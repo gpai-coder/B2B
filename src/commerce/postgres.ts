@@ -26,6 +26,7 @@ import { applyQuickOrderLines, previewQuickOrderLines } from './quick-order'
 import { runCartMutation } from './cart-serialized'
 
 export { CartValidationError } from './cart-helpers'
+export { CartBusyError } from './cart-serialized'
 
 function money(amount: number, currency = 'USD') {
   return { amount, currency }
@@ -88,6 +89,13 @@ export function createPostgresCommerceService(
     actingUser
       ? { overrideAccess: false as const, req: reqFor(payload, actingUser)! }
       : { overrideAccess: true as const }
+
+  const txReadOpts = (req?: PayloadRequest) =>
+    req
+      ? actingUser
+        ? { overrideAccess: false as const, req }
+        : { overrideAccess: true as const, req }
+      : readOpts()
 
   async function findVariantIdsBySkus(skus: string[]) {
     const result = await payload.find({
@@ -217,9 +225,9 @@ export function createPostgresCommerceService(
       : { overrideAccess: true as const }
     const enriched = []
     for (const line of lines) {
-      const meta = await loadVariantCartMeta(payload, line.sku, readOpts())
+      const meta = await loadVariantCartMeta(payload, line.sku, txReadOpts(options?.req))
       if (options?.validateQuantityForSku === line.sku) {
-        await loadVariantForOrdering(payload, line.sku, readOpts())
+        await loadVariantForOrdering(payload, line.sku, txReadOpts(options?.req))
         assertValidCartQuantity(line.quantity, meta)
       }
       enriched.push({
@@ -329,7 +337,7 @@ export function createPostgresCommerceService(
               { req },
             )
           }
-          const meta = await loadVariantForOrdering(payload, sku, readOpts())
+          const meta = await loadVariantForOrdering(payload, sku, txReadOpts(req))
           assertValidCartQuantity(quantity, meta)
           const next = lines.filter((l) => l.sku !== sku)
           next.push({ sku, quantity })
@@ -352,7 +360,7 @@ export function createPostgresCommerceService(
           const current = lines.find((l) => l.sku === sku)?.quantity ?? 0
           const parsedTotal = parseCartQuantity(current + parsedAdd.quantity)
           if (!parsedTotal.ok) throw new CartValidationError(parsedTotal.error)
-          const meta = await loadVariantForOrdering(payload, sku, readOpts())
+          const meta = await loadVariantForOrdering(payload, sku, txReadOpts(req))
           assertValidCartQuantity(parsedTotal.quantity, meta)
           const next = lines.filter((l) => l.sku !== sku)
           next.push({ sku, quantity: parsedTotal.quantity })

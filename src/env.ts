@@ -13,6 +13,7 @@ const serverSchema = z.object({
   /** `public` (default) or `private` — must match the Vercel Blob store type. */
   BLOB_STORE_ACCESS: z.enum(['public', 'private']).optional(),
   NEXT_PUBLIC_SERVER_URL: z.string().url().optional(),
+  DB_POOL_MAX: z.coerce.number().int().positive().optional(),
 })
 
 export type ServerEnv = z.infer<typeof serverSchema>

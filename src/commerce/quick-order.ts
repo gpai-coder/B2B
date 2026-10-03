@@ -140,7 +140,7 @@ export async function applyQuickOrderLines(
         if (!parsed.ok) {
           throw new CartValidationError(parsed.error)
         }
-        const meta = await loadVariantCartMeta(deps.payload, line.sku, deps.readOpts())
+        const meta = await loadVariantCartMeta(deps.payload, line.sku, { overrideAccess: false, req })
         assertValidCartQuantity(parsed.quantity, meta)
         merged.set(line.sku, parsed.quantity)
         addedSkus.push(line.sku)

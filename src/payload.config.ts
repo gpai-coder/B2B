@@ -52,7 +52,8 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: env.DATABASE_URL,
-      max: 20,
+      max: env.DB_POOL_MAX ?? Number(process.env.DB_POOL_MAX ?? 10),
+      connectionTimeoutMillis: 10_000,
     },
     push: process.env.PAYLOAD_DISABLE_PUSH === 'true' ? false : undefined,
   }),
