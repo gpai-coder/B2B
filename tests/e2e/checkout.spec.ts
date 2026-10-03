@@ -12,7 +12,6 @@ test.describe('Cart checkout', () => {
     const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test'
     const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password'
     const po = `E2E-PO-${Date.now()}`
-    let orderIdForCleanup: string | undefined
 
     const path = `/products/${HERO_SLUG}`
     await loginVendor(page, path)
@@ -26,7 +25,7 @@ test.describe('Cart checkout', () => {
     await page.getByTestId('checkout-po').fill(po)
     await page.getByTestId('checkout-submit').click()
     await page.waitForURL(/\/orders\/\d+\?submitted=1/, { timeout: 30_000 })
-    orderIdForCleanup = page.url().match(/\/orders\/(\d+)/)?.[1]
+    const orderIdForCleanup = page.url().match(/\/orders\/(\d+)/)?.[1]
 
     await page.goto('/orders')
     await expect(page.getByTestId('orders-page')).toBeVisible()
