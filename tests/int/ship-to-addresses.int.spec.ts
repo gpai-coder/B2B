@@ -772,6 +772,174 @@ describe('vendor ship-to addresses', () => {
     180_000,
   )
 
+  async function createTempVendor(companyId: number) {
+    const email = `vendor-race-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@local.test`
+    return payload.create({
+      collection: 'users',
+      data: {
+        email,
+        password: 'local-dev-vendor-password',
+        role: 'vendor-buyer',
+        approved: true,
+        company: companyId,
+      },
+      overrideAccess: true,
+    })
+  }
+
+  async function defaultCountForCompany(companyId: number) {
+    const rows = await payload.find({
+      collection: 'ship-to-addresses',
+      where: {
+        and: [{ company: { equals: companyId } }, { isDefault: { equals: true } }],
+      },
+      limit: 10,
+      overrideAccess: true,
+    })
+    return rows.docs.length
+  }
+
+  it(
+    'staff delete-default racing vendor set-default avoids deadlocks and one default',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      let companyId: number | null = null
+      let userId: number | null = null
+      let errorRounds = 0
+      let badDefaultRounds = 0
+
+      try {
+        const company = await createTempCompany('shipto-staff-vendor-del')
+        companyId = company.id
+        const vendor = await createTempVendor(companyId)
+        userId = vendor.id
+        const staff = await staffUser()
+        const staffRequest = createPayloadReq(payload, staff)
+
+        for (let round = 0; round < RACE_ROUNDS; round++) {
+          const stamp = `${Date.now()}-${round}`
+          const a = await createVendorShipToAddress(
+            payload,
+            vendor,
+            String(companyId),
+            sampleAddress(`sv-del-a-${stamp}`),
+          )
+          const b = await createVendorShipToAddress(
+            payload,
+            vendor,
+            String(companyId),
+            sampleAddress(`sv-del-b-${stamp}`),
+          )
+          await setVendorDefaultShipToAddress(payload, vendor, String(companyId), a.id)
+
+          try {
+            await Promise.all([
+              payload.delete({ collection: 'ship-to-addresses', id: a.id, req: staffRequest }),
+              setVendorDefaultShipToAddress(payload, vendor, String(companyId), b.id),
+            ])
+          } catch {
+            errorRounds++
+          }
+
+          const defaults = await defaultCountForCompany(companyId)
+          if (defaults !== 1) badDefaultRounds++
+
+          const rows = await payload.find({
+            collection: 'ship-to-addresses',
+            where: { company: { equals: companyId } },
+            limit: 50,
+            overrideAccess: true,
+          })
+          for (const row of rows.docs.filter((d) => String(d.label ?? '').includes(stamp))) {
+            await payload.delete({ collection: 'ship-to-addresses', id: row.id, overrideAccess: true })
+          }
+        }
+
+        expect(errorRounds).toBe(0)
+        expect(badDefaultRounds).toBe(0)
+      } finally {
+        if (userId != null) {
+          await payload.delete({ collection: 'users', id: userId, overrideAccess: true })
+        }
+        if (companyId != null) await deleteTempCompany(companyId)
+      }
+    },
+    240_000,
+  )
+
+  it(
+    'staff set-default racing vendor delete-default avoids deadlocks and one default',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      let companyId: number | null = null
+      let userId: number | null = null
+      let errorRounds = 0
+      let badDefaultRounds = 0
+
+      try {
+        const company = await createTempCompany('shipto-staff-vendor-set')
+        companyId = company.id
+        const vendor = await createTempVendor(companyId)
+        userId = vendor.id
+        const staff = await staffUser()
+        const staffRequest = createPayloadReq(payload, staff)
+
+        for (let round = 0; round < RACE_ROUNDS; round++) {
+          const stamp = `${Date.now()}-${round}`
+          const a = await createVendorShipToAddress(
+            payload,
+            vendor,
+            String(companyId),
+            sampleAddress(`sv-set-a-${stamp}`),
+          )
+          const b = await createVendorShipToAddress(
+            payload,
+            vendor,
+            String(companyId),
+            sampleAddress(`sv-set-b-${stamp}`),
+          )
+          await setVendorDefaultShipToAddress(payload, vendor, String(companyId), a.id)
+
+          try {
+            await Promise.all([
+              payload.update({
+                collection: 'ship-to-addresses',
+                id: b.id,
+                data: { isDefault: true },
+                req: staffRequest,
+              }),
+              deleteVendorShipToAddress(payload, vendor, String(companyId), a.id),
+            ])
+          } catch {
+            errorRounds++
+          }
+
+          const defaults = await defaultCountForCompany(companyId)
+          if (defaults !== 1) badDefaultRounds++
+
+          const rows = await payload.find({
+            collection: 'ship-to-addresses',
+            where: { company: { equals: companyId } },
+            limit: 50,
+            overrideAccess: true,
+          })
+          for (const row of rows.docs.filter((d) => String(d.label ?? '').includes(stamp))) {
+            await payload.delete({ collection: 'ship-to-addresses', id: row.id, overrideAccess: true })
+          }
+        }
+
+        expect(errorRounds).toBe(0)
+        expect(badDefaultRounds).toBe(0)
+      } finally {
+        if (userId != null) {
+          await payload.delete({ collection: 'users', id: userId, overrideAccess: true })
+        }
+        if (companyId != null) await deleteTempCompany(companyId)
+      }
+    },
+    240_000,
+  )
+
   it('promotes the oldest remaining address when the default is deleted', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     let companyId: number | null = null

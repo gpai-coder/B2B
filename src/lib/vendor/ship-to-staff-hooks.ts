@@ -2,6 +2,7 @@ import type {
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
   CollectionBeforeChangeHook,
+  CollectionBeforeDeleteHook,
 } from 'payload'
 import type { User } from '@/payload-types'
 import { isStaff } from '@/access'
@@ -40,14 +41,30 @@ export const shipToStaffBeforeChange: CollectionBeforeChangeHook = async (args) 
   )
   if (companyId == null || Number.isNaN(companyId)) return args.data
 
-  if (!dataWantsDefault(args.data as Record<string, unknown>)) return args.data
-
+  const wantsDefault = dataWantsDefault(args.data as Record<string, unknown>)
   const keepId = args.operation === 'update' && args.originalDoc ? args.originalDoc.id : null
   await withCompanyLockOnReq(args.req.payload, user, companyId, args.req, async (lockedReq) => {
-    await clearDefaultFlagsExceptSql(args.req.payload, companyId, keepId, lockedReq)
+    if (wantsDefault) await clearDefaultFlagsExceptSql(args.req.payload, companyId, keepId, lockedReq)
   })
 
   return args.data
+}
+
+export const shipToStaffBeforeDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const user = req.user as User | undefined
+  if (!user || !isStaff(user)) return
+
+  const existing = await req.payload.findByID({
+    collection: 'ship-to-addresses',
+    id,
+    req,
+    overrideAccess: true,
+    depth: 0,
+  })
+  const companyId = existing ? companyIdFromDoc(existing as unknown as Record<string, unknown>) : null
+  if (companyId == null) return
+
+  await withCompanyLockOnReq(req.payload, user, companyId, req, async () => {})
 }
 
 export const shipToStaffAfterChange: CollectionAfterChangeHook = async ({ doc, req, previousDoc }) => {

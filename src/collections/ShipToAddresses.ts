@@ -12,6 +12,7 @@ import {
   shipToStaffAfterChange,
   shipToStaffAfterDelete,
   shipToStaffBeforeChange,
+  shipToStaffBeforeDelete,
 } from '../lib/vendor/ship-to-staff-hooks'
 import { SHIP_TO_TRUSTED_MUTATION } from '../lib/vendor/ship-to-trusted'
 import type { User } from '../payload-types'
@@ -79,6 +80,7 @@ export const ShipToAddresses: CollectionConfig = {
   hooks: {
     beforeChange: [shipToStaffBeforeChange, assertShipToCompanyImmutable],
     afterChange: [shipToStaffAfterChange],
+    beforeDelete: [shipToStaffBeforeDelete],
     afterDelete: [shipToStaffAfterDelete],
   },
   fields: [

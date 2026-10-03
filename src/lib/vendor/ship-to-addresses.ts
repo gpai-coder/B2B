@@ -73,6 +73,7 @@ async function withCompanyLockOnReq(
   fn: (req: PayloadRequest) => Promise<void>,
 ): Promise<void> {
   const ownsTx = req.transactionID == null
+  const previousTransactionId = req.transactionID
   let ownedTransactionId: string | number | null | undefined
   if (ownsTx) {
     ownedTransactionId = await payload.db.beginTransaction()
@@ -85,6 +86,8 @@ async function withCompanyLockOnReq(
   } catch (err) {
     if (ownsTx && ownedTransactionId != null) await payload.db.rollbackTransaction(ownedTransactionId)
     throw err
+  } finally {
+    if (ownsTx) req.transactionID = previousTransactionId
   }
 }
 
