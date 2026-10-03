@@ -11,9 +11,16 @@ import crypto from 'crypto'
 import fs from 'fs/promises'
 import path from 'path'
 
-import { get, head, put } from '@vercel/blob'
+import { head } from '@vercel/blob'
 import { getPayload } from 'payload'
 
+import {
+  formatBlobMigrationFailure,
+  blobPathnameFromMediaFilename,
+  readMigrationSourceObject,
+  verifyMigrationDestObject,
+  writeMigrationDestObject,
+} from '../src/lib/blob-migration-transfer.ts'
 import {
   assertBlobStoreEnvConfigured,
   blobMigrationDestToken,
@@ -69,34 +76,6 @@ async function backupFile(mediaId: number, filename: string, data: Buffer) {
   const out = path.join(backupDir, `${mediaId}__${safe}`)
   await fs.writeFile(out, data, { mode: 0o600 })
   return out
-}
-
-async function readPublicObject(filename: string, sourceToken: string): Promise<Buffer> {
-  const result = await get(filename, { access: 'public', token: sourceToken, useCache: false })
-  if (!result || result.statusCode !== 200 || !result.stream) {
-    throw new Error(`Source read failed for ${filename} (status ${result?.statusCode ?? 'unknown'})`)
-  }
-  return Buffer.from(await new Response(result.stream).arrayBuffer())
-}
-
-async function verifyDest(
-  filename: string,
-  destToken: string,
-  expectedSize: number,
-  expectedSha256: string,
-): Promise<void> {
-  const meta = await head(filename, { token: destToken })
-  if (meta.size !== expectedSize) {
-    throw new Error(`Dest size mismatch for ${filename}: ${meta.size} !== ${expectedSize}`)
-  }
-  const downloaded = await get(filename, { access: 'private', token: destToken, useCache: false })
-  if (!downloaded || downloaded.statusCode !== 200 || !downloaded.stream) {
-    throw new Error(`Dest re-read failed for ${filename}`)
-  }
-  const hash = await sha256(Buffer.from(await new Response(downloaded.stream).arrayBuffer()))
-  if (hash !== expectedSha256) {
-    throw new Error(`Dest sha256 mismatch for ${filename}`)
-  }
 }
 
 function failureForId(cp: Checkpoint, id: number) {
@@ -217,29 +196,27 @@ export async function runBlobTwoStoreMigration(): Promise<number> {
 
         const filename = doc.filename
         try {
-          const bytes = await readPublicObject(filename, sourceToken)
+          const source = await readMigrationSourceObject(filename, sourceToken)
+          const bytes = source.buffer
           const digest = await sha256(bytes)
           const backupPath = await backupFile(doc.id, filename, bytes)
 
-          const sourceMeta = await head(filename, { token: sourceToken })
+          await writeMigrationDestObject(
+            filename,
+            bytes,
+            destToken,
+            doc.mimeType ?? source.contentType ?? 'application/octet-stream',
+          )
 
-          await put(filename, bytes, {
-            access: 'private',
-            token: destToken,
-            contentType: doc.mimeType ?? 'application/octet-stream',
-            addRandomSuffix: false,
-            allowOverwrite: true,
-          })
-
-          await verifyDest(filename, destToken, bytes.length, digest)
+          await verifyMigrationDestObject(filename, destToken, bytes.length, digest, sha256)
 
           if (deleteSource) {
-            const destMeta = await head(filename, { token: destToken })
-            if (destMeta.size !== sourceMeta.size) {
+            const destMeta = await head(blobPathnameFromMediaFilename(filename), { token: destToken })
+            if (destMeta.size !== source.size) {
               throw new Error('Refusing to delete source: dest head size mismatch')
             }
             const { del } = await import('@vercel/blob')
-            await del(sourceMeta.url, { token: sourceToken })
+            await del(source.blobUrl, { token: sourceToken })
           }
 
           cp.completedIds.push(doc.id)
@@ -248,7 +225,15 @@ export async function runBlobTwoStoreMigration(): Promise<number> {
           processed++
           console.log(`ok id=${doc.id} ${filename} backup=${backupPath}`)
         } catch (err) {
-          const message = err instanceof Error ? err.message : String(err)
+          const phase =
+            err instanceof Error && err.message.includes('Dest')
+              ? 'dest-verify'
+              : err instanceof Error && err.message.includes('size mismatch')
+                ? 'dest-verify'
+                : 'source-read'
+          const store: 'public' | 'private' =
+            phase === 'source-read' || phase === 'source-head' ? 'public' : 'private'
+          const message = formatBlobMigrationFailure(phase, store, filename, err)
           recordFailure(cp, doc.id, filename, message)
           failedThisRun.add(doc.id)
           console.error(

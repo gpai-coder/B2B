@@ -19,6 +19,11 @@ export type OpenBlobReadResult = {
   contentType: string
   contentLength: number
   etag: string
+  blobUrl: string
+}
+
+export type OpenBlobReadStreamOptions = {
+  useCache?: boolean
 }
 
 /**
@@ -29,12 +34,14 @@ export async function openBlobReadStream(
   pathname: string,
   token: string,
   access: BlobStoreAccess = blobStoreAccessFromEnv(),
+  streamOptions: OpenBlobReadStreamOptions = {},
 ): Promise<OpenBlobReadResult> {
+  const useCache = streamOptions.useCache ?? true
   try {
     const result = await get(pathname, {
       access,
       token,
-      useCache: true,
+      useCache,
     })
 
     if (!result) {
@@ -53,6 +60,7 @@ export async function openBlobReadStream(
       contentType: result.blob.contentType ?? 'application/octet-stream',
       contentLength: result.blob.size,
       etag: result.blob.etag,
+      blobUrl: result.blob.url,
     }
   } catch (err) {
     if (err instanceof BlobReadError) throw err
