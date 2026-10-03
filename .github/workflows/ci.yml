@@ -26,7 +26,6 @@ jobs:
     env:
       DATABASE_URL: postgresql://portal:portal@127.0.0.1:5432/b2b_portal
       PAYLOAD_SECRET: ci-payload-secret-min-16-chars
-      PAYLOAD_DISABLE_PUSH: 'true'
       NEXT_PUBLIC_SERVER_URL: http://localhost:3000
       SEED_ADMIN_EMAIL: admin@local.test
       SEED_ADMIN_PASSWORD: local-dev-admin-password
@@ -58,12 +57,21 @@ jobs:
 
       - name: Migration up/down (fresh Postgres)
         if: hashFiles('src/migrations/**') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
         run: pnpm db:migrate:check
 
-      - name: Migrate and seed
-        run: |
-          pnpm db:migrate
-          pnpm db:seed
+      - name: Migrate database
+        if: hashFiles('src/migrations/**') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+        run: pnpm db:migrate
+
+      - name: Seed database
+        if: hashFiles('src/scripts/seed.ts') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+        run: pnpm db:seed
 
       - name: Unit tests
         run: pnpm test:unit 2>&1 | tee unit-test-output.txt
@@ -74,9 +82,10 @@ jobs:
 
       - name: E2E smoke test
         if: hashFiles('tests/e2e/smoke.spec.ts') != ''
-        run: pnpm test:e2e tests/e2e/smoke.spec.ts 2>&1 | tee e2e-test-output.txt
         env:
+          PAYLOAD_DISABLE_PUSH: 'true'
           B2B_BASE_URL: http://localhost:3000
+        run: pnpm test:e2e tests/e2e/smoke.spec.ts 2>&1 | tee e2e-test-output.txt
 
       - name: Upload test output
         if: always()
