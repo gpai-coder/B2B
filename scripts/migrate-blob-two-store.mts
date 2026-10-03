@@ -19,6 +19,7 @@ import {
   blobMigrationDestToken,
   blobMigrationSourceToken,
 } from '../src/lib/blob-store-env.ts'
+import { swapNodeEnvForPayloadConnect } from '../src/lib/blob-migrate-payload-env.ts'
 
 type FailureRecord = { id: number; filename: string; error: string; attempts: number }
 
@@ -142,10 +143,6 @@ function resolveExitCode(cp: Checkpoint): number {
 export async function runBlobTwoStoreMigration(): Promise<number> {
   process.env.PAYLOAD_DISABLE_PUSH = 'true'
   process.env.PAYLOAD_MIGRATING = 'true'
-  // Payload connect(): production runs interactive prodMigrations; non-production + push:false skips drizzle push.
-  if (process.env.NODE_ENV === 'production') {
-    process.env.NODE_ENV = 'test'
-  }
 
   assertBlobStoreEnvConfigured()
 
@@ -162,8 +159,14 @@ export async function runBlobTwoStoreMigration(): Promise<number> {
 
   const cp = await loadCheckpoint()
 
-  const { default: payloadConfig } = await import('../src/payload.config.ts')
-  const payload = await getPayload({ config: payloadConfig })
+  const restoreNodeEnv = swapNodeEnvForPayloadConnect()
+  let payload
+  try {
+    const { default: payloadConfig } = await import('../src/payload.config.ts')
+    payload = await getPayload({ config: payloadConfig })
+  } finally {
+    restoreNodeEnv()
+  }
 
   try {
     let processed = 0
