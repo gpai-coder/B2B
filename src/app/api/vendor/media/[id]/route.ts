@@ -4,8 +4,8 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import { getCatalogMediaAuthFailure } from '@/access'
-import { BlobReadError, openBlobReadStream } from '@/lib/blob-server-read'
 import { resolveBlobMediaUrl } from '@/lib/blob-media-url'
+import { serveBlobFileResponse } from '@/lib/serve-blob-file'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getRequestUser } from '@/lib/session'
 import config from '@/payload.config'
@@ -96,16 +96,12 @@ export async function GET(request: Request, { params }: RouteParams) {
 
   const blobToken = process.env.BLOB_READ_WRITE_TOKEN
   if (blobToken) {
-    try {
-      const opened = await openBlobReadStream(filename, blobToken)
-      return new Response(opened.stream, {
-        headers: mediaResponseHeaders(mediaDoc, opened.contentType, disposition, opened.contentLength),
-      })
-    } catch (err) {
-      const message = err instanceof BlobReadError ? err.message : 'Failed to read blob'
-      console.error('[vendor/media]', { mediaId, filename, err })
-      return Response.json({ error: message }, { status: 502 })
-    }
+    return serveBlobFileResponse({
+      filename,
+      mimeType: doc.mimeType,
+      disposition: forceDownload ? 'attachment' : 'inline',
+      token: blobToken,
+    })
   }
 
   const remoteUrl =

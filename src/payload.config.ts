@@ -61,6 +61,8 @@ export default buildConfig({
         media: true,
       },
       token: env.BLOB_READ_WRITE_TOKEN ?? '',
+      // Seed idempotency relies on stable `media.filename` keys — never enable random suffixes.
+      addRandomSuffix: false,
     }),
   ],
   sharp,
