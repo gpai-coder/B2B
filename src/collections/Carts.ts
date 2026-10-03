@@ -22,6 +22,7 @@ export const Carts: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: ['user', 'company', 'updatedAt'],
   },
+  indexes: [{ unique: true, fields: ['user', 'company'] }],
   access: {
     admin: adminPanelAccess,
     read: vendorCartAccess,
@@ -63,6 +64,7 @@ export const Carts: CollectionConfig = {
           type: 'number',
           required: true,
           min: 1,
+          max: 9999,
         },
       ],
     },

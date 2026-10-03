@@ -353,11 +353,11 @@ export interface ProductVariant {
   /**
    * Minimum order quantity (MOQ) for this SKU.
    */
-  moq?: number | null;
+  moq: number;
   /**
    * Order increment / case pack size.
    */
-  orderMultiple?: number | null;
+  orderMultiple: number;
   specs?: {
     flowRateGpm?: number | null;
     spoutHeightIn?: number | null;

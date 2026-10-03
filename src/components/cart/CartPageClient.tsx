@@ -42,31 +42,54 @@ export function CartPageClient({ summary }: Props) {
         </thead>
         <tbody>
           {summary.lines.map((line) => (
-            <tr key={line.sku} data-testid={`cart-line-${line.sku}`}>
-              <td>{line.productName}</td>
-              <td>{line.sku}</td>
+            <tr
+              key={line.sku}
+              data-testid={`cart-line-${line.sku}`}
+              className={line.available ? undefined : 'as-cart-line--unavailable'}
+            >
               <td>
-                <AddToCartControls
-                  sku={line.sku}
-                  moq={line.moq}
-                  orderMultiple={line.orderMultiple}
-                  mode="set"
-                  initialQuantity={line.quantity}
-                />
-              </td>
-              <td>
-                ${line.unitPrice.amount.toFixed(2)} ({line.source})
-                {line.quantityBreaks && line.quantityBreaks.length > 0 ? (
-                  <ul className="as-cart-tier-hints">
-                    {line.quantityBreaks.map((b) => (
-                      <li key={b.minQuantity}>
-                        {b.minQuantity}+ @ ${b.unitPrice.toFixed(2)}
-                      </li>
-                    ))}
-                  </ul>
+                {line.productName}
+                {!line.available && line.unavailableReason ? (
+                  <p className="as-field-error" data-testid={`cart-unavailable-${line.sku}`}>
+                    {line.unavailableReason}
+                  </p>
                 ) : null}
               </td>
-              <td data-testid={`cart-line-total-${line.sku}`}>${line.lineTotal.toFixed(2)}</td>
+              <td>{line.sku}</td>
+              <td>
+                {line.available && line.moq != null && line.orderMultiple != null ? (
+                  <AddToCartControls
+                    sku={line.sku}
+                    moq={line.moq}
+                    orderMultiple={line.orderMultiple}
+                    mode="set"
+                    initialQuantity={line.quantity}
+                  />
+                ) : (
+                  <span data-testid={`cart-qty-readonly-${line.sku}`}>{line.quantity}</span>
+                )}
+              </td>
+              <td>
+                {line.available && line.unitPrice ? (
+                  <>
+                    ${line.unitPrice.amount.toFixed(2)} ({line.source})
+                    {line.quantityBreaks && line.quantityBreaks.length > 0 ? (
+                      <ul className="as-cart-tier-hints">
+                        {line.quantityBreaks.map((b) => (
+                          <li key={b.minQuantity}>
+                            {b.minQuantity}+ @ ${b.unitPrice.toFixed(2)}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </>
+                ) : (
+                  '—'
+                )}
+              </td>
+              <td data-testid={`cart-line-total-${line.sku}`}>
+                {line.available && line.lineTotal != null ? `$${line.lineTotal.toFixed(2)}` : '—'}
+              </td>
               <td>
                 <button
                   type="button"

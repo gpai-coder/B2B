@@ -10,7 +10,7 @@ export class CartValidationError extends Error {
   }
 }
 
-export type VariantOrderRules = {
+export type VariantCartMeta = {
   sku: string
   variantId: number
   productId: number
@@ -21,11 +21,13 @@ export type VariantOrderRules = {
   orderMultiple: number
 }
 
-export async function loadVariantForOrdering(
+export type VariantOrderRules = VariantCartMeta
+
+export async function loadVariantCartMeta(
   payload: Payload,
   sku: string,
   readOpts: { overrideAccess: boolean; req?: import('payload').PayloadRequest },
-): Promise<VariantOrderRules> {
+): Promise<VariantCartMeta> {
   const result = await payload.find({
     collection: 'product-variants',
     where: { sku: { equals: sku } },
@@ -42,12 +44,6 @@ export async function loadVariantForOrdering(
   if (!productDoc) {
     throw new CartValidationError(`Unknown SKU ${sku}.`)
   }
-  if (productDoc.catalogHidden === true) {
-    throw new CartValidationError('This product is not available to order.')
-  }
-  if (variant.discontinued === true) {
-    throw new CartValidationError('This finish is discontinued and cannot be ordered.')
-  }
   const rules = normalizeQuantityRules({
     moq: variant.moq ?? 1,
     orderMultiple: variant.orderMultiple ?? 1,
@@ -57,15 +53,36 @@ export async function loadVariantForOrdering(
     variantId: variant.id,
     productId: productDoc.id,
     productName: productDoc.name,
-    catalogHidden: false,
-    discontinued: false,
+    catalogHidden: productDoc.catalogHidden === true,
+    discontinued: variant.discontinued === true,
     moq: rules.moq,
     orderMultiple: rules.orderMultiple,
   }
+}
+
+export async function loadVariantForOrdering(
+  payload: Payload,
+  sku: string,
+  readOpts: { overrideAccess: boolean; req?: import('payload').PayloadRequest },
+): Promise<VariantOrderRules> {
+  const meta = await loadVariantCartMeta(payload, sku, readOpts)
+  if (meta.catalogHidden) {
+    throw new CartValidationError('This product is not available to order.')
+  }
+  if (meta.discontinued) {
+    throw new CartValidationError('This finish is discontinued and cannot be ordered.')
+  }
+  return meta
 }
 
 export function assertValidCartQuantity(quantity: number, rules: Pick<VariantOrderRules, 'moq' | 'orderMultiple'>) {
   const normalized = normalizeQuantityRules(rules)
   const message = validateOrderQuantity(quantity, normalized)
   if (message) throw new CartValidationError(message)
+}
+
+export function unavailableReason(meta: Pick<VariantCartMeta, 'catalogHidden' | 'discontinued'>): string | null {
+  if (meta.catalogHidden) return 'This product is not available to order.'
+  if (meta.discontinued) return 'This finish is discontinued and cannot be ordered.'
+  return null
 }

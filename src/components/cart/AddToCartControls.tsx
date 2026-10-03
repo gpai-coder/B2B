@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 
 import { addToCartAction, setCartLineAction } from '@/app/(frontend)/cart/actions'
-import { quantityHint, validateOrderQuantity } from '@/lib/cart/quantity-rules'
+import { parseCartQuantity, quantityHint, validateOrderQuantity } from '@/lib/cart/quantity-rules'
 
 type Props = {
   sku: string
@@ -28,7 +28,12 @@ export function AddToCartControls({
   const hint = quantityHint({ moq, orderMultiple })
 
   const onSubmit = () => {
-    const validation = validateOrderQuantity(quantity, { moq, orderMultiple })
+    const parsed = parseCartQuantity(quantity)
+    if (!parsed.ok) {
+      setError(parsed.error)
+      return
+    }
+    const validation = validateOrderQuantity(parsed.quantity, { moq, orderMultiple })
     if (validation) {
       setError(validation)
       return
@@ -37,8 +42,8 @@ export function AddToCartControls({
     startTransition(async () => {
       const result =
         mode === 'set'
-          ? await setCartLineAction(sku, quantity)
-          : await addToCartAction(sku, quantity)
+          ? await setCartLineAction(sku, parsed.quantity)
+          : await addToCartAction(sku, parsed.quantity)
       if (!result.ok) setError(result.error)
     })
   }
@@ -49,6 +54,8 @@ export function AddToCartControls({
         <input
           type="number"
           min={1}
+          max={9999}
+          step={1}
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value) || 1)}
           className="as-qty"

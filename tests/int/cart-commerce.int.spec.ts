@@ -7,6 +7,9 @@ import { CartValidationError, createPostgresCommerceService } from '@/commerce/p
 import { createPayloadReq } from '@/lib/payload-req'
 import { SEED_HERO_SKU, SEED_QUOTE_SECOND_SKU } from '@/scripts/seed'
 
+const HIDDEN_SKU = '4279300.002'
+const DISCONTINUED_SKU = '7353101.278'
+
 describe('cart commerce', () => {
   let payload: Payload
   let pacificUserId: number
@@ -61,6 +64,20 @@ describe('cart commerce', () => {
     return payload.findByID({ collection: 'users', id: bayUserId, overrideAccess: true })
   }
 
+  async function deletePacificCartDoc() {
+    const carts = await payload.find({
+      collection: 'carts',
+      where: {
+        and: [{ user: { equals: pacificUserId } }, { company: { equals: Number(pacificCompanyId) } }],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+    if (carts.docs[0]) {
+      await payload.delete({ collection: 'carts', id: carts.docs[0].id, overrideAccess: true })
+    }
+  }
+
   async function clearPacificCart() {
     const commerce = createPostgresCommerceService(payload, await pacificUserDoc())
     const lines = await commerce.getCart(pacificCompanyId)
@@ -79,10 +96,23 @@ describe('cart commerce', () => {
     expect(cart).toEqual([{ sku: SEED_HERO_SKU, quantity: 3 }])
 
     const summary = await commerce.getCartSummary(pacificCompanyId)
-    expect(summary.lines[0]?.unitPrice.amount).toBe(199)
+    expect(summary.lines[0]?.available).toBe(true)
+    expect(summary.lines[0]?.unitPrice?.amount).toBe(199)
     expect(summary.subtotal).toBe(199 * 3)
 
     await clearPacificCart()
+  })
+
+  it('rejects non-integer and out-of-range quantities', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
+    const commerce = createPostgresCommerceService(payload, await pacificUserDoc())
+    await expect(commerce.setCartLine(pacificCompanyId, SEED_HERO_SKU, 10.5)).rejects.toBeInstanceOf(
+      CartValidationError,
+    )
+    await expect(commerce.setCartLine(pacificCompanyId, SEED_HERO_SKU, 1e12)).rejects.toBeInstanceOf(
+      CartValidationError,
+    )
   })
 
   it('enforces MOQ and order multiple on the server', async () => {
@@ -94,13 +124,84 @@ describe('cart commerce', () => {
     ).rejects.toBeInstanceOf(CartValidationError)
   })
 
-  it('rejects hidden catalog and discontinued SKUs', async () => {
+  it('rejects hidden catalog and discontinued SKUs on add', async () => {
     if (!process.env.DATABASE_URL || !payload) return
 
     const commerce = createPostgresCommerceService(payload, await pacificUserDoc())
-    await expect(commerce.setCartLine(pacificCompanyId, '4279300.002', 1)).rejects.toBeInstanceOf(
-      CartValidationError,
-    )
+    await expect(commerce.setCartLine(pacificCompanyId, HIDDEN_SKU, 1)).rejects.toMatchObject({
+      message: expect.stringMatching(/not available to order/i),
+    })
+    await expect(commerce.setCartLine(pacificCompanyId, DISCONTINUED_SKU, 1)).rejects.toMatchObject({
+      message: expect.stringMatching(/discontinued/i),
+    })
+  })
+
+  it('survives a discontinued line: summary, remove, and other lines remain editable', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
+    await clearPacificCart()
+    const commerce = createPostgresCommerceService(payload, await pacificUserDoc())
+    await commerce.setCartLine(pacificCompanyId, SEED_HERO_SKU, 2)
+    await commerce.setCartLine(pacificCompanyId, SEED_QUOTE_SECOND_SKU, 6)
+
+    const variant = await payload.find({
+      collection: 'product-variants',
+      where: { sku: { equals: SEED_QUOTE_SECOND_SKU } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    const variantId = variant.docs[0]!.id
+    await payload.update({
+      collection: 'product-variants',
+      id: variantId,
+      data: { discontinued: true },
+      overrideAccess: true,
+    })
+
+    try {
+      const summary = await commerce.getCartSummary(pacificCompanyId)
+      expect(summary.lines).toHaveLength(2)
+      const hero = summary.lines.find((l) => l.sku === SEED_HERO_SKU)
+      const blocked = summary.lines.find((l) => l.sku === SEED_QUOTE_SECOND_SKU)
+      expect(hero?.available).toBe(true)
+      expect(blocked?.available).toBe(false)
+      expect(summary.subtotal).toBe(199 * 2)
+
+      await commerce.removeCartLine(pacificCompanyId, SEED_QUOTE_SECOND_SKU)
+      await commerce.setCartLine(pacificCompanyId, SEED_HERO_SKU, 4)
+      const after = await commerce.getCartSummary(pacificCompanyId)
+      expect(after.lines).toHaveLength(1)
+      expect(after.lines[0]?.quantity).toBe(4)
+      expect(after.subtotal).toBe(199 * 4)
+    } finally {
+      await payload.update({
+        collection: 'product-variants',
+        id: variantId,
+        data: { discontinued: false },
+        overrideAccess: true,
+      })
+      await clearPacificCart()
+    }
+  })
+
+  it('retries cart create when two empty-cart lookups race', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
+    await deletePacificCartDoc()
+    const user = await pacificUserDoc()
+    const a = createPostgresCommerceService(payload, user)
+    const b = createPostgresCommerceService(payload, user)
+    await Promise.all([a.getCart(pacificCompanyId), b.getCart(pacificCompanyId)])
+    const carts = await payload.find({
+      collection: 'carts',
+      where: {
+        and: [{ user: { equals: pacificUserId } }, { company: { equals: Number(pacificCompanyId) } }],
+      },
+      limit: 10,
+      overrideAccess: true,
+    })
+    expect(carts.docs).toHaveLength(1)
+    await deletePacificCartDoc()
   })
 
   it('blocks another vendor company from reading or mutating the cart', async () => {

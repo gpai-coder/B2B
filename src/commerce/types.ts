@@ -38,12 +38,14 @@ export type CartLine = {
 
 export type PricedCartLine = CartLine & {
   productName: string
-  unitPrice: Money
-  lineTotal: number
-  source: 'company' | 'standard'
+  available: boolean
+  unavailableReason?: string
+  unitPrice?: Money
+  lineTotal?: number
+  source?: 'company' | 'standard'
   quantityBreaks?: Array<{ minQuantity: number; unitPrice: number }>
-  moq: number
-  orderMultiple: number
+  moq?: number
+  orderMultiple?: number
 }
 
 export type CartSummary = {
