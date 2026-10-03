@@ -1,31 +1,40 @@
-import type { Payload } from 'payload'
+import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { parseCartQuantity } from '@/lib/cart/quantity-rules'
 import { mergeQuickOrderLines } from '@/lib/quick-order/parse-input'
 
+import { isUniqueViolation } from './db-errors'
 import {
   assertValidCartQuantity,
   CartValidationError,
   loadVariantCartMeta,
 } from './cart-helpers'
-import type { PriceQuote, QuickOrderApplyResult, QuickOrderPreview, QuickOrderPreviewLine } from './types'
+import type {
+  CartLine,
+  PriceQuote,
+  QuickOrderApplyResult,
+  QuickOrderPreview,
+  QuickOrderPreviewLine,
+} from './types'
 
 const UNKNOWN_SKU = 'Unknown SKU.'
 
-type QuickOrderDeps = {
+export type QuickOrderDeps = {
   payload: Payload
   actingUser: User
   companyId: string
-  readOpts: () => { overrideAccess: boolean; req?: import('payload').PayloadRequest }
+  readOpts: () => { overrideAccess: boolean; req?: PayloadRequest }
   resolveUnitPrice: (
     companyId: string,
     variantId: number,
     sku: string,
     quantity?: number,
   ) => Promise<PriceQuote | null>
-  setCartLine: (companyId: string, sku: string, quantity: number) => Promise<unknown>
-  getCart: (companyId: string) => Promise<Array<{ sku: string; quantity: number }>>
+  getCartLines: (companyId: string) => Promise<CartLine[]>
+  getOrCreateCartDoc: (companyId: string, req: PayloadRequest) => Promise<{ id: number }>
+  persistCartLines: (cartId: number, lines: CartLine[], req: PayloadRequest) => Promise<CartLine[]>
+  createReq: () => PayloadRequest
 }
 
 async function validateQuickOrderLine(
@@ -47,6 +56,12 @@ async function validateQuickOrderLine(
   if (meta.catalogHidden) {
     return { ...base, error: UNKNOWN_SKU }
   }
+
+  const price = await deps.resolveUnitPrice(deps.companyId, meta.variantId, line.sku, qtyCheck.quantity)
+  if (!price) {
+    return { ...base, error: UNKNOWN_SKU }
+  }
+
   if (meta.discontinued) {
     return { ...base, error: 'This finish is discontinued and cannot be ordered.' }
   }
@@ -55,11 +70,6 @@ async function validateQuickOrderLine(
   } catch (err) {
     const message = err instanceof CartValidationError ? err.message : 'Invalid quantity.'
     return { ...base, error: message }
-  }
-
-  const price = await deps.resolveUnitPrice(deps.companyId, meta.variantId, line.sku, qtyCheck.quantity)
-  if (!price) {
-    return { ...base, error: UNKNOWN_SKU }
   }
 
   return {
@@ -85,16 +95,7 @@ export async function previewQuickOrderLines(
   return { lines }
 }
 
-export async function applyQuickOrderLines(
-  deps: QuickOrderDeps,
-  rawLines: Array<{ lineNumber: number; sku: string; quantity: number }>,
-  idempotencyKey: string,
-): Promise<QuickOrderApplyResult> {
-  const key = idempotencyKey.trim()
-  if (!key || key.length > 128) {
-    throw new Error('Idempotency key is required (max 128 characters).')
-  }
-
+async function loadExistingBulkAdd(deps: QuickOrderDeps, key: string) {
   const existing = await deps.payload.find({
     collection: 'cart-bulk-adds',
     where: {
@@ -107,37 +108,82 @@ export async function applyQuickOrderLines(
     limit: 1,
     overrideAccess: true,
   })
-  if (existing.docs[0]) {
-    const addedSkus = (existing.docs[0].addedSkus as string[] | null) ?? []
+  return existing.docs[0] ?? null
+}
+
+export async function applyQuickOrderLines(
+  deps: QuickOrderDeps,
+  rawLines: Array<{ lineNumber: number; sku: string; quantity: number }>,
+  idempotencyKey: string,
+): Promise<QuickOrderApplyResult> {
+  const key = idempotencyKey.trim()
+  if (!key || key.length > 128) {
+    throw new Error('Idempotency key is required (max 128 characters).')
+  }
+
+  const prior = await loadExistingBulkAdd(deps, key)
+  if (prior) {
+    const addedSkus = (prior.addedSkus as string[] | null) ?? []
     return { replay: true, addedSkus }
   }
 
   const preview = await previewQuickOrderLines(deps, rawLines)
   const valid = preview.lines.filter((l) => l.ok)
-  const cart = await deps.getCart(deps.companyId)
+  const cart = await deps.getCartLines(deps.companyId)
+  const merged = new Map(cart.map((line) => [line.sku, line.quantity]))
   const addedSkus: string[] = []
 
   for (const line of valid) {
-    const current = cart.find((l) => l.sku === line.sku)?.quantity ?? 0
+    const current = merged.get(line.sku) ?? 0
     const nextQty = current + line.quantity
     const parsed = parseCartQuantity(nextQty)
     if (!parsed.ok) {
       throw new CartValidationError(parsed.error)
     }
-    await deps.setCartLine(deps.companyId, line.sku, parsed.quantity)
+    const meta = await loadVariantCartMeta(deps.payload, line.sku, deps.readOpts())
+    assertValidCartQuantity(parsed.quantity, meta)
+    merged.set(line.sku, parsed.quantity)
     addedSkus.push(line.sku)
   }
 
-  await deps.payload.create({
-    collection: 'cart-bulk-adds',
-    data: {
-      user: deps.actingUser.id,
-      company: Number(deps.companyId),
-      idempotencyKey: key,
-      addedSkus,
-    },
-    overrideAccess: true,
-  })
+  const finalLines: CartLine[] = [...merged.entries()].map(([sku, quantity]) => ({ sku, quantity }))
 
-  return { replay: false, addedSkus }
+  const req = deps.createReq()
+  const transactionID = await deps.payload.db.beginTransaction()
+  if (transactionID != null) {
+    req.transactionID = transactionID
+  }
+
+  try {
+    await deps.payload.create({
+      collection: 'cart-bulk-adds',
+      data: {
+        user: deps.actingUser.id,
+        company: Number(deps.companyId),
+        idempotencyKey: key,
+        addedSkus,
+      },
+      req,
+      overrideAccess: true,
+    })
+
+    const cartDoc = await deps.getOrCreateCartDoc(deps.companyId, req)
+    await deps.persistCartLines(cartDoc.id, finalLines, req)
+
+    if (transactionID != null) {
+      await deps.payload.db.commitTransaction(transactionID)
+    }
+    return { replay: false, addedSkus }
+  } catch (err) {
+    if (transactionID != null) {
+      await deps.payload.db.rollbackTransaction(transactionID)
+    }
+    if (isUniqueViolation(err)) {
+      const row = await loadExistingBulkAdd(deps, key)
+      if (row) {
+        return { replay: true, addedSkus: (row.addedSkus as string[] | null) ?? [] }
+      }
+    }
+    throw err
+  }
 }

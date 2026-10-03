@@ -88,6 +88,57 @@ describe('quick order commerce', () => {
     ).rejects.toThrow(/does not match/)
   })
 
+  it('concurrent same-key applies write once and replay others', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    await clearCart()
+    const commerce = createPostgresCommerceService(payload, await pacificUser())
+    const lines = [{ lineNumber: 1, sku: SEED_HERO_SKU, quantity: 3 }]
+    const key = `quick-order-concurrent-${Date.now()}`
+    const results = await Promise.all([
+      commerce.applyQuickOrder(pacificCompanyId, lines, key),
+      commerce.applyQuickOrder(pacificCompanyId, lines, key),
+      commerce.applyQuickOrder(pacificCompanyId, lines, key),
+    ])
+    const replays = results.filter((r) => r.replay).length
+    expect(replays).toBeGreaterThanOrEqual(2)
+    expect(results.some((r) => !r.replay)).toBe(true)
+    const cart = await commerce.getCart(pacificCompanyId)
+    expect(cart.find((l) => l.sku === SEED_HERO_SKU)?.quantity).toBe(3)
+    const rows = await payload.find({
+      collection: 'cart-bulk-adds',
+      where: { idempotencyKey: { equals: key } },
+      limit: 10,
+      overrideAccess: true,
+    })
+    expect(rows.docs).toHaveLength(1)
+    await clearCart()
+  })
+
+  it('does not write cart or idempotency row when merged qty exceeds max', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    await clearCart()
+    const commerce = createPostgresCommerceService(payload, await pacificUser())
+    await commerce.setCartLine(pacificCompanyId, SEED_HERO_SKU, 9998)
+    const key = `quick-order-max-${Date.now()}`
+    await expect(
+      commerce.applyQuickOrder(
+        pacificCompanyId,
+        [{ lineNumber: 1, sku: SEED_HERO_SKU, quantity: 3 }],
+        key,
+      ),
+    ).rejects.toThrow(/9999/)
+    const cart = await commerce.getCart(pacificCompanyId)
+    expect(cart.find((l) => l.sku === SEED_HERO_SKU)?.quantity).toBe(9998)
+    const rows = await payload.find({
+      collection: 'cart-bulk-adds',
+      where: { idempotencyKey: { equals: key } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    expect(rows.docs).toHaveLength(0)
+    await clearCart()
+  })
+
   it('enforces MOQ on preview', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     const commerce = createPostgresCommerceService(payload, await pacificUser())

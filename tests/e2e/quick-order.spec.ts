@@ -17,8 +17,12 @@ test.describe('Quick order', () => {
     await page.getByTestId('quick-order-apply').click()
     await expect(page.getByTestId('quick-order-apply-message')).toContainText(/Added/i)
 
+    await page.getByTestId('quick-order-input').fill(`${HERO_SKU} 1`)
+    await page.getByRole('button', { name: 'Validate' }).click()
+    await expect(page.getByTestId('quick-order-preview')).toBeVisible({ timeout: 15_000 })
     await page.getByTestId('quick-order-apply').click()
-    await expect(page.getByTestId('quick-order-apply-message')).toContainText(/idempotent/i)
+    await expect(page.getByTestId('quick-order-apply-message')).toContainText(/^Added/i)
+    await expect(page.getByTestId('quick-order-apply-message')).not.toContainText(/idempotent/i)
 
     await page.goto('/cart')
     await expect(page.getByTestId(`cart-line-${HERO_SKU}`)).toBeVisible()

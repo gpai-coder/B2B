@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 
 import { QUICK_ORDER_MAX_BYTES } from '@/lib/quick-order/limits'
 import {
@@ -20,7 +20,11 @@ export function QuickOrderClient(_props: Props) {
   const [error, setError] = useState<string | null>(null)
   const [applyMessage, setApplyMessage] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
-  const idempotencyKey = useMemo(() => crypto.randomUUID(), [])
+  const [idempotencyKey, setIdempotencyKey] = useState(() => crypto.randomUUID())
+
+  useEffect(() => {
+    setIdempotencyKey(crypto.randomUUID())
+  }, [text, mode])
 
   const validCount = preview?.lines.filter((l) => l.ok).length ?? 0
 
