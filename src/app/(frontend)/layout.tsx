@@ -1,6 +1,8 @@
-import React from 'react'
 import Link from 'next/link'
 import { Montserrat } from 'next/font/google'
+
+import { CatalogSearchBox } from '@/components/catalog/CatalogSearchBox'
+import { getRequestUser } from '@/lib/session'
 
 import './styles.css'
 import './as-catalog.css'
@@ -16,7 +18,10 @@ export const metadata = {
   title: 'B2B Ordering Portal',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getRequestUser()
+  const authenticated = Boolean(user && user.role === 'vendor-buyer')
+
   return (
     <html lang="en" className={montserrat.variable}>
       <body style={{ fontFamily: 'var(--font-montserrat), Montserrat, sans-serif' }}>
@@ -25,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link className="site-logo" href="/">
               B2B Portal
             </Link>
+            <CatalogSearchBox authenticated={authenticated} />
             <nav className="site-nav" aria-label="Main">
               <Link href="/">Home</Link>
               <Link href="/catalog">Catalog</Link>

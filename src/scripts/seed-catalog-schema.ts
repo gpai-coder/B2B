@@ -56,6 +56,7 @@ export const seedCatalogSchema = z.object({
       catalogCategory: z
         .enum(['bathroom-faucet', 'kitchen-faucet', 'toilet'])
         .optional(),
+      catalogHidden: z.boolean().default(false),
       breadcrumbs: z.array(z.object({ label: z.string().min(1) })).default([]),
       description: z.string().optional(),
       shortBullets: z.array(z.object({ text: z.string().min(1) })).default([]),

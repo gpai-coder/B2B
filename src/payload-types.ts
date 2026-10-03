@@ -224,6 +224,10 @@ export interface Product {
    * Category for PLP facets and copy.
    */
   catalogCategory?: ('bathroom-faucet' | 'kitchen-faucet' | 'toilet') | null;
+  /**
+   * Hide from vendor PLP and catalog search.
+   */
+  catalogHidden?: boolean | null;
   breadcrumbs?:
     | {
         label: string;
@@ -623,6 +627,7 @@ export interface ProductsSelect<T extends boolean = true> {
   modelNumber?: T;
   productCollection?: T;
   catalogCategory?: T;
+  catalogHidden?: T;
   breadcrumbs?:
     | T
     | {

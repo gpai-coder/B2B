@@ -61,6 +61,12 @@ export const Products: CollectionConfig = {
       admin: { description: 'Category for PLP facets and copy.' },
     },
     {
+      name: 'catalogHidden',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { description: 'Hide from vendor PLP and catalog search.' },
+    },
+    {
       name: 'breadcrumbs',
       type: 'array',
       fields: [{ name: 'label', type: 'text', required: true }],

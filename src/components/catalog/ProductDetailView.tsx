@@ -60,7 +60,7 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const variant = product.variants.find((v) => v.sku === activeSku) ?? product.variants[0]!
-  const price = prices[variant.sku]
+  const price = variant.discontinued ? undefined : prices[variant.sku]
   const images = variant.imageMediaIds.length ? variant.imageMediaIds : []
 
   const breaks = price?.quantityBreaks ?? []
@@ -153,6 +153,11 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
               />
             ))}
           </div>
+          {variant.discontinued ? (
+            <p className="as-pdp__discontinued" data-testid="product-discontinued">
+              This finish is discontinued and is not available to order.
+            </p>
+          ) : null}
           {price ? (
             <div className="as-pdp__pricing" data-testid={`product-price-${variant.sku}`}>
               <div className="as-pdp__price-row">
@@ -194,11 +199,18 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
               onChange={(e) => setQty(Number(e.target.value) || 1)}
               className="as-qty"
               aria-label="Quantity"
+              disabled={variant.discontinued}
             />
-            <button type="button" className="as-btn-primary">
+            <button type="button" className="as-btn-primary" disabled={variant.discontinued}>
               Add to order
             </button>
-            <Link href="/quotes/Q-2026-0001/order" className="as-btn-secondary">
+            <Link
+              href="/quotes/Q-2026-0001/order"
+              className={`as-btn-secondary${variant.discontinued ? ' as-btn-secondary--disabled' : ''}`}
+              aria-disabled={variant.discontinued}
+              tabIndex={variant.discontinued ? -1 : undefined}
+              onClick={variant.discontinued ? (e) => e.preventDefault() : undefined}
+            >
               Add to quote
             </Link>
           </div>
