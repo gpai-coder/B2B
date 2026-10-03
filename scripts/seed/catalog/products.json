@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "label": "demo-catalog (swap for American Standard products.json)",
+  "products": [
+    {
+      "slug": "lixom-pull-down",
+      "name": "Lixom Pull-Down Faucet",
+      "productCollection": "Faucets",
+      "description": "Lixom Pull-Down Faucet for commercial and residential pro channels.",
+      "featureBullets": [{ "text": "Pull-down spray head with easy-clean rubber nozzles" }],
+      "specsTable": [{ "label": "Collection", "value": "Lixom" }],
+      "primaryImage": "assets/product-placeholder.png",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "LIX-FCT-1001",
+          "finish": "Chrome",
+          "name": "Lixom Pull-Down Faucet — Chrome",
+          "listPrice": 189,
+          "images": [],
+          "documents": [
+            {
+              "docType": "spec-sheet",
+              "file": "assets/docs/lixom-spec.pdf",
+              "displayName": "Sample specification PDF"
+            }
+          ],
+          "specs": {
+            "flowRateGpm": 1.2,
+            "material": "Brass",
+            "certifications": "WaterSense"
+          }
+        },
+        {
+          "sku": "LIX-FCT-1001-BN",
+          "finish": "Brushed Nickel",
+          "name": "Lixom Pull-Down Faucet — Brushed Nickel",
+          "listPrice": 209,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "flowRateGpm": 1.2,
+            "material": "Brass",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "arc-single-hole",
+      "name": "Arc Single-Hole Faucet",
+      "productCollection": "Faucets",
+      "description": "Arc Single-Hole Faucet for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "primaryImage": "assets/product-placeholder.png",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "LIX-FCT-1100",
+          "finish": "Matte Black",
+          "name": "Arc Single-Hole Faucet — Matte Black",
+          "listPrice": 245,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "flowRateGpm": 1.2,
+            "material": "Brass",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wall-lav-faucet",
+      "name": "Wall-Mount Lavatory Faucet",
+      "productCollection": "Faucets",
+      "description": "Wall-Mount Lavatory Faucet for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "variants": [
+        {
+          "sku": "LIX-FCT-1200",
+          "finish": "Polished Chrome",
+          "name": "Wall-Mount Lavatory Faucet — Polished Chrome",
+          "listPrice": 312,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "flowRateGpm": 1.2,
+            "material": "Brass",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "sensor-faucet",
+      "name": "Commercial Sensor Faucet",
+      "productCollection": "Faucets",
+      "description": "Commercial Sensor Faucet for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "variants": [
+        {
+          "sku": "LIX-FCT-2000",
+          "finish": "Stainless",
+          "name": "Commercial Sensor Faucet — Stainless",
+          "listPrice": 428,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "flowRateGpm": 1.2,
+            "material": "Brass",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "one-piece-toilet",
+      "name": "One-Piece Elongated Toilet",
+      "productCollection": "Toilets",
+      "description": "One-Piece Elongated Toilet for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "primaryImage": "assets/product-placeholder.png",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "LIX-TLT-3000",
+          "finish": "Cotton White",
+          "name": "One-Piece Elongated Toilet — Cotton White",
+          "listPrice": 520,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "material": "Vitreous china",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "two-piece-round",
+      "name": "Two-Piece Round Toilet",
+      "productCollection": "Toilets",
+      "description": "Two-Piece Round Toilet for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "variants": [
+        {
+          "sku": "LIX-TLT-3100",
+          "finish": "Cotton White",
+          "name": "Two-Piece Round Toilet — Cotton White",
+          "listPrice": 389,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "material": "Vitreous china",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "wall-hung-bowl",
+      "name": "Wall-Hung Toilet Bowl",
+      "productCollection": "Toilets",
+      "description": "Wall-Hung Toilet Bowl for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "variants": [
+        {
+          "sku": "LIX-TLT-3200",
+          "finish": "Cotton White",
+          "name": "Wall-Hung Toilet Bowl — Cotton White",
+          "listPrice": 610,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "material": "Vitreous china",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "undermount-lav",
+      "name": "Undermount Lavatory Sink",
+      "productCollection": "Fixtures",
+      "description": "Undermount Lavatory Sink for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "variants": [
+        {
+          "sku": "LIX-FIX-4000",
+          "finish": "White",
+          "name": "Undermount Lavatory Sink — White",
+          "listPrice": 165,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "material": "Vitreous china",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "vessel-sink",
+      "name": "Vessel Sink",
+      "productCollection": "Fixtures",
+      "description": "Vessel Sink for commercial and residential pro channels.",
+      "featureBullets": [],
+      "specsTable": [],
+      "variants": [
+        {
+          "sku": "LIX-FIX-4100",
+          "finish": "Matte White",
+          "name": "Vessel Sink — Matte White",
+          "listPrice": 198,
+          "images": [],
+          "documents": [],
+          "specs": {
+            "material": "Vitreous china",
+            "certifications": "WaterSense"
+          }
+        }
+      ]
+    }
+  ]
+}

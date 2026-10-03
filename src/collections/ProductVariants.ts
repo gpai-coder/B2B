@@ -2,6 +2,8 @@ import type { CollectionConfig } from 'payload'
 
 import { adminPanelAccess, catalogReadAccess, staffOnly } from '../access'
 
+import { PRODUCT_DOCUMENT_TYPES, PRODUCT_DOCUMENT_LABELS } from './product-document-types'
+
 const specFields = [
   { name: 'flowRateGpm', type: 'number' as const, label: 'Flow rate (GPM)' },
   { name: 'spoutHeightIn', type: 'number' as const, label: 'Spout height (in)' },
@@ -44,6 +46,8 @@ export const ProductVariants: CollectionConfig = {
     {
       name: 'finish',
       type: 'text',
+      required: true,
+      admin: { description: 'Finish name shown in the PDP finish selector (e.g. Chrome).' },
     },
     {
       name: 'specs',
@@ -53,6 +57,7 @@ export const ProductVariants: CollectionConfig = {
     {
       name: 'images',
       type: 'array',
+      admin: { description: 'Finish-specific images for gallery / selector.' },
       fields: [
         {
           name: 'image',
@@ -63,16 +68,49 @@ export const ProductVariants: CollectionConfig = {
       ],
     },
     {
+      name: 'documents',
+      type: 'array',
+      admin: { description: 'Typed downloads (spec, install, parts diagram).' },
+      fields: [
+        {
+          name: 'docType',
+          type: 'select',
+          required: true,
+          options: PRODUCT_DOCUMENT_TYPES.map((value) => ({
+            label: PRODUCT_DOCUMENT_LABELS[value],
+            value,
+          })),
+        },
+        {
+          name: 'file',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+        {
+          name: 'displayName',
+          type: 'text',
+          admin: { description: 'Optional override for download link text.' },
+        },
+      ],
+    },
+    {
       name: 'specPdf',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Specification sheet PDF.' },
+      admin: {
+        description: 'Legacy — prefer documents[] with type spec-sheet.',
+        condition: () => false,
+      },
     },
     {
       name: 'installPdf',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Installation guide PDF.' },
+      admin: {
+        description: 'Legacy — prefer documents[] with type install-instructions.',
+        condition: () => false,
+      },
     },
   ],
 }

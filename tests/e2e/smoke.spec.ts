@@ -120,6 +120,13 @@ test.describe('B2B foundations smoke', () => {
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('777')
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('company')
 
+      await page.goto('/products/lixom-pull-down')
+      await expect(page.getByTestId('product-primary-image')).toBeVisible()
+      const specDownload = page.waitForEvent('download')
+      await page.getByTestId('product-doc-LIX-FCT-1001-spec').click()
+      const specFile = await specDownload
+      expect(specFile.suggestedFilename()).toMatch(/\.pdf$/i)
+
       await page.goto('/quotes/Q-2026-0001/order')
       await page.getByTestId('submit-quote-order').click()
       await page.waitForURL('**/orders/**')
@@ -129,7 +136,7 @@ test.describe('B2B foundations smoke', () => {
       if (!adminCookieHeader) return
       const headers = { Cookie: adminCookieHeader, 'Content-Type': 'application/json' }
 
-      const assertOk = async (res: Awaited<ReturnType<typeof request.delete>>, label: string) => {
+      const assertOk = async (res: { ok: () => boolean; status: () => number; text: () => Promise<string> }, label: string) => {
         if (!res.ok()) {
           const body = await res.text()
           throw new Error(`Smoke teardown failed (${label}): ${res.status()} ${body}`)

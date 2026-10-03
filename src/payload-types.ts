@@ -217,6 +217,38 @@ export interface Product {
    */
   productCollection: string;
   description?: string | null;
+  /**
+   * Marketing feature bullets (PDP highlights).
+   */
+  featureBullets?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Shared specification rows (label / value).
+   */
+  specsTable?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * PLP thumbnail / default PDP hero when no finish selected.
+   */
+  primaryImage?: (number | null) | Media;
+  /**
+   * Product-level gallery (lifestyle / alternate angles).
+   */
+  gallery?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -229,7 +261,10 @@ export interface ProductVariant {
   sku: string;
   name: string;
   product: number | Product;
-  finish?: string | null;
+  /**
+   * Finish name shown in the PDP finish selector (e.g. Chrome).
+   */
+  finish: string;
   specs?: {
     flowRateGpm?: number | null;
     spoutHeightIn?: number | null;
@@ -239,6 +274,9 @@ export interface ProductVariant {
      */
     certifications?: string | null;
   };
+  /**
+   * Finish-specific images for gallery / selector.
+   */
   images?:
     | {
         image: number | Media;
@@ -246,11 +284,25 @@ export interface ProductVariant {
       }[]
     | null;
   /**
-   * Specification sheet PDF.
+   * Typed downloads (spec, install, parts diagram).
+   */
+  documents?:
+    | {
+        docType: 'spec-sheet' | 'install-instructions' | 'parts-diagram';
+        file: number | Media;
+        /**
+         * Optional override for download link text.
+         */
+        displayName?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Legacy — prefer documents[] with type spec-sheet.
    */
   specPdf?: (number | null) | Media;
   /**
-   * Installation guide PDF.
+   * Legacy — prefer documents[] with type install-instructions.
    */
   installPdf?: (number | null) | Media;
   updatedAt: string;
@@ -505,6 +557,26 @@ export interface ProductsSelect<T extends boolean = true> {
   slug?: T;
   productCollection?: T;
   description?: T;
+  featureBullets?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  specsTable?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  primaryImage?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -529,6 +601,14 @@ export interface ProductVariantsSelect<T extends boolean = true> {
     | T
     | {
         image?: T;
+        id?: T;
+      };
+  documents?:
+    | T
+    | {
+        docType?: T;
+        file?: T;
+        displayName?: T;
         id?: T;
       };
   specPdf?: T;

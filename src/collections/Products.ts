@@ -42,5 +42,39 @@ export const Products: CollectionConfig = {
       name: 'description',
       type: 'textarea',
     },
+    {
+      name: 'featureBullets',
+      type: 'array',
+      admin: { description: 'Marketing feature bullets (PDP highlights).' },
+      fields: [{ name: 'text', type: 'text', required: true }],
+    },
+    {
+      name: 'specsTable',
+      type: 'array',
+      admin: { description: 'Shared specification rows (label / value).' },
+      fields: [
+        { name: 'label', type: 'text', required: true },
+        { name: 'value', type: 'text', required: true },
+      ],
+    },
+    {
+      name: 'primaryImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'PLP thumbnail / default PDP hero when no finish selected.' },
+    },
+    {
+      name: 'gallery',
+      type: 'array',
+      admin: { description: 'Product-level gallery (lifestyle / alternate angles).' },
+      fields: [
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+        },
+      ],
+    },
   ],
 }

@@ -61,6 +61,25 @@ export const catalogReadAccess: Access = ({ req: { user } }) => {
   return isStaff(u) || u.role === 'vendor-buyer'
 }
 
+/** Catalog media/PDFs: approved vendors and staff only (blocks anonymous + pending vendors). */
+export const catalogMediaReadAccess: Access = ({ req: { user } }) => {
+  const u = user as AppUser
+  if (!u) return false
+  if (isStaff(u)) return true
+  return u.role === 'vendor-buyer' && u.approved === true
+}
+
+export type CatalogMediaAuthFailure = 'unauthenticated' | 'forbidden'
+
+export function getCatalogMediaAuthFailure(
+  user: AppUser | null | undefined,
+): CatalogMediaAuthFailure | null {
+  if (!user) return 'unauthenticated'
+  if (isStaff(user)) return null
+  if (user.role === 'vendor-buyer' && user.approved === true) return null
+  return 'forbidden'
+}
+
 export const priceListReadAccess: Access = ({ req: { user } }) => {
   const u = user as AppUser
   if (!u) return false
