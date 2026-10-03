@@ -2,21 +2,31 @@
 
 import { randomUUID } from 'crypto'
 
-import { getPayload } from 'payload'
 import { redirect } from 'next/navigation'
 
 import { getCommerce } from '@/commerce'
+import { shipToFromCompanyDefault } from '@/lib/checkout/ship-to'
+import { validatePoNumber } from '@/lib/checkout/validate-po'
+import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
+import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { createPayloadReq } from '@/lib/payload-req'
-import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 
-export async function createAndSubmitQuoteOrder(quoteNumber: string) {
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
+export async function createAndSubmitQuoteOrder(quoteNumber: string, formData: FormData) {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     throw new Error('Unauthorized')
   }
+  if (!user.approved) {
+    throw new Error(PENDING_APPROVAL)
+  }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) throw new Error('Missing company')
+
+  const po = validatePoNumber(formData.get('poNumber')?.toString() ?? `PO-${quoteNumber}`)
+  if (!po.ok) throw new Error(po.error)
 
   const payloadConfig = await config
   const payload = await getPayload({ config: payloadConfig })
@@ -30,24 +40,35 @@ export async function createAndSubmitQuoteOrder(quoteNumber: string) {
   const quoteDoc = quotes.docs[0]
   if (!quoteDoc) throw new Error('Quote not found')
 
-  const commerce = await getCommerce({ user })
-  const quote = await commerce.getQuote(String(quoteDoc.id), companyId)
-  if (!quote) throw new Error('Quote not available')
-
-  const draft = await commerce.createDraftOrder({
-    companyId,
-    quoteId: quote.id,
-    poNumber: `PO-${quote.quoteNumber}`,
-    shipTo: {
-      name: 'Pacific Plumbing Supply',
-      line1: '100 Market Street',
-      city: 'San Francisco',
-      state: 'CA',
-      postalCode: '94105',
-      country: 'US',
-    },
+  const company = await payload.findByID({
+    collection: 'companies',
+    id: Number(companyId),
+    overrideAccess: false,
+    req: createPayloadReq(payload, user),
   })
+  const defaultShip = shipToFromCompanyDefault(company.defaultShipTo)
+  const shipTo = {
+    name: String(formData.get('shipToName') ?? defaultShip?.name ?? '').trim(),
+    line1: String(formData.get('shipToLine1') ?? defaultShip?.line1 ?? '').trim(),
+    line2: String(formData.get('shipToLine2') ?? defaultShip?.line2 ?? '').trim() || undefined,
+    city: String(formData.get('shipToCity') ?? defaultShip?.city ?? '').trim(),
+    state: String(formData.get('shipToState') ?? defaultShip?.state ?? '').trim(),
+    postalCode: String(formData.get('shipToPostalCode') ?? defaultShip?.postalCode ?? '').trim(),
+    country: String(formData.get('shipToCountry') ?? defaultShip?.country ?? 'US').trim() || 'US',
+  }
+  if (!shipTo.name || !shipTo.line1 || !shipTo.city || !shipTo.state || !shipTo.postalCode) {
+    throw new Error('Complete ship-to address is required.')
+  }
 
-  const submitted = await commerce.submitOrder(draft.id, randomUUID(), companyId)
+  const idempotencyKey = String(formData.get('idempotencyKey') ?? randomUUID()).trim()
+  const orderNotes = String(formData.get('orderNotes') ?? '').trim() || undefined
+
+  const commerce = await getCommerce({ user })
+  const submitted = await commerce.convertQuoteToOrder(companyId, String(quoteDoc.id), {
+    poNumber: po.poNumber,
+    shipTo,
+    orderNotes,
+    idempotencyKey,
+  })
   redirect(`/orders/${submitted.id}?submitted=1`)
 }

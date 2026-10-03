@@ -48,6 +48,12 @@ export const Quotes: CollectionConfig = {
       admin: { date: { pickerAppearance: 'dayOnly' } },
     },
     {
+      name: 'convertedOrder',
+      type: 'relationship',
+      relationTo: 'orders',
+      admin: { readOnly: true },
+    },
+    {
       name: 'lines',
       type: 'array',
       required: true,

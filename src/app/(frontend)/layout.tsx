@@ -35,6 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/">Home</Link>
               <Link href="/catalog">Catalog</Link>
               {authenticated ? <Link href="/cart">Cart</Link> : null}
+              {authenticated ? <Link href="/orders">Orders</Link> : null}
               {authenticated ? <Link href="/quick-order">Quick order</Link> : null}
               <Link href="/login">Vendor login</Link>
               <Link href="/admin">Admin</Link>

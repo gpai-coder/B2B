@@ -7,6 +7,7 @@ import { getUserCompanyId } from '@/access'
 
 import type {
   CartLine,
+  CheckoutInput,
   CommerceOrder,
   CommerceQuote,
   CommerceService,
@@ -24,6 +25,7 @@ import {
 } from './cart-helpers'
 import { applyQuickOrderLines, previewQuickOrderLines } from './quick-order'
 import { runCartMutation } from './cart-serialized'
+import { submitCartCheckout, convertQuoteToOrder } from './checkout'
 
 export { CartValidationError } from './cart-helpers'
 export { CartBusyError } from './cart-serialized'
@@ -45,10 +47,12 @@ function mapOrder(doc: Record<string, unknown>): CommerceOrder {
     companyId: String(typeof doc.company === 'object' ? (doc.company as { id: number }).id : doc.company),
     status: String(doc.status),
     poNumber: (doc.poNumber as string | null) ?? null,
+    orderNotes: (doc.orderNotes as string | null) ?? null,
     quoteId: doc.quote
       ? String(typeof doc.quote === 'object' ? (doc.quote as { id: number }).id : doc.quote)
       : null,
     idempotencyKey: (doc.idempotencyKey as string | null) ?? null,
+    createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
     lines: lines.map((line) => ({
       sku: String(line.sku),
       quantity: Number(line.quantity),
@@ -116,6 +120,7 @@ export function createPostgresCommerceService(
     variantId: number,
     sku: string,
     quantity = 1,
+    req?: PayloadRequest,
   ): Promise<PriceQuote | null> {
     const result = await payload.find({
       collection: 'price-lists',
@@ -126,7 +131,7 @@ export function createPostgresCommerceService(
         ],
       },
       limit: 10,
-      ...readOpts(),
+      ...txReadOpts(req),
     })
 
     const companyList = result.docs.find((l) => l.kind === 'company')
@@ -243,6 +248,23 @@ export function createPostgresCommerceService(
       ...writeOpts,
     })
     return mapCartLines(updated)
+  }
+
+  function checkoutDeps(companyId: string) {
+    if (!actingUser) throw new Error('Authentication required')
+    return {
+      payload,
+      actingUser,
+      companyId,
+      txReadOpts,
+      resolveUnitPrice,
+      persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
+        persistCartLines(cartId, cartLines, { req }),
+      runCartMutation: (mutate: Parameters<typeof runCartMutation>[0]['mutate']) =>
+        runCartMutation({ payload, actingUser, companyId, getOrCreateCartDoc, mutate }),
+      createReq: () => createPayloadReq(payload, actingUser),
+      mapOrder,
+    }
   }
 
   return {
@@ -407,6 +429,28 @@ export function createPostgresCommerceService(
       return applyQuickOrderLines(quickDeps, lines, idempotencyKey)
     },
 
+    async submitCartCheckout(companyId, input: CheckoutInput) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      return submitCartCheckout(checkoutDeps(companyId), input)
+    },
+
+    async convertQuoteToOrder(companyId, quoteId, input: CheckoutInput) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      return convertQuoteToOrder(checkoutDeps(companyId), { quoteId, ...input })
+    },
+
+    async listOrders(companyId) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      const result = await payload.find({
+        collection: 'orders',
+        where: { company: { equals: Number(companyId) } },
+        sort: '-createdAt',
+        limit: 100,
+        ...readOpts(),
+      })
+      return result.docs.map((doc) => mapOrder(doc as unknown as Record<string, unknown>))
+    },
+
     async listQuotes(companyId) {
       if (actingUser) assertCompanyMatchesUser(actingUser, companyId)
       const result = await payload.find({
@@ -485,7 +529,12 @@ export function createPostgresCommerceService(
 
       const existing = await payload.find({
         collection: 'orders',
-        where: { idempotencyKey: { equals: idempotencyKey } },
+        where: {
+          and: [
+            { company: { equals: Number(companyId) } },
+            { idempotencyKey: { equals: idempotencyKey } },
+          ],
+        },
         limit: 1,
         overrideAccess: true,
       })
@@ -527,11 +576,18 @@ export function createPostgresCommerceService(
 
     async getOrder(orderId, companyId) {
       if (actingUser) assertCompanyMatchesUser(actingUser, companyId)
-      const doc = await payload.findByID({
-        collection: 'orders',
-        id: orderId,
-        ...readOpts(),
-      })
+      let doc
+      try {
+        doc = await payload.findByID({
+          collection: 'orders',
+          id: orderId,
+          ...readOpts(),
+        })
+      } catch (err) {
+        const status = (err as { status?: number }).status
+        if (status === 404) return null
+        throw err
+      }
       const mapped = mapOrder(doc as unknown as Record<string, unknown>)
       if (mapped.companyId !== companyId) return null
       return mapped

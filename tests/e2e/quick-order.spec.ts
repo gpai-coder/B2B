@@ -1,32 +1,50 @@
 import { test, expect } from '@playwright/test'
 
+import { deleteCartBulkAddsByKey } from '../helpers/admin-api'
 import { expectVendorOnPath, loginVendor } from '../helpers/vendor-login'
 
 const HERO_SKU = '7353101.002'
 
+async function fillIfEmpty(page: import('@playwright/test').Page, testId: string, value: string) {
+  const field = page.getByTestId(testId)
+  if ((await field.inputValue()).trim() === '') {
+    await field.fill(value)
+  }
+}
+
 test.describe('Quick order', () => {
-  test('validate and add lines with idempotent replay', async ({ page }) => {
-    await loginVendor(page, '/quick-order')
-    await expectVendorOnPath(page, '/quick-order')
+  test('validate and add lines with idempotent replay', async ({ page, request }) => {
+    const keysUsed: string[] = []
 
-    await page.getByTestId('quick-order-input').fill(`${HERO_SKU} 2`)
-    await page.getByRole('button', { name: 'Validate' }).click()
-    await expect(page.getByTestId('quick-order-preview')).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByTestId(`quick-order-line-${HERO_SKU}`)).toContainText('OK')
+    try {
+      await loginVendor(page, '/quick-order')
+      await expectVendorOnPath(page, '/quick-order')
 
-    await page.getByTestId('quick-order-apply').click()
-    await expect(page.getByTestId('quick-order-apply-message')).toContainText(/Added/i)
+      await page.getByTestId('quick-order-input').fill(`${HERO_SKU} 2`)
+      await page.getByRole('button', { name: 'Validate' }).click()
+      await expect(page.getByTestId('quick-order-preview')).toBeVisible({ timeout: 15_000 })
+      await expect(page.getByTestId(`quick-order-line-${HERO_SKU}`)).toContainText('OK')
 
-    await page.getByTestId('quick-order-input').fill(`${HERO_SKU} 1`)
-    await page.getByRole('button', { name: 'Validate' }).click()
-    await expect(page.getByTestId('quick-order-preview')).toBeVisible({ timeout: 15_000 })
-    await page.getByTestId('quick-order-apply').click()
-    await expect(page.getByTestId('quick-order-apply-message')).toContainText(/^Added/i)
-    await expect(page.getByTestId('quick-order-apply-message')).not.toContainText(/idempotent/i)
+      await page.getByTestId('quick-order-apply').click()
+      await expect(page.getByTestId('quick-order-apply-message')).toContainText(/Added/i)
+      keysUsed.push(await page.getByTestId('quick-order-idempotency-key').inputValue())
 
-    await page.goto('/cart')
-    await expect(page.getByTestId(`cart-line-${HERO_SKU}`)).toBeVisible()
-    await page.getByTestId(`cart-remove-${HERO_SKU}`).click()
-    await expect(page.getByTestId('cart-empty')).toBeVisible({ timeout: 15_000 })
+      await page.getByTestId('quick-order-input').fill(`${HERO_SKU} 1`)
+      await page.getByRole('button', { name: 'Validate' }).click()
+      await expect(page.getByTestId('quick-order-preview')).toBeVisible({ timeout: 15_000 })
+      keysUsed.push(await page.getByTestId('quick-order-idempotency-key').inputValue())
+      await page.getByTestId('quick-order-apply').click()
+      await expect(page.getByTestId('quick-order-apply-message')).toContainText(/^Added/i)
+      await expect(page.getByTestId('quick-order-apply-message')).not.toContainText(/idempotent/i)
+
+      await page.goto('/cart')
+      await expect(page.getByTestId(`cart-line-${HERO_SKU}`)).toBeVisible()
+      await page.getByTestId(`cart-remove-${HERO_SKU}`).click()
+      await expect(page.getByTestId('cart-empty')).toBeVisible({ timeout: 15_000 })
+    } finally {
+      for (const key of [...new Set(keysUsed.filter(Boolean))]) {
+        await deleteCartBulkAddsByKey(request, key).catch(() => undefined)
+      }
+    }
   })
 })

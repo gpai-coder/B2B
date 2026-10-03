@@ -129,7 +129,12 @@ export function QuickOrderClient(_props: Props) {
           {error}
         </p>
       ) : null}
-      {applyMessage ? <p data-testid="quick-order-apply-message">{applyMessage}</p> : null}
+      {applyMessage ? (
+        <p data-testid="quick-order-apply-message" data-idempotency-key={idempotencyKey}>
+          {applyMessage}
+        </p>
+      ) : null}
+      <input type="hidden" data-testid="quick-order-idempotency-key" value={idempotencyKey} readOnly />
 
       {preview ? (
         <table className="as-cart-table" data-testid="quick-order-preview">

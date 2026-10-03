@@ -20,4 +20,4 @@ export async function getCommerce(options: GetCommerceOptions = {}): Promise<Com
 }
 
 export type { CommerceService, CommerceOrder, CommerceQuote, PriceQuote, CartSummary, QuickOrderPreview, QuickOrderApplyResult } from './types'
-export { CartValidationError } from './postgres'
+export { CartValidationError, CartBusyError } from './postgres'

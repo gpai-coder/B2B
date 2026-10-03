@@ -40,7 +40,7 @@ function isCartBusyCause(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false
   const record = err as Record<string, unknown>
   const code = record.code ?? (record.cause as Record<string, unknown> | undefined)?.code
-  if (code === '55P03' || code === '57014') return true
+  if (code === '55P03' || code === '57014' || code === '40P01') return true
   const message = String(record.message ?? '')
   if (/lock timeout|canceling statement due to lock timeout/i.test(message)) return true
   if (/timeout exceeded when trying to connect|connection timeout/i.test(message)) return true
@@ -75,6 +75,19 @@ export async function lockCartRow(payload: Payload, cartId: number, req: Payload
   })
 }
 
+export async function lockQuoteRow(payload: Payload, quoteId: number, req: PayloadRequest): Promise<void> {
+  const txId = await resolveTransactionId(req)
+  if (txId == null) {
+    throw new Error('Quote lock requires an active transaction.')
+  }
+  await setTransactionLockTimeout(payload, txId)
+  const drizzle = drizzleForTransaction(payload, txId)
+  await payload.db.execute({
+    drizzle,
+    sql: sql`SELECT id FROM quotes WHERE id = ${quoteId} FOR UPDATE`,
+  })
+}
+
 type RunCartMutationParams = {
   payload: Payload
   actingUser: User
@@ -86,9 +99,19 @@ type RunCartMutationParams = {
 /** Runs a cart write inside a DB transaction with the cart row locked (FOR UPDATE). */
 export async function runCartMutation(params: RunCartMutationParams): Promise<CartLine[]> {
   const { payload, actingUser, companyId, getOrCreateCartDoc, mutate } = params
-  const cart = await getOrCreateCartDoc(companyId)
+  let cart: { id: number }
+  try {
+    cart = await getOrCreateCartDoc(companyId)
+  } catch (err) {
+    rethrowCartMutationError(err)
+  }
   const req = createPayloadReq(payload, actingUser)
-  const transactionID = await payload.db.beginTransaction()
+  let transactionID: string | number | null | undefined
+  try {
+    transactionID = await payload.db.beginTransaction()
+  } catch (err) {
+    rethrowCartMutationError(err)
+  }
   if (transactionID != null) {
     req.transactionID = transactionID
   }
