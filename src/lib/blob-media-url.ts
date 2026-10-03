@@ -1,7 +1,6 @@
 /**
  * Resolve the absolute URL for a media file stored by @payloadcms/storage-vercel-blob.
- * Payload returns a relative `/api/media/file/<filename>` URL for Blob-backed uploads, so the
- * vendor media proxy cannot fetch `doc.url` directly. Mirrors the adapter's base URL logic.
+ * @deprecated Prefer `readBlobFile()` — public URLs must not be exposed to clients after migration.
  */
 export function resolveBlobMediaUrl(
   filename: string,

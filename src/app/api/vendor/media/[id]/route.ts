@@ -4,7 +4,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import { getCatalogMediaAuthFailure } from '@/access'
-import { resolveBlobMediaUrl } from '@/lib/blob-media-url'
+import { readBlobFile } from '@/lib/blob-server-read'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getRequestUser } from '@/lib/session'
 import config from '@/payload.config'
@@ -79,7 +79,7 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 
   const remoteUrl =
-    doc.url && doc.url.startsWith('http') ? doc.url : resolveBlobMediaUrl(doc.filename)
+    doc.url && doc.url.startsWith('http') ? doc.url : null
   if (remoteUrl) {
     const upstream = await fetch(remoteUrl, { cache: 'no-store' })
     if (!upstream.ok) {
@@ -93,6 +93,20 @@ export async function GET(request: Request, { params }: RouteParams) {
         'Cache-Control': 'private, no-store',
       },
     })
+  }
+
+  const token = process.env.BLOB_READ_WRITE_TOKEN
+  if (token) {
+    const blob = await readBlobFile(doc.filename, token)
+    if (blob) {
+      return new Response(blob.data, {
+        headers: {
+          'Content-Type': doc.mimeType ?? blob.contentType,
+          'Content-Disposition': `${disposition}; filename="${doc.filename}"`,
+          'Cache-Control': 'private, no-store',
+        },
+      })
+    }
   }
 
   return Response.json({ error: 'Media file unavailable' }, { status: 404 })

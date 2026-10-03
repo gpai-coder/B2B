@@ -9,6 +9,8 @@ const serverSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   PAYLOAD_SECRET: z.string().min(16, 'PAYLOAD_SECRET must be at least 16 characters'),
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  /** `public` (legacy) or `private` after blob migration. Controls uploads + server reads. */
+  BLOB_FILE_ACCESS: z.enum(['public', 'private']).optional(),
   NEXT_PUBLIC_SERVER_URL: z.string().url().optional(),
 })
 

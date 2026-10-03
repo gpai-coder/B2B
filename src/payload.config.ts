@@ -22,6 +22,7 @@ const dirname = path.dirname(filename)
 
 const env = getEnv()
 const blobEnabled = Boolean(env.BLOB_READ_WRITE_TOKEN)
+const blobFileAccess = env.BLOB_FILE_ACCESS === 'private' ? 'private' : 'public'
 
 export default buildConfig({
   admin: {
@@ -61,6 +62,10 @@ export default buildConfig({
         media: true,
       },
       token: env.BLOB_READ_WRITE_TOKEN ?? '',
+      // Payload types only document `public`; @vercel/blob supports private access.
+      access: blobFileAccess as 'public',
+      addRandomSuffix: true,
+      cacheControlMaxAge: 0,
     }),
   ],
   sharp,
