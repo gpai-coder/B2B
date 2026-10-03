@@ -23,13 +23,16 @@ export function AccountAddressesManager({ initialAddresses }: Props) {
   async function run(action: () => Promise<{ ok: boolean; error?: string }>) {
     setBusy(true)
     setError(null)
-    const result = await action()
-    setBusy(false)
-    if (!result.ok) {
-      setError(result.error ?? 'Request failed.')
-      return
+    try {
+      const result = await action()
+      if (!result.ok) {
+        setError(result.error ?? 'Request failed.')
+        return
+      }
+      router.refresh()
+    } finally {
+      setBusy(false)
     }
-    router.refresh()
   }
 
   return (
@@ -95,9 +98,10 @@ export function AccountAddressesManager({ initialAddresses }: Props) {
         className="as-address-create"
         onSubmit={(event) => {
           event.preventDefault()
+          const form = event.currentTarget
           void run(async () => {
-            const result = await createShipToAddressAction(new FormData(event.currentTarget))
-            if (result.ok) event.currentTarget.reset()
+            const result = await createShipToAddressAction(new FormData(form))
+            if (result.ok) form.reset()
             return result
           })
         }}

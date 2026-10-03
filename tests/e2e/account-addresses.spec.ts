@@ -10,14 +10,23 @@ type CleanupState = {
   addressIds: number[]
 }
 
+function isClosedRequestError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return /Target page, context or browser has been closed|Request context disposed/i.test(msg)
+}
+
 async function deleteAddresses(request: import('@playwright/test').APIRequestContext, state: CleanupState) {
   if (state.addressIds.length === 0) return
-  const headers = await adminJwtHeaders(request)
-  for (const id of [...state.addressIds]) {
-    const res = await request.delete(`/api/ship-to-addresses/${id}`, { headers })
-    if (res.ok() || res.status() === 404) {
-      state.addressIds = state.addressIds.filter((x) => x !== id)
+  try {
+    const headers = await adminJwtHeaders(request)
+    for (const id of [...state.addressIds]) {
+      const res = await request.delete(`/api/ship-to-addresses/${id}`, { headers })
+      if (res.ok() || res.status() === 404) {
+        state.addressIds = state.addressIds.filter((x) => x !== id)
+      }
     }
+  } catch (err) {
+    if (!isClosedRequestError(err)) throw err
   }
 }
 
@@ -77,32 +86,29 @@ test.describe('Account ship-to addresses', () => {
       await page.locator('.as-address-create input[name="postalCode"]').fill('94108')
       await page.getByTestId('account-address-create').click()
 
+      const row = page.locator('li[data-testid^="account-address-"]').filter({ hasText: label })
+      await expect(row).toBeVisible({ timeout: 30_000 })
+      await expect(page.getByTestId('account-addresses-error')).toHaveCount(0)
+
+      const rowTestId = await row.getAttribute('data-testid')
+      expect(rowTestId).toMatch(/^account-address-\d+$/)
+      const addressId = Number(rowTestId!.replace('account-address-', ''))
+      cleanup.addressIds.push(addressId)
+
+      const created = await request.get(`/api/ship-to-addresses/${addressId}?depth=0`, { headers })
+      expect(created.ok()).toBeTruthy()
+      const doc = (await created.json()) as { isDefault?: boolean }
+      expect(doc.isDefault).toBe(false)
+      const deleteBtn = page.getByTestId(`account-address-delete-${addressId}`)
+      await expect(deleteBtn).toBeEnabled({ timeout: 15_000 })
+      await deleteBtn.click()
+
+      await expect(row).toHaveCount(0, { timeout: 30_000 })
       await expect.poll(async () => {
-        const created = await request.get(
-          `/api/ship-to-addresses?where[label][equals]=${encodeURIComponent(label)}&limit=1&depth=0`,
-          { headers },
-        )
-        if (!created.ok()) return 0
-        return ((await created.json()) as { docs: unknown[] }).docs.length
-      }).toBe(1)
-
-      const created = await request.get(
-        `/api/ship-to-addresses?where[label][equals]=${encodeURIComponent(label)}&limit=1&depth=0`,
-        { headers },
-      )
-      const doc = ((await created.json()) as { docs: Array<{ id: number; isDefault?: boolean }> }).docs[0]
-      expect(doc!.isDefault).toBe(false)
-      cleanup.addressIds.push(doc!.id)
-
-      const rowTestId = `account-address-${doc!.id}`
-      await expect(page.getByTestId(rowTestId)).toBeVisible({ timeout: 15_000 })
-      await page.getByTestId(`account-address-delete-${doc!.id}`).click()
-
-      await expect.poll(async () => {
-        const row = await request.get(`/api/ship-to-addresses/${doc!.id}`, { headers })
-        return row.status()
-      }).toBe(404)
-      cleanup.addressIds = cleanup.addressIds.filter((id) => id !== doc!.id)
+        const deleted = await request.get(`/api/ship-to-addresses/${addressId}`, { headers })
+        return deleted.status()
+      }, { timeout: 15_000 }).toBe(404)
+      cleanup.addressIds = cleanup.addressIds.filter((id) => id !== addressId)
 
       const defaultsAfter = await defaultAddressIdsForCompany(request, companyId)
       expect(defaultsAfter).toEqual(defaultsBefore)
