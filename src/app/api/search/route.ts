@@ -1,53 +1,16 @@
 import { getPayload } from 'payload'
-import { z } from 'zod'
 
 import { getCommerce } from '@/commerce'
 import config from '@/payload.config'
 import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { PriceDTO } from '@/lib/catalog/types'
 import { getSearchProvider } from '@/lib/search'
+import { applyPostPricingSearch } from '@/lib/search/search-pagination'
 import { parseSearchRequestParams } from '@/lib/search/validate'
-import type { SearchHit } from '@/lib/search/types'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
-
-function applyPriceSort(
-  hits: SearchHit[],
-  sort: 'price-asc' | 'price-desc',
-  priceBySku: Map<string, PriceDTO>,
-  defaultSkuByProduct: Map<number, string>,
-): SearchHit[] {
-  const withPrice = [...hits]
-  withPrice.sort((a, b) => {
-    const skuA = defaultSkuByProduct.get(a.productId)
-    const skuB = defaultSkuByProduct.get(b.productId)
-    const priceA = skuA ? (priceBySku.get(skuA)?.unitPrice.amount ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER
-    const priceB = skuB ? (priceBySku.get(skuB)?.unitPrice.amount ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER
-    return sort === 'price-asc' ? priceA - priceB : priceB - priceA
-  })
-  return withPrice
-}
-
-function filterByPriceRange(
-  hits: SearchHit[],
-  minPrice: number | undefined,
-  maxPrice: number | undefined,
-  priceBySku: Map<string, PriceDTO>,
-  defaultSkuByProduct: Map<number, string>,
-): SearchHit[] {
-  if (minPrice == null && maxPrice == null) return hits
-  return hits.filter((hit) => {
-    const sku = defaultSkuByProduct.get(hit.productId)
-    if (!sku) return false
-    const amount = priceBySku.get(sku)?.unitPrice.amount
-    if (amount == null) return false
-    if (minPrice != null && amount < minPrice) return false
-    if (maxPrice != null && amount > maxPrice) return false
-    return true
-  })
-}
 
 export async function GET(request: Request) {
   const user = await getRequestUser()
@@ -59,13 +22,7 @@ export async function GET(request: Request) {
     return Response.json({ error: 'Vendor account is missing a company.' }, { status: 403 })
   }
 
-  let parsed
-  try {
-    parsed = parseSearchRequestParams(new URL(request.url).searchParams)
-  } catch (err) {
-    const message = err instanceof z.ZodError ? err.flatten() : 'Invalid query'
-    return Response.json({ error: message }, { status: 400 })
-  }
+  const parsed = parseSearchRequestParams(new URL(request.url).searchParams)
 
   const payloadConfig = await config
   const payload = await getPayload({ config: payloadConfig })
@@ -84,16 +41,15 @@ export async function GET(request: Request) {
     )
   }
 
+  const pageSize = parsed.limit ?? 12
   const result = await search.search(
     {
       q: parsed.q,
       category: parsed.category,
       finish: parsed.finish,
-      minPrice: parsed.minPrice,
-      maxPrice: parsed.maxPrice,
       sort: parsed.sort,
       page: parsed.page,
-      pageSize: parsed.limit ?? 12,
+      pageSize,
       showDiscontinued: false,
     },
     ctx,
@@ -102,7 +58,7 @@ export async function GET(request: Request) {
   const productIds = result.hits.map((h) => h.productId)
   const variantsResult = await payload.find({
     collection: 'product-variants',
-    where: { product: { in: productIds } },
+    where: { product: { in: productIds.length ? productIds : [-1] } },
     limit: 500,
     depth: 0,
     overrideAccess: false,
@@ -138,17 +94,15 @@ export async function GET(request: Request) {
     priceBySku.set(row.sku, row as PriceDTO)
   }
 
-  let hits = filterByPriceRange(
-    result.hits,
-    parsed.minPrice,
-    parsed.maxPrice,
+  const priced = applyPostPricingSearch(result.hits, {
+    sort: parsed.sort,
+    minPrice: parsed.minPrice,
+    maxPrice: parsed.maxPrice,
+    page: parsed.page,
+    pageSize,
     priceBySku,
     defaultSkuByProduct,
-  )
-
-  if (parsed.sort === 'price-asc' || parsed.sort === 'price-desc') {
-    hits = applyPriceSort(hits, parsed.sort, priceBySku, defaultSkuByProduct)
-  }
+  })
 
   const prices: Record<string, PriceDTO> = {}
   for (const sku of skus) {
@@ -159,8 +113,10 @@ export async function GET(request: Request) {
   return Response.json(
     {
       ...result,
-      hits,
-      total: parsed.minPrice != null || parsed.maxPrice != null ? hits.length : result.total,
+      hits: priced.hits,
+      total: priced.total,
+      page: parsed.page,
+      pageSize,
       prices,
     },
     {

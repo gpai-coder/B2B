@@ -4,18 +4,7 @@ import { SEARCH_MAX_QUERY_LENGTH } from '@/lib/search/postgres-query'
 import type { SearchSort } from '@/lib/search/types'
 
 const sortSchema = z.enum(['relevance', 'name', 'price-asc', 'price-desc'])
-
-export const searchQuerySchema = z.object({
-  q: z.string().max(SEARCH_MAX_QUERY_LENGTH).optional().default(''),
-  category: z.enum(['bathroom-faucet', 'kitchen-faucet', 'toilet']).optional(),
-  finish: z.string().max(80).optional(),
-  minPrice: z.coerce.number().min(0).optional(),
-  maxPrice: z.coerce.number().min(0).optional(),
-  sort: sortSchema.optional().default('relevance'),
-  page: z.coerce.number().int().min(1).max(500).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(48).optional(),
-  suggest: z.enum(['1', 'true']).optional(),
-})
+const categorySchema = z.enum(['bathroom-faucet', 'kitchen-faucet', 'toilet'])
 
 export type ParsedSearchQuery = {
   q: string
@@ -30,19 +19,44 @@ export type ParsedSearchQuery = {
 }
 
 export function parseSearchRequestParams(params: URLSearchParams): ParsedSearchQuery {
-  const parsed = searchQuerySchema.parse({
-    q: params.get('q') ?? '',
-    category: params.get('category') ?? undefined,
-    finish: params.get('finish') ?? undefined,
-    minPrice: params.get('minPrice') ?? undefined,
-    maxPrice: params.get('maxPrice') ?? undefined,
-    sort: params.get('sort') ?? undefined,
-    page: params.get('page') ?? undefined,
-    limit: params.get('limit') ?? undefined,
-    suggest: params.get('suggest') ?? undefined,
-  })
+  const qParsed = z.string().max(SEARCH_MAX_QUERY_LENGTH).safeParse(params.get('q') ?? '')
+  const q = qParsed.success ? qParsed.data : ''
+
+  const categoryRaw = params.get('category')
+  const categoryParsed = categorySchema.safeParse(categoryRaw)
+  const category = categoryParsed.success ? categoryParsed.data : undefined
+
+  const finishRaw = params.get('finish')
+  const finishParsed = z.string().max(80).safeParse(finishRaw ?? undefined)
+  const finish = finishParsed.success ? finishParsed.data : undefined
+
+  const minPriceParsed = z.coerce.number().min(0).safeParse(params.get('minPrice') ?? undefined)
+  const minPrice = minPriceParsed.success ? minPriceParsed.data : undefined
+
+  const maxPriceParsed = z.coerce.number().min(0).safeParse(params.get('maxPrice') ?? undefined)
+  const maxPrice = maxPriceParsed.success ? maxPriceParsed.data : undefined
+
+  const sortParsed = sortSchema.safeParse(params.get('sort') ?? undefined)
+  const sort: SearchSort = sortParsed.success ? sortParsed.data : 'relevance'
+
+  const pageParsed = z.coerce.number().int().min(1).max(500).safeParse(params.get('page') ?? undefined)
+  const page = pageParsed.success ? pageParsed.data : 1
+
+  const limitParsed = z.coerce.number().int().min(1).max(48).safeParse(params.get('limit') ?? undefined)
+  const limit = limitParsed.success ? limitParsed.data : undefined
+
+  const suggestRaw = params.get('suggest')
+  const suggest = suggestRaw === '1' || suggestRaw === 'true'
+
   return {
-    ...parsed,
-    suggest: parsed.suggest === '1' || parsed.suggest === 'true',
+    q,
+    category,
+    finish,
+    minPrice,
+    maxPrice,
+    sort,
+    page,
+    limit,
+    suggest,
   }
 }

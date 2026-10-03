@@ -1,91 +1,129 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
-import { getPayload } from 'payload'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
 import { SEED_HERO_SKU } from '@/scripts/seed'
 import { getSearchProvider } from '@/lib/search'
 
 describe('catalog search (postgres)', () => {
-  it('finds exact SKU and partial model number', async () => {
-    if (!process.env.DATABASE_URL) return
+  let payload: Payload
 
+  beforeAll(async () => {
+    if (!process.env.DATABASE_URL) return
     const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
+    payload = await getPayload({ config: payloadConfig })
+  })
+
+  afterAll(async () => {
+    if (payload) await payload.destroy()
+  })
+
+  it('finds exact SKU and partial model number', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
     const search = getSearchProvider(payload)
 
-    try {
-      const bySku = await search.search({ q: SEED_HERO_SKU, pageSize: 10 }, { companyId: '1' })
-      expect(bySku.hits.some((h) => h.slug.includes('townsend'))).toBe(true)
+    const bySku = await search.search({ q: SEED_HERO_SKU, pageSize: 10 }, { companyId: '1' })
+    expect(bySku.hits.some((h) => h.slug.includes('townsend'))).toBe(true)
 
-      const partial = await search.search({ q: '7353101', pageSize: 10 }, { companyId: '1' })
-      expect(partial.hits.some((h) => h.modelNumber === '7353101')).toBe(true)
-    } finally {
-      await payload.destroy()
-    }
+    const partial = await search.search({ q: '7353101', pageSize: 10 }, { companyId: '1' })
+    expect(partial.hits.some((h) => h.modelNumber === '7353101')).toBe(true)
   })
 
   it('finds Townsend with typo townsnd', async () => {
-    if (!process.env.DATABASE_URL) return
+    if (!process.env.DATABASE_URL || !payload) return
 
-    const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
     const search = getSearchProvider(payload)
-
-    try {
-      const result = await search.search({ q: 'townsnd', pageSize: 10 }, { companyId: '1' })
-      expect(result.hits.some((h) => h.name.toLowerCase().includes('townsend'))).toBe(true)
-    } finally {
-      await payload.destroy()
-    }
+    const result = await search.search({ q: 'townsnd', pageSize: 10 }, { companyId: '1' })
+    expect(result.hits.some((h) => h.name.toLowerCase().includes('townsend'))).toBe(true)
   })
 
   it('never returns hidden Delancey kitchen faucet', async () => {
-    if (!process.env.DATABASE_URL) return
+    if (!process.env.DATABASE_URL || !payload) return
 
-    const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
+    const search = getSearchProvider(payload)
+    const result = await search.search({ q: 'Delancey', pageSize: 20 }, { companyId: '1' })
+    expect(result.hits.every((h) => !h.slug.includes('delancey'))).toBe(true)
+  })
+
+  it('treats malicious finish and special q as data (no error, no broadened results)', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
     const search = getSearchProvider(payload)
 
-    try {
-      const result = await search.search({ q: 'Delancey', pageSize: 20 }, { companyId: '1' })
-      expect(result.hits.every((h) => !h.slug.includes('delancey'))).toBe(true)
-    } finally {
-      await payload.destroy()
-    }
+    const baseline = await search.search({ q: '7353101', pageSize: 50 }, { companyId: '1' })
+    expect(baseline.hits.length).toBeGreaterThan(0)
+
+    const benignFinish = await search.search(
+      {
+        q: "7353101' \\ % $&",
+        finish: '__no_such_finish__',
+        pageSize: 50,
+      },
+      { companyId: '1' },
+    )
+
+    const injected = await search.search(
+      {
+        q: "7353101' \\ % $&",
+        finish: "x\\' OR 1=1 --",
+        pageSize: 50,
+      },
+      { companyId: '1' },
+    )
+
+    expect(injected.hits.map((h) => h.productId).sort()).toEqual(
+      benignFinish.hits.map((h) => h.productId).sort(),
+    )
+    expect(injected.hits.length).toBeLessThanOrEqual(baseline.hits.length)
   })
 
   it('respects finish facet filter', async () => {
-    if (!process.env.DATABASE_URL) return
+    if (!process.env.DATABASE_URL || !payload) return
 
-    const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
     const search = getSearchProvider(payload)
-
-    try {
-      const result = await search.search(
-        { q: '7353101', finish: 'Matte Black', pageSize: 10 },
-        { companyId: '1' },
-      )
-      expect(result.hits.length).toBeGreaterThan(0)
-    } finally {
-      await payload.destroy()
-    }
+    const result = await search.search(
+      { q: '7353101', finish: 'Matte Black', pageSize: 10 },
+      { companyId: '1' },
+    )
+    expect(result.hits.length).toBeGreaterThan(0)
   })
 
   it('returns the same visible catalog products for any vendor company', async () => {
-    if (!process.env.DATABASE_URL) return
+    if (!process.env.DATABASE_URL || !payload) return
 
-    const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
     const search = getSearchProvider(payload)
+    const pacific = await search.search({ q: '7353101', pageSize: 5 }, { companyId: '1' })
+    const bay = await search.search({ q: '7353101', pageSize: 5 }, { companyId: '2' })
+    expect(pacific.hits.map((h) => h.productId).sort()).toEqual(bay.hits.map((h) => h.productId).sort())
+  })
 
-    try {
-      const pacific = await search.search({ q: '7353101', pageSize: 5 }, { companyId: '1' })
-      const bay = await search.search({ q: '7353101', pageSize: 5 }, { companyId: '2' })
-      expect(pacific.hits.map((h) => h.productId).sort()).toEqual(bay.hits.map((h) => h.productId).sort())
-    } finally {
-      await payload.destroy()
-    }
+  it('loads hidden Delancey product by slug for PDP (not in search)', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
+    const search = getSearchProvider(payload)
+    const slug = 'delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min'
+    const found = await payload.find({
+      collection: 'products',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    expect(found.docs[0]?.catalogHidden).toBe(true)
+
+    const searchResult = await search.search({ q: 'Delancey', pageSize: 20 }, { companyId: '1' })
+    expect(searchResult.hits.some((h) => h.slug === slug)).toBe(false)
+
+    const variants = await payload.find({
+      collection: 'product-variants',
+      where: { product: { equals: found.docs[0]!.id } },
+      limit: 20,
+      depth: 0,
+      overrideAccess: true,
+    })
+    expect(variants.docs.length).toBeGreaterThan(0)
+    expect(variants.docs.every((v) => v.discontinued === true)).toBe(true)
   })
 })
