@@ -137,6 +137,22 @@ test.describe('B2B foundations smoke', () => {
       await expect
         .poll(async () => heroImg.evaluate((el: HTMLImageElement) => el.naturalWidth))
         .toBeGreaterThan(0)
+
+      await page.setViewportSize({ width: 1280, height: 900 })
+      await page.goto(`/products/${SEED_HERO_SLUG}`)
+      await expect(page.getByTestId('product-primary-image')).toBeVisible()
+      await expect(page.getByTestId('product-buybox')).toBeVisible()
+      const galleryLayout = await page.evaluate(() => {
+        const main = document.querySelector('[data-testid="product-primary-image"]')
+        const buybox = document.querySelector('[data-testid="product-buybox"]')
+        if (!main || !buybox) return null
+        const imgRect = main.getBoundingClientRect()
+        const buyRect = buybox.getBoundingClientRect()
+        return { imageRight: imgRect.right, buyBoxLeft: buyRect.left }
+      })
+      expect(galleryLayout).not.toBeNull()
+      expect(galleryLayout!.imageRight).toBeLessThanOrEqual(galleryLayout!.buyBoxLeft + 1)
+
       const specDownload = page.waitForEvent('download')
       await page.getByTestId(`product-doc-${SEED_HERO_SKU}-spec`).click()
       const specFile = await specDownload
@@ -144,8 +160,9 @@ test.describe('B2B foundations smoke', () => {
 
       await page.goto('/catalog')
       await expect(page.getByTestId('catalog-page')).toBeVisible()
-      await page.getByTestId('filter-finish-Matte-Black').check()
-      await expect(page.getByTestId('catalog-result-count')).toBeVisible()
+      await page.getByTestId('filter-finish-Matte-Black').click()
+      await page.waitForURL(/finish=Matte/i)
+      await expect(page.getByTestId('filter-finish-Matte-Black')).toBeChecked()
 
       await page.goto(`/products/${SEED_HERO_SLUG}`)
       await page.getByTestId('pdp-finish-Polished-Nickel').click()

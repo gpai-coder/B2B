@@ -122,7 +122,7 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
           )}
         </div>
 
-        <div className="as-pdp__buybox">
+        <div className="as-pdp__buybox" data-testid="product-buybox">
           <p className="as-pdp__collection">
             {product.productCollection}{' '}
             <Link href={`/catalog?collection=${encodeURIComponent(product.productCollection)}`}>
@@ -155,12 +155,14 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
           </div>
           {price ? (
             <div className="as-pdp__pricing" data-testid={`product-price-${variant.sku}`}>
-              <p className="as-pdp__your-price">
-                Your price ${price.unitPrice.amount.toFixed(2)} / ea ({price.source})
-              </p>
-              {variant.msrp ? (
-                <p className="as-pdp__list-price">List price ${variant.msrp.toFixed(2)}</p>
-              ) : null}
+              <div className="as-pdp__price-row">
+                <p className="as-pdp__your-price">
+                  Your price ${price.unitPrice.amount.toFixed(2)} / ea ({price.source})
+                </p>
+                {variant.msrp && variant.msrp > price.unitPrice.amount ? (
+                  <span className="as-pdp__list-price">${variant.msrp.toFixed(2)}</span>
+                ) : null}
+              </div>
               {tierRows.length > 1 ? (
                 <table className="as-tier-table">
                   <thead>

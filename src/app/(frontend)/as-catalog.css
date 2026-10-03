@@ -265,7 +265,7 @@
 
 .as-pdp__gallery {
   display: grid;
-  grid-template-columns: 72px 1fr;
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 12px;
 }
 
@@ -303,12 +303,28 @@
   padding: 0;
   aspect-ratio: 1;
   cursor: zoom-in;
+  min-width: 0;
+  width: 100%;
 }
 
 .as-pdp__main-image img {
-  width: 100%;
+  display: block;
+  max-width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.as-pdp__price-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.as-pdp__list-price {
+  font-size: 14px;
+  color: var(--as-muted);
+  text-decoration: line-through;
 }
 
 .as-pdp__collection {
