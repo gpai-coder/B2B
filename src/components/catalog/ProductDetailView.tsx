@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
 import { PRODUCT_EXTERNAL_RESOURCE_LABELS } from '@/collections/product-document-types'
+import { AddToCartControls } from '@/components/cart/AddToCartControls'
 import { finishSwatchColor } from '@/lib/finish-swatches'
 import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { PriceDTO } from '@/lib/catalog/types'
@@ -33,6 +34,8 @@ export type ProductDetailDTO = {
     msrp?: number | null
     inStock: boolean
     discontinued: boolean
+    moq: number
+    orderMultiple: number
     imageMediaIds: number[]
   }>
 }
@@ -51,7 +54,6 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
     pickDefaultVariantSku(product.variants, prices) ??
     product.variants[0]?.sku
   const [activeSku, setActiveSku] = useState(initialSku ?? '')
-  const [qty, setQty] = useState(1)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     overview: true,
     specs: false,
@@ -60,8 +62,7 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const variant = product.variants.find((v) => v.sku === activeSku) ?? product.variants[0]!
-  const allDiscontinued =
-    product.variants.length > 0 && product.variants.every((v) => v.discontinued)
+  const canOrder = Boolean(variant && !variant.discontinued)
   const price = variant.discontinued ? undefined : prices[variant.sku]
   const images = variant.imageMediaIds.length ? variant.imageMediaIds : []
 
@@ -193,23 +194,17 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
               ) : null}
             </div>
           ) : null}
-          {!allDiscontinued ? (
-          <div className="as-pdp__cta-row" data-testid="product-order-cta">
-            <input
-              type="number"
-              min={1}
-              value={qty}
-              onChange={(e) => setQty(Number(e.target.value) || 1)}
-              className="as-qty"
-              aria-label="Quantity"
-            />
-            <button type="button" className="as-btn-primary">
-              Add to order
-            </button>
-            <Link href="/quotes/Q-2026-0001/order" className="as-btn-secondary">
-              Add to quote
-            </Link>
-          </div>
+          {canOrder ? (
+            <div data-testid="product-order-cta">
+              <AddToCartControls
+                sku={variant.sku}
+                moq={variant.moq}
+                orderMultiple={variant.orderMultiple}
+              />
+              <Link href="/quotes/Q-2026-0001/order" className="as-btn-secondary">
+                Add to quote
+              </Link>
+            </div>
           ) : null}
         </div>
       </div>

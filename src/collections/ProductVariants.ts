@@ -67,6 +67,34 @@ export const ProductVariants: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: 'moq',
+      type: 'number',
+      required: true,
+      min: 1,
+      defaultValue: 1,
+      admin: { description: 'Minimum order quantity (MOQ) for this SKU.', step: 1 },
+      validate: (value: number | null | undefined) => {
+        if (value === null || value === undefined) return 'MOQ is required.'
+        if (!Number.isInteger(value)) return 'MOQ must be a whole number.'
+        if (value < 1) return 'MOQ must be at least 1.'
+        return true
+      },
+    },
+    {
+      name: 'orderMultiple',
+      type: 'number',
+      required: true,
+      min: 1,
+      defaultValue: 1,
+      admin: { description: 'Order increment / case pack size.', step: 1 },
+      validate: (value: number | null | undefined) => {
+        if (value === null || value === undefined) return 'Order multiple is required.'
+        if (!Number.isInteger(value)) return 'Order multiple must be a whole number.'
+        if (value < 1) return 'Order multiple must be at least 1.'
+        return true
+      },
+    },
+    {
       name: 'specs',
       type: 'group',
       fields: specFields,

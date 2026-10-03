@@ -75,6 +75,7 @@ export interface Config {
     'price-lists': PriceList;
     quotes: Quote;
     orders: Order;
+    carts: Cart;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     quotes: QuotesSelect<false> | QuotesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -348,6 +350,14 @@ export interface ProductVariant {
   upc?: string | null;
   inStock?: boolean | null;
   discontinued?: boolean | null;
+  /**
+   * Minimum order quantity (MOQ) for this SKU.
+   */
+  moq: number;
+  /**
+   * Order increment / case pack size.
+   */
+  orderMultiple: number;
   specs?: {
     flowRateGpm?: number | null;
     spoutHeightIn?: number | null;
@@ -463,6 +473,25 @@ export interface Order {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: number;
+  user: number | User;
+  company: number | Company;
+  lines?:
+    | {
+        sku: string;
+        variant?: (number | null) | ProductVariant;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -516,6 +545,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: number | Cart;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -710,6 +743,8 @@ export interface ProductVariantsSelect<T extends boolean = true> {
   upc?: T;
   inStock?: T;
   discontinued?: T;
+  moq?: T;
+  orderMultiple?: T;
   specs?:
     | T
     | {
@@ -807,6 +842,24 @@ export interface OrdersSelect<T extends boolean = true> {
         variant?: T;
         quantity?: T;
         unitPrice?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  user?: T;
+  company?: T;
+  lines?:
+    | T
+    | {
+        sku?: T;
+        variant?: T;
+        quantity?: T;
         id?: T;
       };
   updatedAt?: T;

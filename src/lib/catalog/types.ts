@@ -5,6 +5,8 @@ export type CatalogVariantDTO = {
   msrp?: number | null
   inStock: boolean
   discontinued: boolean
+  moq: number
+  orderMultiple: number
   imageMediaIds: number[]
 }
 

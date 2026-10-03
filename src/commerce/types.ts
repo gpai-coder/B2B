@@ -31,6 +31,29 @@ export type CommerceOrderLine = {
   unitPrice: Money
 }
 
+export type CartLine = {
+  sku: string
+  quantity: number
+}
+
+export type PricedCartLine = CartLine & {
+  productName: string
+  available: boolean
+  unavailableReason?: string
+  unitPrice?: Money
+  lineTotal?: number
+  source?: 'company' | 'standard'
+  quantityBreaks?: Array<{ minQuantity: number; unitPrice: number }>
+  moq?: number
+  orderMultiple?: number
+}
+
+export type CartSummary = {
+  lines: PricedCartLine[]
+  subtotal: number
+  currency: string
+}
+
 export type CommerceOrder = {
   id: string
   orderNumber: string | null
@@ -60,6 +83,10 @@ export type CreateDraftOrderInput = {
 
 export interface CommerceService {
   getPrices(customerId: string, skus: string[]): Promise<PriceQuote[]>
+  getCart(companyId: string): Promise<CartLine[]>
+  getCartSummary(companyId: string): Promise<CartSummary>
+  setCartLine(companyId: string, sku: string, quantity: number): Promise<CartLine[]>
+  removeCartLine(companyId: string, sku: string): Promise<CartLine[]>
   createDraftOrder(input: CreateDraftOrderInput): Promise<CommerceOrder>
   submitOrder(orderId: string, idempotencyKey: string, companyId: string): Promise<CommerceOrder>
   getOrder(orderId: string, companyId: string): Promise<CommerceOrder | null>
