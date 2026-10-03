@@ -24,7 +24,8 @@
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "test:unit": "vitest run --environment node",
     "test:commerce": "vitest run --environment node src/commerce/postgres.test.ts",
-    "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts"
+    "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
+    "blob:migrate:ci": "cross-env NODE_ENV=production PAYLOAD_DISABLE_PUSH=true NODE_OPTIONS=--no-deprecation tsx scripts/migrate-blob-two-store.mts && cross-env NODE_ENV=production PAYLOAD_DISABLE_PUSH=true NODE_OPTIONS=--no-deprecation tsx scripts/migrate-blob-two-store.mts --execute"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.90.2",

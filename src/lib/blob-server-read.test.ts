@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { blobStoreAccessFromEnv, BlobReadError, openBlobReadStream } from '@/lib/blob-server-read'
+import { BlobReadError, openBlobReadStream } from '@/lib/blob-server-read'
 
 vi.mock('@vercel/blob', () => ({
   get: vi.fn(),
@@ -46,12 +46,5 @@ describe('openBlobReadStream', () => {
   it('wraps SDK failures in BlobReadError', async () => {
     vi.mocked(get).mockRejectedValueOnce(new Error('network'))
     await expect(openBlobReadStream('missing.bin', 'token')).rejects.toBeInstanceOf(BlobReadError)
-  })
-})
-
-describe('blobStoreAccessFromEnv', () => {
-  it('defaults to public', () => {
-    expect(blobStoreAccessFromEnv({})).toBe('public')
-    expect(blobStoreAccessFromEnv({ BLOB_STORE_ACCESS: 'private' })).toBe('private')
   })
 })

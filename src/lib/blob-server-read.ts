@@ -1,6 +1,8 @@
 import { get } from '@vercel/blob'
 
-export type BlobStoreAccess = 'public' | 'private'
+import { blobStoreAccessFromEnv, type BlobStoreAccess } from '@/lib/blob-store-env'
+
+export { blobStoreAccessFromEnv, type BlobStoreAccess } from '@/lib/blob-store-env'
 
 export class BlobReadError extends Error {
   readonly cause?: unknown
@@ -10,13 +12,6 @@ export class BlobReadError extends Error {
     this.name = 'BlobReadError'
     this.cause = cause
   }
-}
-
-/** Which Vercel Blob access mode this deployment reads (matches store type after env swap). */
-export function blobStoreAccessFromEnv(
-  env: Record<string, string | undefined> = process.env,
-): BlobStoreAccess {
-  return env.BLOB_STORE_ACCESS === 'private' ? 'private' : 'public'
 }
 
 export type OpenBlobReadResult = {

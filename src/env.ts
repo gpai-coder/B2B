@@ -9,6 +9,7 @@ const serverSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   PAYLOAD_SECRET: z.string().min(16, 'PAYLOAD_SECRET must be at least 16 characters'),
   BLOB_READ_WRITE_TOKEN: z.string().optional(),
+  BLOB_PRIVATE_READ_WRITE_TOKEN: z.string().optional(),
   /** `public` (default) or `private` — must match the Vercel Blob store type. */
   BLOB_STORE_ACCESS: z.enum(['public', 'private']).optional(),
   NEXT_PUBLIC_SERVER_URL: z.string().url().optional(),
