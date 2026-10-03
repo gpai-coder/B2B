@@ -6,6 +6,8 @@ const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-passwo
 const vendorEmail = process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local'
 const vendorPassword = process.env.SEED_VENDOR_A_PASSWORD ?? 'local-dev-vendor-a-password'
 
+const PACIFIC_CONTRACT_LIST = 'Pacific Plumbing Contract 2026'
+
 test.describe('B2B foundations smoke', () => {
   test('admin creates catalog item with PDF; vendor sees company price; quote order flow', async ({
     page,
@@ -22,6 +24,7 @@ test.describe('B2B foundations smoke', () => {
     let mediaId: number | undefined
     let variantId: number | undefined
     let orderId: number | undefined
+    let pacificListId: number | undefined
     let adminCookieHeader = ''
 
     try {
@@ -81,9 +84,12 @@ test.describe('B2B foundations smoke', () => {
         headers: { Cookie: adminCookieHeader },
       })
       expect(pacificLists.ok()).toBeTruthy()
-      const listBody = (await pacificLists.json()) as { docs: Array<{ id: number; lines?: unknown[] }> }
-      const pacificList = listBody.docs.find((d) => d.id)
+      const listBody = (await pacificLists.json()) as {
+        docs: Array<{ id: number; name?: string; lines?: Array<{ variant?: number | { id: number } }> }>
+      }
+      const pacificList = listBody.docs.find((d) => d.name === PACIFIC_CONTRACT_LIST)
       expect(pacificList).toBeTruthy()
+      pacificListId = pacificList!.id
 
       const variantLookup = await request.get(
         `/api/product-variants?where[sku][equals]=${encodeURIComponent(sku)}&limit=1`,
@@ -122,17 +128,46 @@ test.describe('B2B foundations smoke', () => {
     } finally {
       if (!adminCookieHeader) return
       const headers = { Cookie: adminCookieHeader, 'Content-Type': 'application/json' }
+
+      const assertOk = async (res: Awaited<ReturnType<typeof request.delete>>, label: string) => {
+        if (!res.ok()) {
+          const body = await res.text()
+          throw new Error(`Smoke teardown failed (${label}): ${res.status()} ${body}`)
+        }
+      }
+
+      if (pacificListId && variantId) {
+        const listRes = await request.get(`/api/price-lists/${pacificListId}`, { headers })
+        expect(listRes.ok()).toBeTruthy()
+        const listDoc = (await listRes.json()) as {
+          lines?: Array<{ variant?: number | { id: number }; unitPrice?: number; currency?: string }>
+        }
+        const remainingLines = (listDoc.lines ?? []).filter((line) => {
+          const v = line.variant
+          const id = typeof v === 'object' && v !== null ? v.id : v
+          return id !== variantId
+        })
+        const patchList = await request.patch(`/api/price-lists/${pacificListId}`, {
+          headers,
+          data: { lines: remainingLines },
+        })
+        await assertOk(patchList, 'remove smoke variant from Pacific price list')
+      }
+
       if (orderId && !Number.isNaN(orderId)) {
-        await request.delete(`/api/orders/${orderId}`, { headers })
+        await assertOk(await request.delete(`/api/orders/${orderId}`, { headers }), 'delete order')
       }
       if (variantId) {
-        await request.delete(`/api/product-variants/${variantId}`, { headers })
+        await assertOk(
+          await request.delete(`/api/product-variants/${variantId}`, { headers }),
+          'delete variant',
+        )
       }
       if (productId) {
-        await request.delete(`/api/products/${productId}`, { headers })
+        await assertOk(await request.delete(`/api/products/${productId}`, { headers }), 'delete product')
       }
       if (mediaId) {
-        await request.delete(`/api/media/${mediaId}`, { headers })
+        await assertOk(await request.delete(`/api/media/${mediaId}`, { headers }), 'delete media')
       }
     }
   })

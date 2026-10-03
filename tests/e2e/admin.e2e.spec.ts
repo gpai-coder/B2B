@@ -1,14 +1,14 @@
 import { test, expect, Page } from '@playwright/test'
 import { login } from '../helpers/login'
-import { seedTestUser, cleanupTestUser, testUser } from '../helpers/seedUser'
-import { isRemoteE2ETarget } from '../helpers/e2e-env'
+import { skipTemplateE2ESpecs } from '../helpers/e2e-env'
 
-const describeAdmin = isRemoteE2ETarget ? test.describe.skip : test.describe
+const describeAdmin = skipTemplateE2ESpecs ? test.describe.skip : test.describe
 
 describeAdmin('Admin Panel', () => {
   let page: Page
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }) => {
+    const { seedTestUser, testUser } = await import('../helpers/seedUser')
     await seedTestUser()
 
     const context = await browser.newContext()
@@ -18,6 +18,7 @@ describeAdmin('Admin Panel', () => {
   })
 
   test.afterAll(async () => {
+    const { cleanupTestUser } = await import('../helpers/seedUser')
     await cleanupTestUser()
   })
 
