@@ -4,6 +4,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import { getCatalogMediaAuthFailure } from '@/access'
+import { BlobReadError, openBlobReadStream } from '@/lib/blob-server-read'
 import { resolveBlobMediaUrl } from '@/lib/blob-media-url'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getRequestUser } from '@/lib/session'
@@ -25,6 +26,23 @@ async function resolveLocalMediaPath(filename: string): Promise<string | null> {
     }
   }
   return null
+}
+
+function mediaResponseHeaders(
+  doc: { filename: string; mimeType?: string | null },
+  contentType: string,
+  disposition: string,
+  contentLength?: number,
+): Headers {
+  const headers = new Headers({
+    'Content-Type': doc.mimeType ?? contentType,
+    'Content-Disposition': `${disposition}; filename="${doc.filename}"`,
+    'Cache-Control': 'private, no-store',
+  })
+  if (contentLength != null) {
+    headers.set('Content-Length', String(contentLength))
+  }
+  return headers
 }
 
 export async function GET(request: Request, { params }: RouteParams) {
@@ -61,37 +79,59 @@ export async function GET(request: Request, { params }: RouteParams) {
   if (!doc?.filename) {
     return Response.json({ error: 'Not found' }, { status: 404 })
   }
+  const filename = doc.filename
+  const mediaDoc = { filename, mimeType: doc.mimeType }
 
   const url = new URL(request.url)
   const forceDownload = url.searchParams.get('download') === '1' || doc.mimeType === 'application/pdf'
   const disposition = forceDownload ? 'attachment' : 'inline'
 
-  const localPath = await resolveLocalMediaPath(doc.filename)
+  const localPath = await resolveLocalMediaPath(filename)
   if (localPath) {
     const data = await fs.readFile(localPath)
     return new Response(data, {
-      headers: {
-        'Content-Type': doc.mimeType ?? 'application/octet-stream',
-        'Content-Disposition': `${disposition}; filename="${doc.filename}"`,
-        'Cache-Control': 'private, no-store',
-      },
+      headers: mediaResponseHeaders(mediaDoc, doc.mimeType ?? 'application/octet-stream', disposition, data.byteLength),
     })
   }
 
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+  if (blobToken) {
+    try {
+      const opened = await openBlobReadStream(filename, blobToken)
+      return new Response(opened.stream, {
+        headers: mediaResponseHeaders(mediaDoc, opened.contentType, disposition, opened.contentLength),
+      })
+    } catch (err) {
+      const message = err instanceof BlobReadError ? err.message : 'Failed to read blob'
+      console.error('[vendor/media]', { mediaId, filename, err })
+      return Response.json({ error: message }, { status: 502 })
+    }
+  }
+
   const remoteUrl =
-    doc.url && doc.url.startsWith('http') ? doc.url : resolveBlobMediaUrl(doc.filename)
+    doc.url && doc.url.startsWith('http') ? doc.url : resolveBlobMediaUrl(filename)
   if (remoteUrl) {
-    const upstream = await fetch(remoteUrl, { cache: 'no-store' })
+    const upstream = await fetch(remoteUrl, { cache: 'default' })
     if (!upstream.ok) {
+      console.error('[vendor/media] upstream fetch failed', {
+        mediaId,
+        filename,
+        status: upstream.status,
+        url: remoteUrl,
+      })
       return Response.json({ error: 'Failed to load media' }, { status: 502 })
     }
-    const buffer = await upstream.arrayBuffer()
-    return new Response(buffer, {
-      headers: {
-        'Content-Type': doc.mimeType ?? upstream.headers.get('content-type') ?? 'application/octet-stream',
-        'Content-Disposition': `${disposition}; filename="${doc.filename}"`,
-        'Cache-Control': 'private, no-store',
-      },
+    if (!upstream.body) {
+      return Response.json({ error: 'Failed to load media' }, { status: 502 })
+    }
+    const contentLength = upstream.headers.get('content-length')
+    return new Response(upstream.body, {
+      headers: mediaResponseHeaders(
+        mediaDoc,
+        doc.mimeType ?? upstream.headers.get('content-type') ?? 'application/octet-stream',
+        disposition,
+        contentLength ? Number(contentLength) : undefined,
+      ),
     })
   }
 
