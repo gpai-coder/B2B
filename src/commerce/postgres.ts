@@ -13,6 +13,7 @@ import type {
   PriceQuote,
   PricedCartLine,
 } from './types'
+import { isUniqueViolation } from './db-errors'
 import {
   assertValidCartQuantity,
   CartValidationError,
@@ -143,6 +144,7 @@ export function createPostgresCommerceService(
         sku,
         unitPrice: money(price, line.currency ?? 'USD'),
         source,
+        priceListName: source === 'company' ? (list.name ?? undefined) : undefined,
         quantityBreaks: quantityBreaks.length > 0 ? quantityBreaks : undefined,
       }
     }
@@ -187,8 +189,7 @@ export function createPostgresCommerceService(
           overrideAccess: true,
         })
       } catch (err) {
-        const code = (err as { code?: string })?.code
-        if (code === '23505' && attempt < 2) continue
+        if (isUniqueViolation(err) && attempt < 2) continue
         throw err
       }
     }

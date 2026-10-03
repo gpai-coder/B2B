@@ -4,6 +4,7 @@ import path from 'path'
 import type { Payload } from 'payload'
 
 import type { Order, PriceList, Product, ProductVariant, Quote } from '@/payload-types'
+import { sanitizeProductDescription } from '@/lib/catalog/sanitize-product-description'
 
 import {
   parseSeedCatalogFile,
@@ -285,7 +286,7 @@ async function seedProductFromCatalogEntry(
     catalogCategory: product.catalogCategory,
     catalogHidden: product.catalogHidden ?? false,
     breadcrumbs: product.breadcrumbs,
-    description: product.description ?? '',
+    description: sanitizeProductDescription(product.description),
     shortBullets: product.shortBullets,
     featureBullets: product.featureBullets,
     specGroups: product.specGroups,
