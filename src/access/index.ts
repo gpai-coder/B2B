@@ -42,6 +42,19 @@ export const companyReadAccess =
     return false
   }
 
+/** Approved vendor-buyer reads scoped to own company (staff bypass). */
+export const approvedVendorCompanyReadAccess =
+  (companyField = 'company'): Access =>
+  ({ req: { user } }) => {
+    const u = user as AppUser
+    if (!u) return false
+    if (isStaff(u)) return true
+    if (u.role !== 'vendor-buyer' || !u.approved) return false
+    const companyId = getUserCompanyId(u)
+    if (!companyId) return false
+    return { [companyField]: { equals: companyId } }
+  }
+
 export const companyWriteAccess =
   (companyField = 'company'): Access =>
   ({ req: { user } }) => {
@@ -53,6 +66,19 @@ export const companyWriteAccess =
       return { [companyField]: { equals: companyId } }
     }
     return false
+  }
+
+/** Vendor-buyer writes scoped to own company; requires an approved user (staff bypass). */
+export const approvedVendorCompanyWriteAccess =
+  (companyField = 'company'): Access =>
+  ({ req: { user } }) => {
+    const u = user as AppUser
+    if (!u) return false
+    if (isStaff(u)) return true
+    if (u.role !== 'vendor-buyer' || !u.approved) return false
+    const companyId = getUserCompanyId(u)
+    if (!companyId) return false
+    return { [companyField]: { equals: companyId } }
   }
 
 export const catalogReadAccess: Access = ({ req: { user } }) => {

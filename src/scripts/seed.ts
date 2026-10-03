@@ -11,6 +11,7 @@ import {
   seedCatalogFromDataset,
   seedMediaStorageName,
 } from './seed-catalog-loader'
+import { ensureCompanyDefaultShipToAddressFromGroup } from '../lib/vendor/ship-to-addresses'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../..')
@@ -247,6 +248,9 @@ export async function runSeed(payload?: Payload) {
       country: 'US',
     },
   })
+
+  await ensureCompanyDefaultShipToAddressFromGroup(p, pacific.id)
+  await ensureCompanyDefaultShipToAddressFromGroup(p, bay.id)
 
   await upsertUser(p, {
     email: seedConfig.adminEmail,
