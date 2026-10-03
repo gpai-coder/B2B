@@ -3,8 +3,21 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
-import { CartValidationError, createPostgresCommerceService } from '@/commerce/postgres'
+import { createPostgresCommerceService } from '@/commerce/postgres'
 import { SEED_HERO_SKU } from '@/scripts/seed'
+
+type CreateArgs = Parameters<Payload['create']>[0]
+
+async function txState(payload: Payload, args: CreateArgs) {
+  let txId = args.req?.transactionID
+  if (txId != null && typeof (txId as Promise<unknown>).then === 'function') {
+    txId = await txId
+  }
+  const key = txId == null ? null : String(txId)
+  const sessions = payload.db.sessions ?? {}
+  const live = key != null && Object.prototype.hasOwnProperty.call(sessions, key)
+  return { txId: key, live }
+}
 
 describe('checkout commerce', () => {
   let payload: Payload
@@ -111,9 +124,11 @@ describe('checkout commerce', () => {
     await svc.setCartLine(pacificCompanyId, SEED_HERO_SKU, 1)
 
     const baseCreate = payload.create.bind(payload)
-    let orderCreates = 0
-    const createSpy = vi.spyOn(payload, 'create').mockImplementation((args) => {
-      if (args.collection === 'orders') orderCreates++
+    const orderCreateStates: Array<{ txId: string | null; live: boolean }> = []
+    const createSpy = vi.spyOn(payload, 'create').mockImplementation(async (args) => {
+      if (args.collection === 'orders') {
+        orderCreateStates.push(await txState(payload, args))
+      }
       return baseCreate(args)
     })
 
@@ -127,7 +142,8 @@ describe('checkout commerce', () => {
       ).rejects.toMatchObject({
         message: 'PO number is already used for this company.',
       })
-      expect(orderCreates).toBe(1)
+      expect(orderCreateStates).toHaveLength(1)
+      expect(orderCreateStates[0]!.live).toBe(true)
     } finally {
       createSpy.mockRestore()
     }
@@ -140,17 +156,27 @@ describe('checkout commerce', () => {
     const key = `ord-coll-${Date.now()}`
     const po = `PO-COLL-${Date.now()}`
 
+    const existingOrders = await payload.find({
+      collection: 'orders',
+      limit: 1,
+      overrideAccess: true,
+    })
+    const takenOrderNumber = existingOrders.docs[0]?.orderNumber
+    expect(takenOrderNumber).toBeTruthy()
+
     const baseCreate = payload.create.bind(payload)
+    const orderCreateStates: Array<{ txId: string | null; live: boolean }> = []
     let orderCreateCalls = 0
     const createSpy = vi.spyOn(payload, 'create').mockImplementation(async (args) => {
       if (args.collection === 'orders') {
         orderCreateCalls++
+        orderCreateStates.push(await txState(payload, args))
         if (orderCreateCalls === 1) {
-          const err = {
-            code: '23505',
-            data: { errors: [{ path: 'orderNumber', message: 'unique' }] },
+          const collisionArgs = {
+            ...args,
+            data: { ...(args.data as Record<string, unknown>), orderNumber: takenOrderNumber },
           }
-          throw err
+          return baseCreate(collisionArgs as CreateArgs)
         }
       }
       return baseCreate(args)
@@ -164,6 +190,10 @@ describe('checkout commerce', () => {
       })
       expect(order.id).toBeTruthy()
       expect(orderCreateCalls).toBe(2)
+      expect(orderCreateStates).toHaveLength(2)
+      expect(orderCreateStates[0]!.live).toBe(true)
+      expect(orderCreateStates[1]!.live).toBe(true)
+      expect(orderCreateStates[1]!.txId).not.toBe(orderCreateStates[0]!.txId)
       const cart = await svc.getCart(pacificCompanyId)
       expect(cart).toHaveLength(0)
       const rows = await payload.find({
