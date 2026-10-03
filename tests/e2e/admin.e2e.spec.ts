@@ -1,8 +1,11 @@
 import { test, expect, Page } from '@playwright/test'
 import { login } from '../helpers/login'
 import { seedTestUser, cleanupTestUser, testUser } from '../helpers/seedUser'
+import { isRemoteE2ETarget } from '../helpers/e2e-env'
 
-test.describe('Admin Panel', () => {
+const describeAdmin = isRemoteE2ETarget ? test.describe.skip : test.describe
+
+describeAdmin('Admin Panel', () => {
   let page: Page
 
   test.beforeAll(async ({ browser }, testInfo) => {
