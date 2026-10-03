@@ -486,8 +486,7 @@ async function applyDefaultAddressInternal(
   addressId: string,
 ): Promise<void> {
   const req = createPayloadReq(payload, null)
-  let transactionID: string | number | null | undefined
-  transactionID = await payload.db.beginTransaction()
+  const transactionID = await payload.db.beginTransaction()
   if (transactionID != null) req.transactionID = transactionID
   try {
     await lockCompanyRow(payload, companyId, req)
