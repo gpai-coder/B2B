@@ -213,12 +213,35 @@ export interface Product {
    */
   slug: string;
   /**
-   * Merchandising collection (e.g. Faucets, Toilets).
+   * Base model number (PLP MODEL line).
+   */
+  modelNumber?: string | null;
+  /**
+   * Design collection (e.g. Townsend, Champion).
    */
   productCollection: string;
+  /**
+   * Category for PLP facets and copy.
+   */
+  catalogCategory?: ('bathroom-faucet' | 'kitchen-faucet' | 'toilet') | null;
+  breadcrumbs?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
   description?: string | null;
   /**
-   * Marketing feature bullets (PDP highlights).
+   * Up to 3 short bullets for buy box.
+   */
+  shortBullets?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Full feature list (Product Overview).
    */
   featureBullets?:
     | {
@@ -227,7 +250,23 @@ export interface Product {
       }[]
     | null;
   /**
-   * Shared specification rows (label / value).
+   * Grouped specification tables (PDP Specifications).
+   */
+  specGroups?:
+    | {
+        groupName: string;
+        rows?:
+          | {
+              label: string;
+              value: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Legacy flat specs (optional).
    */
   specsTable?:
     | {
@@ -236,6 +275,39 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Product-level PDFs and external downloads.
+   */
+  documents?:
+    | {
+        docType: 'spec-sheet' | 'install-instructions' | 'parts-diagram' | 'cad-2d' | 'revit';
+        /**
+         * PDF upload (spec, install, parts diagram).
+         */
+        file?: (number | null) | Media;
+        /**
+         * External URL (CAD, Revit, etc.).
+         */
+        externalUrl?: string | null;
+        displayName?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * YouTube video id for Installation / overview embed.
+   */
+  youtubeVideoId?: string | null;
+  /**
+   * PLP facet values derived from specs.
+   */
+  facetMeta?: {
+    handleType?: string | null;
+    holesRequired?: string | null;
+    ada?: string | null;
+    bowlShape?: string | null;
+    flushTechnology?: string | null;
+    gpf?: string | null;
+  };
   /**
    * PLP thumbnail / default PDP hero when no finish selected.
    */
@@ -265,6 +337,13 @@ export interface ProductVariant {
    * Finish name shown in the PDP finish selector (e.g. Chrome).
    */
   finish: string;
+  /**
+   * List / compare-at price (struck through on PDP).
+   */
+  msrp?: number | null;
+  upc?: string | null;
+  inStock?: boolean | null;
+  discontinued?: boolean | null;
   specs?: {
     flowRateGpm?: number | null;
     spoutHeightIn?: number | null;
@@ -284,25 +363,11 @@ export interface ProductVariant {
       }[]
     | null;
   /**
-   * Typed downloads (spec, install, parts diagram).
-   */
-  documents?:
-    | {
-        docType: 'spec-sheet' | 'install-instructions' | 'parts-diagram';
-        file: number | Media;
-        /**
-         * Optional override for download link text.
-         */
-        displayName?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Legacy — prefer documents[] with type spec-sheet.
+   * Legacy — prefer product documents[].
    */
   specPdf?: (number | null) | Media;
   /**
-   * Legacy — prefer documents[] with type install-instructions.
+   * Legacy — prefer product documents[].
    */
   installPdf?: (number | null) | Media;
   updatedAt: string;
@@ -555,12 +620,39 @@ export interface MediaSelect<T extends boolean = true> {
 export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  modelNumber?: T;
   productCollection?: T;
+  catalogCategory?: T;
+  breadcrumbs?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
   description?: T;
+  shortBullets?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
   featureBullets?:
     | T
     | {
         text?: T;
+        id?: T;
+      };
+  specGroups?:
+    | T
+    | {
+        groupName?: T;
+        rows?:
+          | T
+          | {
+              label?: T;
+              value?: T;
+              id?: T;
+            };
         id?: T;
       };
   specsTable?:
@@ -569,6 +661,26 @@ export interface ProductsSelect<T extends boolean = true> {
         label?: T;
         value?: T;
         id?: T;
+      };
+  documents?:
+    | T
+    | {
+        docType?: T;
+        file?: T;
+        externalUrl?: T;
+        displayName?: T;
+        id?: T;
+      };
+  youtubeVideoId?: T;
+  facetMeta?:
+    | T
+    | {
+        handleType?: T;
+        holesRequired?: T;
+        ada?: T;
+        bowlShape?: T;
+        flushTechnology?: T;
+        gpf?: T;
       };
   primaryImage?: T;
   gallery?:
@@ -589,6 +701,10 @@ export interface ProductVariantsSelect<T extends boolean = true> {
   name?: T;
   product?: T;
   finish?: T;
+  msrp?: T;
+  upc?: T;
+  inStock?: T;
+  discontinued?: T;
   specs?:
     | T
     | {
@@ -601,14 +717,6 @@ export interface ProductVariantsSelect<T extends boolean = true> {
     | T
     | {
         image?: T;
-        id?: T;
-      };
-  documents?:
-    | T
-    | {
-        docType?: T;
-        file?: T;
-        displayName?: T;
         id?: T;
       };
   specPdf?: T;

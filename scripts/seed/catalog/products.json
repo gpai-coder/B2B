@@ -1,231 +1,2336 @@
 {
   "version": 1,
-  "label": "demo-catalog (swap for American Standard products.json)",
+  "label": "American Standard (approved LIXIL import)",
   "products": [
     {
-      "slug": "lixom-pull-down",
-      "name": "Lixom Pull-Down Faucet",
-      "productCollection": "Faucets",
-      "description": "Lixom Pull-Down Faucet for commercial and residential pro channels.",
-      "featureBullets": [{ "text": "Pull-down spray head with easy-clean rubber nozzles" }],
-      "specsTable": [{ "label": "Collection", "value": "Lixom" }],
-      "primaryImage": "assets/product-placeholder.png",
-      "gallery": [],
-      "variants": [
+      "slug": "townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle",
+      "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle",
+      "modelNumber": "7353101",
+      "productCollection": "Townsend",
+      "catalogCategory": "bathroom-faucet",
+      "breadcrumbs": [
         {
-          "sku": "LIX-FCT-1001",
-          "finish": "Chrome",
-          "name": "Lixom Pull-Down Faucet — Chrome",
-          "listPrice": 189,
-          "images": [],
-          "documents": [
-            {
-              "docType": "spec-sheet",
-              "file": "assets/docs/lixom-spec.pdf",
-              "displayName": "Sample specification PDF"
-            }
-          ],
-          "specs": {
-            "flowRateGpm": 1.2,
-            "material": "Brass",
-            "certifications": "WaterSense"
-          }
+          "label": "Home"
         },
         {
-          "sku": "LIX-FCT-1001-BN",
-          "finish": "Brushed Nickel",
-          "name": "Lixom Pull-Down Faucet — Brushed Nickel",
-          "listPrice": 209,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "flowRateGpm": 1.2,
-            "material": "Brass",
-            "certifications": "WaterSense"
-          }
+          "label": "Bathroom"
+        },
+        {
+          "label": "Bathroom Sink Faucets"
+        },
+        {
+          "label": "Single Hole Bathroom Faucets"
         }
-      ]
-    },
-    {
-      "slug": "arc-single-hole",
-      "name": "Arc Single-Hole Faucet",
-      "productCollection": "Faucets",
-      "description": "Arc Single-Hole Faucet for commercial and residential pro channels.",
-      "featureBullets": [],
+      ],
+      "description": "The Townsend Single-Handle Single-Hole Bathroom Sink Faucet from American Standard is an elegant style defined by a single lever top handle and architectural details. Designed for durability, this metal bathroom faucet features an ADA-compliant metal lever handle and a push pop-up drain that is simple to use and quick to install, requiring fewer parts than a standard drain. The Townsend bathroom sink faucet is available in an array of beautiful, on-trend finishes to complement any bathroom style.",
+      "shortBullets": [
+        {
+          "text": "BATHROOM SINK FAUCET: Single-handle fits a single-hole sink"
+        },
+        {
+          "text": "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve"
+        },
+        {
+          "text": "EASY INSTALLATION: Includes a metal push pop-up drain"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "SINGLE-HANDLE FAUCET: For use on single-hole bathroom sink or on two- and three-hole sinks and countertops with deck plate, sold separately"
+        },
+        {
+          "text": "DRIP-FREE: This one-handle bathroom faucet features quality ceramic disc valves ensuring drip-free performance for life"
+        },
+        {
+          "text": "INCLUDES PUSH POP-UP DRAIN AND HOSES: Metal push pop-up drain and flexible stainless steel hoses for quick, easy installation"
+        },
+        {
+          "text": "BUILT FOR RELIABILITY: Metal spout and handle ensures long-lasting dependability"
+        },
+        {
+          "text": "SAVES WATER: Features 1.2 gpm/4.5 Lpm pressure-compensating aerator"
+        },
+        {
+          "text": "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean"
+        },
+        {
+          "text": "WARRANTY: Limited lifetime warranty on function and finish"
+        },
+        {
+          "text": "Water-conserving 1.2 gpm/4.5 Lpm pressure-compensating aerator"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Features",
+              "value": "Ceramic Disc Valves, Water Efficient"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Fitting Connection Size",
+              "value": "9.52 mm"
+            },
+            {
+              "label": "Fitting Handle Height",
+              "value": "7-13/16 in"
+            },
+            {
+              "label": "Fitting Handle Type",
+              "value": "Lever"
+            },
+            {
+              "label": "Fitting Material",
+              "value": "Brass"
+            },
+            {
+              "label": "Fitting Max Deck Thickness",
+              "value": "1-7/8 in"
+            },
+            {
+              "label": "Fitting Speed Connect",
+              "value": "No"
+            },
+            {
+              "label": "Fitting Spout Reach",
+              "value": "5-1/4 in"
+            },
+            {
+              "label": "Fitting Swivel Degrees",
+              "value": "0 °"
+            },
+            {
+              "label": "Fitting Valve Material",
+              "value": "Ceramic"
+            },
+            {
+              "label": "Fitting Valve Needed for Install",
+              "value": "Not Applicable"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.2 GPM"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "Limited Lifetime Warranty"
+            }
+          ]
+        }
+      ],
       "specsTable": [],
-      "primaryImage": "assets/product-placeholder.png",
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/7353101/docs/specSheet__168938_spec_7353101-101P_Townsend_sc_lav_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/7353101/docs/installationGuide__137844_M965722_Townsend_mb_lav_faucet_7353.101_EFS_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/7353101/docs/repairPartsDiagram__137863_RP_M965722_Townsend_mb_lav_faucet_7353.101_EFS_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/245807_Faucet_Single_Control-American_Standard-Towsend-7353.101_original.rfa",
+          "displayName": "Revit Files"
+        }
+      ],
+      "youtubeVideoId": "Vkpr6SQSfmM",
+      "facetMeta": {
+        "handleType": "Lever",
+        "gpf": "1.2 GPM"
+      },
+      "primaryImage": "assets/7353101/images/7353101.002/00_main_59837.jpg",
       "gallery": [],
       "variants": [
         {
-          "sku": "LIX-FCT-1100",
-          "finish": "Matte Black",
-          "name": "Arc Single-Hole Faucet — Matte Black",
-          "listPrice": 245,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "flowRateGpm": 1.2,
-            "material": "Brass",
-            "certifications": "WaterSense"
-          }
-        }
-      ]
-    },
-    {
-      "slug": "wall-lav-faucet",
-      "name": "Wall-Mount Lavatory Faucet",
-      "productCollection": "Faucets",
-      "description": "Wall-Mount Lavatory Faucet for commercial and residential pro channels.",
-      "featureBullets": [],
-      "specsTable": [],
-      "variants": [
-        {
-          "sku": "LIX-FCT-1200",
+          "sku": "7353101.002",
           "finish": "Polished Chrome",
-          "name": "Wall-Mount Lavatory Faucet — Polished Chrome",
-          "listPrice": 312,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "flowRateGpm": 1.2,
-            "material": "Brass",
-            "certifications": "WaterSense"
-          }
-        }
-      ]
-    },
-    {
-      "slug": "sensor-faucet",
-      "name": "Commercial Sensor Faucet",
-      "productCollection": "Faucets",
-      "description": "Commercial Sensor Faucet for commercial and residential pro channels.",
-      "featureBullets": [],
-      "specsTable": [],
-      "variants": [
+          "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Polished Chrome",
+          "listPrice": 234,
+          "msrp": 360,
+          "upc": "012611581076",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7353101/images/7353101.002/00_main_59837.jpg",
+            "assets/7353101/images/7353101.002/01_gallery_59840.jpg",
+            "assets/7353101/images/7353101.002/02_gallery_59842.jpg"
+          ],
+          "specs": {}
+        },
         {
-          "sku": "LIX-FCT-2000",
-          "finish": "Stainless",
-          "name": "Commercial Sensor Faucet — Stainless",
-          "listPrice": 428,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "flowRateGpm": 1.2,
-            "material": "Brass",
-            "certifications": "WaterSense"
-          }
+          "sku": "7353101.013",
+          "finish": "Polished Nickel",
+          "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Polished Nickel",
+          "listPrice": 316.55,
+          "msrp": 487,
+          "upc": "012611581045",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7353101/images/7353101.013/00_main_59846.jpg",
+            "assets/7353101/images/7353101.013/01_gallery_59849.jpg",
+            "assets/7353101/images/7353101.013/02_gallery_238756.jpg",
+            "assets/7353101/images/7353101.013/03_gallery_77743.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7353101.278",
+          "finish": "Legacy Bronze",
+          "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Legacy Bronze",
+          "listPrice": 313.95,
+          "msrp": 483,
+          "upc": "012611581069",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7353101/images/7353101.278/00_main_59852.jpg",
+            "assets/7353101/images/7353101.278/01_gallery_59854.jpg",
+            "assets/7353101/images/7353101.278/02_gallery_238752.jpg",
+            "assets/7353101/images/7353101.278/03_gallery_77761.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7353101.295",
+          "finish": "Brushed Nickel",
+          "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Brushed Nickel",
+          "listPrice": 316.55,
+          "msrp": 487,
+          "upc": "012611581052",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7353101/images/7353101.295/00_main_59857.jpg",
+            "assets/7353101/images/7353101.295/01_gallery_59858.jpg",
+            "assets/7353101/images/7353101.295/02_gallery_238753.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7353101.243",
+          "finish": "Matte Black",
+          "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Matte Black",
+          "listPrice": 316.55,
+          "msrp": 487,
+          "upc": "012611915178",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7353101/images/7353101.243/00_main_168307.jpg",
+            "assets/7353101/images/7353101.243/01_gallery_77720.jpg",
+            "assets/7353101/images/7353101.243/02_gallery_77724.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7353101.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Brushed Cool Sunrise",
+          "listPrice": 339.3,
+          "msrp": 522,
+          "upc": "012611956706",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7353101/images/7353101.GN0/00_main_168581.jpg",
+            "assets/7353101/images/7353101.GN0/01_gallery_168598.jpg",
+            "assets/7353101/images/7353101.GN0/02_gallery_168856.jpg",
+            "assets/7353101/images/7353101.GN0/03_gallery_238754.jpg"
+          ],
+          "specs": {}
         }
       ]
     },
     {
-      "slug": "one-piece-toilet",
-      "name": "One-Piece Elongated Toilet",
-      "productCollection": "Toilets",
-      "description": "One-Piece Elongated Toilet for commercial and residential pro channels.",
-      "featureBullets": [],
+      "slug": "town-square-r-s-4-inch-centerset-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+      "modelNumber": "7455207",
+      "productCollection": "Town Square® S",
+      "catalogCategory": "bathroom-faucet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Bathroom"
+        },
+        {
+          "label": "Bathroom Faucets"
+        },
+        {
+          "label": "Centerset Bathroom Faucets"
+        }
+      ],
+      "description": "The Town Square S Centerset Faucet by American Standard is a paragon of classic elegance, featuring architecturally inspired details reminiscent of crown molding. This stately faucet is crafted from solid brass, making it a durable choice, ideal for prolonged contact with water. Available in tarnish- and scratch-resistant finishes, the Town Square S faucet will stay looking like new for years. A pop-up drain is included, for easy installation and use. Part of the Town Square S collection, the faucet is easy to match with the rest of the suite’s fittings and fixtures, for a total design solution that makes remodeling a perfectly matched bathroom effortless.",
+      "shortBullets": [
+        {
+          "text": "Solid Brass Construction: Excellent in high use applications"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "Solid Brass Construction: Durable – Excellent in high use applications. Ideal for prolonged contact with water. Provides the finest surface for application of all colors and finishes"
+        },
+        {
+          "text": "Ceramic Disc Valve Cartridges: Assures a lifetime of drip-free performance"
+        },
+        {
+          "text": "Includes Push-Pop drain for ease of installation and use"
+        },
+        {
+          "text": "Lead Free"
+        },
+        {
+          "text": "WaterSense Certified"
+        },
+        {
+          "text": "CEC Compliant Product"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Fitting Handle Material",
+              "value": "Metal"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Fitting Connection Size",
+              "value": "12.70 mm"
+            },
+            {
+              "label": "Fitting Handle Height",
+              "value": "3-3/4 in"
+            },
+            {
+              "label": "Fitting Handle Type",
+              "value": "Lever"
+            },
+            {
+              "label": "Fitting Material",
+              "value": "Metal"
+            },
+            {
+              "label": "Fitting Speed Connect",
+              "value": "No"
+            },
+            {
+              "label": "Fitting Spout Reach",
+              "value": "5-3/16 in"
+            },
+            {
+              "label": "Fitting Swivel Degrees",
+              "value": "0 °"
+            },
+            {
+              "label": "Fitting Valve Material",
+              "value": "Ceramic"
+            },
+            {
+              "label": "Fitting Valve Needed for Install",
+              "value": "No"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.2 GPM"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "Limited Lifetime Warranty"
+            }
+          ]
+        }
+      ],
       "specsTable": [],
-      "primaryImage": "assets/product-placeholder.png",
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/7455207/docs/specSheet__168932_spec_7455207_TownSquare_S_2handle_sc_lav_faucet_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/7455207/docs/installationGuide__137840_M965910_TownSqS_centerset_lav_745521X_EFS_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/7455207/docs/repairPartsDiagram__137867_RP_M965910_TownSqS_centerset_lav_745521X_EFS_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        },
+        {
+          "docType": "cad-2d",
+          "externalUrl": "https://lixil.cdn.celum.cloud/251964_Faucet-Two-Handle-American_Standard-Town_Square-7455207_original.dwg",
+          "displayName": "CAD Drawings 2D"
+        },
+        {
+          "docType": "cad-2d",
+          "externalUrl": "https://lixil.cdn.celum.cloud/255449_Faucet-Two-Handle-American_Standard-Town_Square-7455207_original.dwg",
+          "displayName": "CAD Drawings 2D"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/245797_Faucet-Two-Handle-American_Standard-Town_Square-7455207_Series_original.rfa",
+          "displayName": "Revit Files"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/254023_Faucet-Two-Handle-American_Standard-Town_Square-7455207_Series_original.rfa",
+          "displayName": "Revit Files"
+        }
+      ],
+      "youtubeVideoId": "MY8e9nno410",
+      "facetMeta": {
+        "handleType": "Lever",
+        "gpf": "1.2 GPM"
+      },
+      "primaryImage": "assets/7455207/images/7455207.002/00_main_61889.jpg",
       "gallery": [],
       "variants": [
         {
-          "sku": "LIX-TLT-3000",
-          "finish": "Cotton White",
-          "name": "One-Piece Elongated Toilet — Cotton White",
-          "listPrice": 520,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "material": "Vitreous china",
-            "certifications": "WaterSense"
-          }
+          "sku": "7455207.002",
+          "finish": "Polished Chrome",
+          "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Chrome",
+          "listPrice": 224.9,
+          "msrp": 346,
+          "upc": "012611627101",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7455207/images/7455207.002/00_main_61889.jpg",
+            "assets/7455207/images/7455207.002/01_gallery_61892.jpg",
+            "assets/7455207/images/7455207.002/02_gallery_79664.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7455207.013",
+          "finish": "Polished Nickel",
+          "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Nickel",
+          "listPrice": 303.55,
+          "msrp": 467,
+          "upc": "012611627095",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7455207/images/7455207.013/00_main_61894.jpg",
+            "assets/7455207/images/7455207.013/01_gallery_61896.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7455207.278",
+          "finish": "Legacy Bronze",
+          "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Legacy Bronze",
+          "listPrice": 302.25,
+          "msrp": 465,
+          "upc": "012611627071",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7455207/images/7455207.278/00_main_61901.jpg",
+            "assets/7455207/images/7455207.278/01_gallery_61903.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7455207.295",
+          "finish": "Brushed Nickel",
+          "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Nickel",
+          "listPrice": 303.55,
+          "msrp": 467,
+          "upc": "012611627149",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7455207/images/7455207.295/00_main_61904.jpg",
+            "assets/7455207/images/7455207.295/01_gallery_61905.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7455207.243",
+          "finish": "Matte Black",
+          "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Matte Black",
+          "listPrice": 303.55,
+          "msrp": 467,
+          "upc": "012611956867",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7455207/images/7455207.243/00_main_168575.jpg",
+            "assets/7455207/images/7455207.243/01_gallery_168578.jpg",
+            "assets/7455207/images/7455207.243/02_gallery_168864.jpg",
+            "assets/7455207/images/7455207.243/03_gallery_176856.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7455207.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Cool Sunrise",
+          "listPrice": 326.3,
+          "msrp": 502,
+          "upc": "012611956874",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7455207/images/7455207.GN0/00_main_168536.jpg",
+            "assets/7455207/images/7455207.GN0/01_gallery_176856.jpg"
+          ],
+          "specs": {}
         }
       ]
     },
     {
-      "slug": "two-piece-round",
-      "name": "Two-Piece Round Toilet",
-      "productCollection": "Toilets",
-      "description": "Two-Piece Round Toilet for commercial and residential pro channels.",
-      "featureBullets": [],
+      "slug": "studio-r-s-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "name": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+      "modelNumber": "7105801",
+      "productCollection": "Studio S",
+      "catalogCategory": "bathroom-faucet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Bathroom"
+        },
+        {
+          "label": "Bathroom Faucets"
+        },
+        {
+          "label": "Widespread Bathroom Faucets"
+        }
+      ],
+      "description": "The sleek geometric design and soft edges of the Studio S Widespread Bathroom Faucet provides a metropolitan update for modern bathrooms. Engineered with ceramic disc valves, the handles operate smoothly with drip-free performance. The WaterSense certified faucet provides up to 32% water-savings when compared to standard faucets and is CEC listed.",
+      "shortBullets": [
+        {
+          "text": "Easy installation system"
+        },
+        {
+          "text": "Brass spout for a durable and long-lasting design"
+        },
+        {
+          "text": "Metal lever handles"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "Easy installation system includes cast brass valve bodies with integral flexible hose connections for 6\"-12\" (152 - 305 mm) installations"
+        },
+        {
+          "text": "Brass spout for a durable and long-lasting design"
+        },
+        {
+          "text": "Metal lever handles"
+        },
+        {
+          "text": "WaterSense Certified – Water-saving maximum flow rate of 1.2 gallons per minute (1.2 gpm/4.5 L/min) without sacrificing performance"
+        },
+        {
+          "text": "Brass push pop-up drain uses fewer parts and installs in less time"
+        },
+        {
+          "text": "1/4 turn washerless ceramic disc valve cartridges"
+        },
+        {
+          "text": "Integrated, color-coded flexible braided stainless steel supply hoses with 3/8\" (10 mm) compression connectors"
+        },
+        {
+          "text": "Limited Lifetime Warrany on function and finish"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Features",
+              "value": "Water Efficient"
+            },
+            {
+              "label": "Fitting Handle Material",
+              "value": "Metal"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Fitting Connection Size",
+              "value": "9.52 mm"
+            },
+            {
+              "label": "Fitting Handle Height",
+              "value": "2-5/8 in"
+            },
+            {
+              "label": "Fitting Handle Type",
+              "value": "Lever"
+            },
+            {
+              "label": "Fitting Material",
+              "value": "Brass"
+            },
+            {
+              "label": "Fitting Max Deck Thickness",
+              "value": "1-1/4 in"
+            },
+            {
+              "label": "Fitting Max Deck Thickness with Escutcheon",
+              "value": "2 in"
+            },
+            {
+              "label": "Fitting Speed Connect",
+              "value": "Yes"
+            },
+            {
+              "label": "Fitting Spout Reach",
+              "value": "4-7/8 in"
+            },
+            {
+              "label": "Fitting Valve Material",
+              "value": "Ceramic"
+            },
+            {
+              "label": "Fitting Valve Needed for Install",
+              "value": "No"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.2 GPM"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "Limited Lifetime Warranty"
+            }
+          ]
+        }
+      ],
       "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/7105801/docs/specSheet__252025_spec_7105801-Studio®_S_8-Inch_Widespread_2-Handle_Bathroom_Faucet_1_2_gpm_4_5_L_min_With_Lever_Handles_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/7105801/docs/installationGuide__171524_as_us_bath_install__7105_5504_2_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/7105801/docs/repairPartsDiagram__168359_RP_7105801-821_M965780_StudioS_DC_ws_lav_faucet_EFS_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        },
+        {
+          "docType": "cad-2d",
+          "externalUrl": "https://lixil.cdn.celum.cloud/255459_Faucet-Two_Handle-American_Standard-Studio_S-7105.801_original.dwg",
+          "displayName": "CAD Drawings 2D"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/173958_as_us_bath_cad_RFA__7105%20%282525%29_original.rfa",
+          "displayName": "Revit Files"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/254029_Faucet-Two_Handle-American_Standard-Studio_S-71058X1_Series_original.rfa",
+          "displayName": "Revit Files"
+        }
+      ],
+      "youtubeVideoId": "CYsq7b2iCTU",
+      "facetMeta": {
+        "handleType": "Lever",
+        "gpf": "1.2 GPM"
+      },
+      "primaryImage": "assets/7105801/images/7105801.243/00_main_59079.jpg",
+      "gallery": [],
       "variants": [
         {
-          "sku": "LIX-TLT-3100",
-          "finish": "Cotton White",
-          "name": "Two-Piece Round Toilet — Cotton White",
-          "listPrice": 389,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "material": "Vitreous china",
-            "certifications": "WaterSense"
-          }
+          "sku": "7105801.243",
+          "finish": "Matte Black",
+          "name": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Matte Black",
+          "listPrice": 534.95,
+          "msrp": 823,
+          "upc": "012611627576",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7105801/images/7105801.243/00_main_59079.jpg",
+            "assets/7105801/images/7105801.243/01_gallery_59080.jpg",
+            "assets/7105801/images/7105801.243/02_gallery_67904.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7105801.002",
+          "finish": "Polished Chrome",
+          "name": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Chrome",
+          "listPrice": 396.5,
+          "msrp": 610,
+          "upc": "012611597947",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7105801/images/7105801.002/00_main_59077.jpg",
+            "assets/7105801/images/7105801.002/01_gallery_63350.jpg",
+            "assets/7105801/images/7105801.002/02_gallery_63352.jpg",
+            "assets/7105801/images/7105801.002/03_gallery_81486.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7105801.295",
+          "finish": "Brushed Nickel",
+          "name": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Nickel",
+          "listPrice": 534.95,
+          "msrp": 823,
+          "upc": "012611597930",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7105801/images/7105801.295/00_main_59070.jpg",
+            "assets/7105801/images/7105801.295/01_gallery_59084.jpg",
+            "assets/7105801/images/7105801.295/02_gallery_81055.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7105801.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "name": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Cool Sunrise",
+          "listPrice": 575.25,
+          "msrp": 885,
+          "upc": "012611955709",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7105801/images/7105801.GN0/00_main_168588.jpg",
+            "assets/7105801/images/7105801.GN0/01_gallery_168590.jpg",
+            "assets/7105801/images/7105801.GN0/02_gallery_168831.jpg",
+            "assets/7105801/images/7105801.GN0/03_gallery_169419.jpg"
+          ],
+          "specs": {}
         }
       ]
     },
     {
-      "slug": "wall-hung-bowl",
-      "name": "Wall-Hung Toilet Bowl",
-      "productCollection": "Toilets",
-      "description": "Wall-Hung Toilet Bowl for commercial and residential pro channels.",
-      "featureBullets": [],
+      "slug": "edgemere-r-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "name": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+      "modelNumber": "7018801",
+      "productCollection": "Edgemere",
+      "catalogCategory": "bathroom-faucet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Bathroom"
+        },
+        {
+          "label": "Bathroom Faucets"
+        },
+        {
+          "label": "Widespread Bathroom Faucets"
+        }
+      ],
+      "description": "The Edgemere Widespread Bathroom Faucet is ideal for traditional and contemporary style bathrooms. This transitional inspired bathroom faucet is EPA WaterSense certified and includes a SpeedConnect drain for a smooth installation process. It is constructed of all metal and is available in three beautiful finishes.",
+      "shortBullets": [
+        {
+          "text": "All metal construction"
+        },
+        {
+          "text": "Exclusive SpeedConnect Drain for a simple installation process"
+        },
+        {
+          "text": "Meets EPA WaterSense Criteria"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "All metal construction"
+        },
+        {
+          "text": "Exclusive SpeedConnect Drain for a simple installation process"
+        },
+        {
+          "text": "Meets EPA WaterSense Criteria"
+        },
+        {
+          "text": "ADA Compliant"
+        },
+        {
+          "text": "1.2 gallons per minute (4.5 liters per minute) maximum flow rate to conserve water"
+        },
+        {
+          "text": "24” stainless steel braided flexible supply hoses with 3/8” compression connections"
+        },
+        {
+          "text": "20” long flexible stainless steel drain cable"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Fitting Handle Material",
+              "value": "Metal"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Fitting Connection Size",
+              "value": "9.52 mm"
+            },
+            {
+              "label": "Fitting Handle Height",
+              "value": "4-1/8 in"
+            },
+            {
+              "label": "Fitting Handle Type",
+              "value": "Lever"
+            },
+            {
+              "label": "Fitting Material",
+              "value": "Brass"
+            },
+            {
+              "label": "Fitting Max Deck Thickness",
+              "value": "1-1/4 in"
+            },
+            {
+              "label": "Fitting Speed Connect",
+              "value": "Yes"
+            },
+            {
+              "label": "Fitting Spout Reach",
+              "value": "4-3/4 in"
+            },
+            {
+              "label": "Fitting Valve Material",
+              "value": "Ceramic"
+            },
+            {
+              "label": "Fitting Valve Needed for Install",
+              "value": "No"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.2 GPM"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "Limited Lifetime Warranty"
+            }
+          ]
+        }
+      ],
       "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/7018801/docs/specSheet__173217_as_us_bath_spec__7018_7918_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/7018801/docs/installationGuide__173474_as_us_bath_install__7018_5247_0_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/7018801/docs/repairPartsDiagram__172018_as_us_bath_parts__7018_5944_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        },
+        {
+          "docType": "cad-2d",
+          "externalUrl": "https://lixil.cdn.celum.cloud/255326_Faucet-Two_Handle-American_Standard-Edgmere-7018.801_original.dwg",
+          "displayName": "CAD Drawings 2D"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/244482_Faucet-Two_Handle-American_Standard-Edgmere-7018801_Series_original.rfa",
+          "displayName": "Revit Files"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/253827_Faucet-Two_Handle-American_Standard-Edgmere-7018801_Series_original.rfa",
+          "displayName": "Revit Files"
+        }
+      ],
+      "youtubeVideoId": "CcOm_V_lvys",
+      "facetMeta": {
+        "handleType": "Lever",
+        "gpf": "1.2 GPM"
+      },
+      "primaryImage": "assets/7018801/images/7018801.002/00_main_57965.jpg",
+      "gallery": [],
       "variants": [
         {
-          "sku": "LIX-TLT-3200",
-          "finish": "Cotton White",
-          "name": "Wall-Hung Toilet Bowl — Cotton White",
-          "listPrice": 610,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "material": "Vitreous china",
-            "certifications": "WaterSense"
-          }
+          "sku": "7018801.002",
+          "finish": "Polished Chrome",
+          "name": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Chrome",
+          "listPrice": 290.55,
+          "msrp": 447,
+          "upc": "012611599644",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7018801/images/7018801.002/00_main_57965.jpg",
+            "assets/7018801/images/7018801.002/01_gallery_57967.jpg",
+            "assets/7018801/images/7018801.002/02_gallery_57968.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7018801.278",
+          "finish": "Legacy Bronze",
+          "name": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Legacy Bronze",
+          "listPrice": 364.65,
+          "msrp": 561,
+          "upc": "012611599637",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/7018801/images/7018801.278/00_main_57979.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7018801.295",
+          "finish": "Brushed Nickel",
+          "name": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Nickel",
+          "listPrice": 391.95,
+          "msrp": 603,
+          "upc": "012611599620",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7018801/images/7018801.295/00_main_57981.jpg",
+            "assets/7018801/images/7018801.295/01_gallery_57983.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7018801.243",
+          "finish": "Matte Black",
+          "name": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Matte Black",
+          "listPrice": 391.95,
+          "msrp": 603,
+          "upc": "012611914225",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7018801/images/7018801.243/00_main_152255.jpg",
+            "assets/7018801/images/7018801.243/01_gallery_57944.jpg",
+            "assets/7018801/images/7018801.243/02_gallery_57947.jpg",
+            "assets/7018801/images/7018801.243/03_gallery_152298.jpg"
+          ],
+          "specs": {}
         }
       ]
     },
     {
-      "slug": "undermount-lav",
-      "name": "Undermount Lavatory Sink",
-      "productCollection": "Fixtures",
-      "description": "Undermount Lavatory Sink for commercial and residential pro channels.",
-      "featureBullets": [],
+      "slug": "champion-r-4-one-piece-1-6-gpf-6-0-lpf-chair-height-elongated-toilet-with-seat",
+      "name": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat",
+      "modelNumber": "2034314",
+      "productCollection": "Champion",
+      "catalogCategory": "toilet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Bathroom"
+        },
+        {
+          "label": "Toilets"
+        },
+        {
+          "label": "One-Piece Toilets"
+        }
+      ],
+      "description": "The Champion 4 One-Piece Elongated Toilet from American Standard is engineered for clog-free performance. This one-piece toilet features a 4-in. flush valve, the largest in the industry, to produce a fast, powerful flush that effectively clears the bowl. Designed for comfortable use and ease of accessibility, the chair-height bowl is 16 ½-in. high with an elongated shape that offers a more spacious interior bowl surface. The slow-close toilet seat eliminates the noise and annoyance of slamming. .brand-icons img { width: var(--brand-icon-size-m); height: var(--brand-icon-size-m); } @media (min-width: 1024px) { .brand-icons img { width: var(--brand-icon-size-d); height: var(--brand-icon-size-d); } }",
+      "shortBullets": [
+        {
+          "text": "CLOG-FREE RELIABILITY: Large 4-in. flush valve for optimal power"
+        },
+        {
+          "text": "EASY TO KEEP CLEAN: One-piece toilet has less seams and crevices"
+        },
+        {
+          "text": "EverClean® antimicrobial surface: Protects against bacteria"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "INDUSTRY-LEADING POWER: Equipped with a large 4-in. flush valve (102 mm) and 2-3/8-in. (60 mm) fully-glazed trapway this one-piece toilet is virtually clog-free"
+        },
+        {
+          "text": "EASY-CLEAN ONE-PIECE TOILET: Sleek, seamless construction eliminates the crevices where dirt can hide, and EverClean® antimicrobial surface protects against mold, mildew, odor- and stain-causing bacteria on toilet"
+        },
+        {
+          "text": "CHAIR-HEIGHT COMFORT: 16 1/2-in. bowl height makes accessibility, sitting and standing easier and more comfortable"
+        },
+        {
+          "text": "SLOW-CLOSE TOILET SEAT: Durable toilet seat with slow-close hinge eliminates slamming"
+        },
+        {
+          "text": "INCLUDES: Chrome trip lever and bolt caps"
+        },
+        {
+          "text": "12\" (305mm) rough-in"
+        },
+        {
+          "text": "2-3/8\" (60mm) fully-glazed trapway"
+        },
+        {
+          "text": "16-1/2\" (419 mm) rim height"
+        },
+        {
+          "text": "100% factory flush tested"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Item Shape",
+              "value": "Bowl Shape: Elongated"
+            },
+            {
+              "label": "Toilet Type",
+              "value": "One Piece"
+            },
+            {
+              "label": "Warranty",
+              "value": "10 Year Limited Warranty"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Flush Valve Size",
+              "value": "4 in"
+            },
+            {
+              "label": "Flush Technology",
+              "value": "Gravity Fed"
+            },
+            {
+              "label": "Flushing Type",
+              "value": "Single Flush"
+            },
+            {
+              "label": "GPF Maximum",
+              "value": "1.6 gpf"
+            },
+            {
+              "label": "Tank Included",
+              "value": "Yes"
+            },
+            {
+              "label": "Toilet Bowl Height with Seat",
+              "value": "18-7/16 in"
+            },
+            {
+              "label": "Insulated Toilet Tank",
+              "value": "No"
+            },
+            {
+              "label": "Toilet Seat Included",
+              "value": "Yes"
+            },
+            {
+              "label": "Toilet Trapway Diameter",
+              "value": "2-3/8 in"
+            },
+            {
+              "label": "Toilet Type",
+              "value": "One Piece"
+            },
+            {
+              "label": "Bidet Spray Type",
+              "value": "Yes"
+            },
+            {
+              "label": "Everclean",
+              "value": "Yes"
+            },
+            {
+              "label": "No. of Flush Valves",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "10 Year Limited Warranty"
+            },
+            {
+              "label": "Battery Lifetime",
+              "value": "Not Applicable (N/A)"
+            }
+          ]
+        }
+      ],
       "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/2034314/docs/specSheet__167867_as_us_bath_spec__2034_7428_0_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/2034314/docs/installationGuide__172873_as_us_bath_install__2034_4489_0_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/2034314/docs/repairPartsDiagram__167408_as_us_bath_parts__2034_5596_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        }
+      ],
+      "facetMeta": {
+        "bowlShape": "Bowl Shape: Elongated",
+        "flushTechnology": "Gravity Fed",
+        "gpf": "1.6 gpf"
+      },
+      "primaryImage": "assets/2034314/images/2034314.020/00_main_153436.jpg",
+      "gallery": [],
       "variants": [
         {
-          "sku": "LIX-FIX-4000",
+          "sku": "2034314.020",
           "finish": "White",
-          "name": "Undermount Lavatory Sink — White",
-          "listPrice": 165,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "material": "Vitreous china",
-            "certifications": "WaterSense"
-          }
+          "name": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat - White",
+          "listPrice": 592.15,
+          "msrp": 911,
+          "upc": "033056697863",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/2034314/images/2034314.020/00_main_153436.jpg",
+            "assets/2034314/images/2034314.020/01_gallery_153460.jpg",
+            "assets/2034314/images/2034314.020/02_gallery_153472.jpg",
+            "assets/2034314/images/2034314.020/03_gallery_153473.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "2034314.021",
+          "finish": "Bone",
+          "name": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat - Bone",
+          "listPrice": 691.6,
+          "msrp": 1064,
+          "upc": "033056697870",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/2034314/images/2034314.021/00_main_153430.jpg",
+            "assets/2034314/images/2034314.021/01_gallery_153455.jpg",
+            "assets/2034314/images/2034314.021/02_gallery_153457.jpg",
+            "assets/2034314/images/2034314.021/03_gallery_153474.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "2034314.222",
+          "finish": "Linen",
+          "name": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat - Linen",
+          "listPrice": 691.6,
+          "msrp": 1064,
+          "upc": "033056697900",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/2034314/images/2034314.222/00_main_153434.jpg",
+            "assets/2034314/images/2034314.222/01_gallery_153435.jpg",
+            "assets/2034314/images/2034314.222/02_gallery_153448.jpg",
+            "assets/2034314/images/2034314.222/03_gallery_153462.jpg"
+          ],
+          "specs": {}
         }
       ]
     },
     {
-      "slug": "vessel-sink",
-      "name": "Vessel Sink",
-      "productCollection": "Fixtures",
-      "description": "Vessel Sink for commercial and residential pro channels.",
-      "featureBullets": [],
+      "slug": "cadet-r-pro-two-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-less-seat",
+      "name": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat",
+      "modelNumber": "215AA104",
+      "productCollection": "Cadet®",
+      "catalogCategory": "toilet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Bathroom"
+        },
+        {
+          "label": "Toilets"
+        },
+        {
+          "label": "Two-Piece Toilets"
+        }
+      ],
+      "description": "The Cadet PRO Chair-Height Elongated Toilet from American Standard is plumber tested and plumber approved. The Cadet is backed by an industry-leading warranty that includes limited lifetime on chinaware, limited 5 years on mechanical parts. This chair-height toilet features an elongated bowl for optimal comfort. Engineered for high-efficiency, low consumption, it uses 1.28 gallons per flush, 20% less water than a regular toilet, and is WaterSense® certified, your assurance of optimal water savings, quality and performance. EverClean® antimicrobial surface to protect against mold, mildew, odor- and stain-causing bacteria. .brand-icons img { width: var(--brand-icon-size-m); height: var(--brand-icon-size-m); } @media (min-width: 1024px) { .brand-icons img { width: var(--brand-icon-size-d); height: var(--brand-icon-size-d); } }",
+      "shortBullets": [
+        {
+          "text": "Plumber tested, plumber approved: Reliability proven by the pros"
+        },
+        {
+          "text": "EverClean® antimicrobial surface: Protects against bacteria"
+        },
+        {
+          "text": "Warranty: Limited Lifetime on chinaware, limited 5-yr. on parts"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "Trade-exclusive tank"
+        },
+        {
+          "text": "12-inch rough-in"
+        },
+        {
+          "text": "WaterSense® certified: Uses 20 percent less water and performs as well as or better than regular toilets"
+        },
+        {
+          "text": "Chair-height comfort: Measures 17” tall, including seat, for ease of use compared to standard height. Slight variation in height may occur based on the height of the seat used."
+        },
+        {
+          "text": "ADA compliant: Meets Americans with Disabilities Act requirements for use and accessibility"
+        },
+        {
+          "text": "PowerWash® rim: Scrubs the bowl clean with every flush"
+        },
+        {
+          "text": "Finishing touches: Includes color-matched bowl caps and trip lever"
+        },
+        {
+          "text": "Metal parts: Robust metal trip lever and metal shank fill valve"
+        },
+        {
+          "text": "Durable construction: Made from quality vitreous china for strength and reliability"
+        },
+        {
+          "text": "Less seat: Toilet seat is sold separately"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Features",
+              "value": "Water Efficient"
+            },
+            {
+              "label": "Item Shape",
+              "value": "Bowl Shape: Elongated"
+            },
+            {
+              "label": "Toilet Type",
+              "value": "Two Piece"
+            },
+            {
+              "label": "Warranty",
+              "value": "5 Year Limited Warranty"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Flush Valve Size",
+              "value": "3 in"
+            },
+            {
+              "label": "Flush Technology",
+              "value": "Gravity Fed"
+            },
+            {
+              "label": "Flushing Type",
+              "value": "Single Flush"
+            },
+            {
+              "label": "GPF Maximum",
+              "value": "1.28 gpf"
+            },
+            {
+              "label": "Tank Included",
+              "value": "Yes"
+            },
+            {
+              "label": "Insulated Toilet Tank",
+              "value": "No"
+            },
+            {
+              "label": "Toilet Seat Included",
+              "value": "No"
+            },
+            {
+              "label": "Toilet Trapway Diameter",
+              "value": "2-1/8 in"
+            },
+            {
+              "label": "Toilet Type",
+              "value": "Two Piece"
+            },
+            {
+              "label": "Bidet Spray Type",
+              "value": "Yes"
+            },
+            {
+              "label": "Everclean",
+              "value": "Yes"
+            },
+            {
+              "label": "No. of Flush Valves",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "5 Year Limited Warranty"
+            }
+          ]
+        }
+      ],
       "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/215AA104/docs/specSheet__172117_as_us_bath_spec_215A7102_0_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/215AA104/docs/installationGuide__232118_139439_Cadet_bowl-7301878-100_EN_FR_SP_original_0_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/215AA104/docs/repairPartsDiagram__247225_CadetPro_Parts_Toilets_July2024_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        }
+      ],
+      "youtubeVideoId": "1nLlngA3mDk",
+      "facetMeta": {
+        "bowlShape": "Bowl Shape: Elongated",
+        "flushTechnology": "Gravity Fed",
+        "gpf": "1.28 gpf"
+      },
+      "primaryImage": "assets/215AA104/images/215AA104.020/00_main_231787.jpg",
+      "gallery": [],
       "variants": [
         {
-          "sku": "LIX-FIX-4100",
-          "finish": "Matte White",
-          "name": "Vessel Sink — Matte White",
-          "listPrice": 198,
-          "images": [],
-          "documents": [],
-          "specs": {
-            "material": "Vitreous china",
-            "certifications": "WaterSense"
-          }
+          "sku": "215AA104.020",
+          "finish": "White",
+          "name": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat - White",
+          "listPrice": 303.55,
+          "msrp": 467,
+          "upc": "791556010246",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/215AA104/images/215AA104.020/00_main_231787.jpg",
+            "assets/215AA104/images/215AA104.020/01_gallery_231799.jpg",
+            "assets/215AA104/images/215AA104.020/02_gallery_231800.jpg",
+            "assets/215AA104/images/215AA104.020/03_gallery_231807.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "215AA104.021",
+          "finish": "Bone",
+          "name": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat - Bone",
+          "listPrice": 482.3,
+          "msrp": 742,
+          "upc": "791556010253",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/215AA104/images/215AA104.021/00_main_29517.jpg",
+            "assets/215AA104/images/215AA104.021/01_gallery_174340.jpg",
+            "assets/215AA104/images/215AA104.021/02_gallery_67113.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "215AA104.222",
+          "finish": "Linen",
+          "name": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat - Linen",
+          "listPrice": 482.3,
+          "msrp": 742,
+          "upc": "791556010260",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/215AA104/images/215AA104.222/00_main_29519.jpg",
+            "assets/215AA104/images/215AA104.222/01_gallery_174339.jpg",
+            "assets/215AA104/images/215AA104.222/02_gallery_187734.jpg"
+          ],
+          "specs": {}
+        }
+      ]
+    },
+    {
+      "slug": "town-square-r-s-one-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-with-seat",
+      "name": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat",
+      "modelNumber": "2851A104",
+      "productCollection": "Town Square® S",
+      "catalogCategory": "toilet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Bathroom"
+        },
+        {
+          "label": "Toilets"
+        },
+        {
+          "label": "One-Piece Toilets"
+        }
+      ],
+      "description": "Elevate your bathroom with the American Standard Town Square S Chair Height Skirted Elongated Toilet. This luxury performance toilet blends classic architectural design with modern efficiency. Featuring elegant crown molding-inspired details, it seamlessly coordinates with the entire Town Square S collection. Save water with its high-efficiency 1.28 gallons per flush (gpf) rate, meeting WaterSense® requirements. The Chair Height® elongated bowl offers superior comfort, while the EverClean® surface with antimicrobial properties prevents the growth of stain and odor-causing bacteria, mold, and mildew. Enjoy a pristine bowl with every flush thanks to the powerful PowerWash® rim, and the wipe-clean ease of its smooth, skirted sides. .brand-icons img { width: var(--brand-icon-size-m); height: var(--brand-icon-size-m); } @media (min-width: 1024px) { .brand-icons img { width: var(--brand-icon-size-d); height: var(--brand-icon-size-d); } }",
+      "shortBullets": [
+        {
+          "text": "Powerful flush: High efficiency performance and water savings"
+        },
+        {
+          "text": "Easy to clean: Skirted 1-piece has nowhere for dirt to hide"
+        },
+        {
+          "text": "Cleaner bowl: PowerWash® rim scrubs the bowl with every flush"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "Richly detailed one-piece design: Edged in crown molding-inspired details for a seamless, architectural look"
+        },
+        {
+          "text": "Coordinated style: Perfectly complements the American Standard Town Square S Bathroom Collection"
+        },
+        {
+          "text": "Water-saving: High-efficiency 1.28 gpf (4.8 lpf) uses 20% less water than a 1.6 gpf toilet resulting in water conservation, cost savings, and WaterSense® certification for efficiency and performance"
+        },
+        {
+          "text": "Comfortable height for all users: 16 ½ inch chair-height bowl makes sitting and standing easier, and is ADA compliant, ideal for adults, seniors, and those with mobility issues"
+        },
+        {
+          "text": "Antimicrobial surface: EverClean® protects against mold, mildew, odor- and stain-causing bacteria on the toilet"
+        },
+        {
+          "text": "Includes: Slow-close, no-slam seat and chrome-finish trip lever"
+        },
+        {
+          "text": "Durable quality: Lifetime warranty on chinaware, 10-year warranty on mechanical parts, and 1-year warranty on seat"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Features",
+              "value": "Water Efficient"
+            },
+            {
+              "label": "Item Shape",
+              "value": "Bowl Shape: Elongated"
+            },
+            {
+              "label": "Toilet Type",
+              "value": "One Piece"
+            },
+            {
+              "label": "Warranty",
+              "value": "10 Year Limited Warranty"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Flush Valve Size",
+              "value": "3 in"
+            },
+            {
+              "label": "Flush Technology",
+              "value": "Gravity Fed"
+            },
+            {
+              "label": "Flushing Type",
+              "value": "Single Flush"
+            },
+            {
+              "label": "GPF Maximum",
+              "value": "1.28 gpf"
+            },
+            {
+              "label": "Tank Included",
+              "value": "Yes"
+            },
+            {
+              "label": "Toilet Bowl Height with Seat",
+              "value": "18-3/4 in"
+            },
+            {
+              "label": "Insulated Toilet Tank",
+              "value": "No"
+            },
+            {
+              "label": "Toilet Seat Included",
+              "value": "Yes"
+            },
+            {
+              "label": "Toilet Trapway Diameter",
+              "value": "2-1/8 in"
+            },
+            {
+              "label": "Toilet Type",
+              "value": "One Piece"
+            },
+            {
+              "label": "Bidet Spray Type",
+              "value": "Yes"
+            },
+            {
+              "label": "Everclean",
+              "value": "Yes"
+            },
+            {
+              "label": "No. of Flush Valves",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "10 Year Limited Warranty"
+            },
+            {
+              "label": "Battery Lifetime",
+              "value": "Not Applicable (N/A)"
+            }
+          ]
+        }
+      ],
+      "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/2851A104/docs/specSheet__171460_as_us_bath_spec__2851_8615_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/2851A104/docs/installationGuide__139566_2851A104_TownSq-1pc_7301450-100_EN_0_original.pdf",
+          "displayName": "Installation Guide"
+        }
+      ],
+      "youtubeVideoId": "z_sYTOc7osE",
+      "facetMeta": {
+        "bowlShape": "Bowl Shape: Elongated",
+        "flushTechnology": "Gravity Fed",
+        "gpf": "1.28 gpf"
+      },
+      "primaryImage": "assets/2851A104/images/2851A104.222/00_main_174411.jpg",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "2851A104.222",
+          "finish": "Linen",
+          "name": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat - Left / Linen",
+          "listPrice": 903.5,
+          "msrp": 1390,
+          "upc": "193406019407",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/2851A104/images/2851A104.222/00_main_174411.jpg",
+            "assets/2851A104/images/2851A104.222/01_gallery_51922.jpg",
+            "assets/2851A104/images/2851A104.222/02_gallery_51924.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "2851A104.020",
+          "finish": "White",
+          "name": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat - Left / White",
+          "listPrice": 848.9,
+          "msrp": 1306,
+          "upc": "193406019544",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/2851A104/images/2851A104.020/00_main_226561.jpg",
+            "assets/2851A104/images/2851A104.020/01_gallery_51919.jpg",
+            "assets/2851A104/images/2851A104.020/02_gallery_51920.jpg",
+            "assets/2851A104/images/2851A104.020/03_gallery_71355.jpg"
+          ],
+          "specs": {}
+        }
+      ]
+    },
+    {
+      "slug": "delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min",
+      "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min",
+      "modelNumber": "4279300",
+      "productCollection": "Delancey",
+      "catalogCategory": "kitchen-faucet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Kitchen Faucets"
+        },
+        {
+          "label": "Single Hole Pull Down Faucets"
+        }
+      ],
+      "description": "The Delancey Pull-Down Single-Handle Kitchen Faucet from American Standard is a traditional swivel kitchen faucet with today’s favorite features. The pull-down spray head features regular stream, spray for rinsing, and pause to tackle every kitchen task with ease. Durable brass spout, metal body and lever handle withstand everyday use in the busiest kitchen.",
+      "shortBullets": [
+        {
+          "text": "SINGLE-HANDLE KITCHEN FAUCET: Single-hole installation"
+        },
+        {
+          "text": "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve"
+        },
+        {
+          "text": "DUAL SPRAY: Easily switch from stream to spray"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "PULL-DOWN DUAL-SPRAY FAUCET: Traditional single-hole kitchen faucet with toggle on spray head to easily switch from regular stream to spray functions"
+        },
+        {
+          "text": "SMOOTH RETRACTION: Re-Trax® system ensures smooth extension, retraction and docking of the faucet spray head"
+        },
+        {
+          "text": "DRIP-FREE: This single-handle kitchen faucet features a quality ceramic disc valve ensuring drip-free performance for life"
+        },
+        {
+          "text": "HIGH-ARC SWIVEL SPOUT: Provides ample clearance to fill large pots and access the entire sink"
+        },
+        {
+          "text": "FORWARD ROTATING HANDLE: Will not interfere with the backsplash"
+        },
+        {
+          "text": "WATER SAVINGS: Flow rate of 1.5 gallons per minute helps conserve water without sacrificing performance"
+        },
+        {
+          "text": "BUILT TO LAST: Durable brass spout, metal body and lever handle ensure years of reliable use"
+        },
+        {
+          "text": "LEAD-FREE: Faucet contains ? 0.25% total lead content by weighted average"
+        },
+        {
+          "text": "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean"
+        },
+        {
+          "text": "WARRANTY: Limited lifetime warranty on function and finish"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Color/Finish",
+              "value": "Brushed Cool Sunrise"
+            },
+            {
+              "label": "Faucet Type",
+              "value": "Yes"
+            },
+            {
+              "label": "Features",
+              "value": "Pull Down, Water Efficient"
+            },
+            {
+              "label": "Fitting Material",
+              "value": "Metal"
+            },
+            {
+              "label": "Side Spray Included",
+              "value": "No"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Dimensions",
+              "value": "Height: 16-11/16 in, Weight: 5.908 lb"
+            },
+            {
+              "label": "Fitting Connection Size",
+              "value": "9.52 mm"
+            },
+            {
+              "label": "Fitting Handle Height",
+              "value": "3-3/4 in"
+            },
+            {
+              "label": "Fitting Max Deck Thickness",
+              "value": "2 in"
+            },
+            {
+              "label": "Fitting Max Deck Thickness with Escutcheon",
+              "value": "2-5/16 in"
+            },
+            {
+              "label": "Fitting Holes Required",
+              "value": "1"
+            },
+            {
+              "label": "Fitting Spout Reach",
+              "value": "8-11/16 in"
+            },
+            {
+              "label": "Fitting Swivel Degrees",
+              "value": "360 °"
+            },
+            {
+              "label": "Fitting Valve Material",
+              "value": "Ceramic"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.5 GPM"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Warranty",
+              "value": "Limited Lifetime Warranty"
+            }
+          ]
+        }
+      ],
+      "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/4279300/docs/specSheet__167329_spec_4279300_Delancey_sc_kitchen_faucets_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/4279300/docs/installationGuide__171452_as_us_kitc_install__4279_8943_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/4279300/docs/repairPartsDiagram__168274_RP_M965796_Dalancey_pd_kitch_4279.300_EFS_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/173894_as_us_kitc_cad_RFA__4279%20%283963%29_original.rfa",
+          "displayName": "Revit Files"
+        }
+      ],
+      "facetMeta": {
+        "gpf": "1.5 GPM"
+      },
+      "primaryImage": "assets/4279300/images/4279300.002/00_main_30540.jpg",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "4279300.002",
+          "finish": "Polished Chrome",
+          "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Polished Chrome",
+          "listPrice": 421.2,
+          "msrp": 648,
+          "upc": "012611597114",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/4279300/images/4279300.002/00_main_30540.jpg",
+            "assets/4279300/images/4279300.002/01_gallery_30543.jpg",
+            "assets/4279300/images/4279300.002/02_gallery_72573.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4279300.013",
+          "finish": "Polished Nickel",
+          "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Polished Nickel",
+          "listPrice": 568.75,
+          "msrp": 875,
+          "upc": "012611597091",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/4279300/images/4279300.013/00_main_30549.jpg",
+            "assets/4279300/images/4279300.013/01_gallery_30552.jpg",
+            "assets/4279300/images/4279300.013/02_gallery_72579.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4279300.075",
+          "finish": "Stainless Steel",
+          "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Stainless Steel",
+          "listPrice": 568.75,
+          "msrp": 875,
+          "upc": "012611597107",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/4279300/images/4279300.075/00_main_30557.jpg",
+            "assets/4279300/images/4279300.075/01_gallery_30558.jpg",
+            "assets/4279300/images/4279300.075/02_gallery_100791.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4279300.278",
+          "finish": "Legacy Bronze",
+          "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Legacy Bronze",
+          "listPrice": 443.3,
+          "msrp": 682,
+          "upc": "012611597084",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/4279300/images/4279300.278/00_main_30565.jpg",
+            "assets/4279300/images/4279300.278/01_gallery_30566.jpg",
+            "assets/4279300/images/4279300.278/02_gallery_72594.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4279300.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Brushed Cool Sunrise",
+          "listPrice": 611,
+          "msrp": 940,
+          "upc": "012611955334",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/4279300/images/4279300.GN0/00_main_168561.jpg",
+            "assets/4279300/images/4279300.GN0/01_gallery_168597.jpg",
+            "assets/4279300/images/4279300.GN0/02_gallery_168974.jpg",
+            "assets/4279300/images/4279300.GN0/03_gallery_169315.jpg"
+          ],
+          "specs": {}
+        }
+      ]
+    },
+    {
+      "slug": "studio-r-s-pull-down-dual-spray-kitchen-faucet-1-5-gpm-5-7-l-min",
+      "name": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min",
+      "modelNumber": "4803300",
+      "productCollection": "Studio S",
+      "catalogCategory": "kitchen-faucet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Kitchen Faucets"
+        },
+        {
+          "label": "Single Hole Pull Down Faucets"
+        }
+      ],
+      "description": "The Studio S Dual Spray Pull-Down Kitchen Faucet from American Standard is a contemporary, single-handle faucet with a tall 18-in. high-arc spout that creates a stylish focal point and provides ample clearance to fill large pots with ease. The pull-down spray head features regular stream and powerful spray functions. Unique raised single-handle lever offers drip-free performance while adding distinction to your kitchen design.",
+      "shortBullets": [
+        {
+          "text": "SINGLE-HANDLE KITCHEN FAUCET: Single-hole installation"
+        },
+        {
+          "text": "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve"
+        },
+        {
+          "text": "DUAL SPRAY: Easily switch from stream to spray"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "PULL-DOWN DUAL-SPRAY FAUCET: Contemporary single-hole kitchen faucet with toggle on spray head to easily switch from regular stream to spray functions"
+        },
+        {
+          "text": "SMOOTH RETRACTION: Re-Trax® system ensures smooth extension, retraction and docking of the faucet spray head"
+        },
+        {
+          "text": "DRIP-FREE: This single-handle kitchen faucet features a quality ceramic disc valve ensuring drip-free performance for life"
+        },
+        {
+          "text": "HIGH-ARC SWIVEL SPOUT: Provides ample clearance to fill large pots and rotates 360° for island-friendly use and access the entire sink"
+        },
+        {
+          "text": "FORWARD ROTATING HANDLE: Will not interfere with the backsplash"
+        },
+        {
+          "text": "BUILT TO LAST: Durable brass spout, metal body and lever handle ensure years of reliable use"
+        },
+        {
+          "text": "LEAD-FREE: Faucet contains ? 0.25% total lead content by weighted average"
+        },
+        {
+          "text": "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean"
+        },
+        {
+          "text": "WARRANTY: Limited lifetime warranty on function and finish"
+        },
+        {
+          "text": "Limited lifetime warranty"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Color/Finish",
+              "value": "Polished Chrome"
+            },
+            {
+              "label": "Faucet Type",
+              "value": "Yes"
+            },
+            {
+              "label": "Features",
+              "value": "Pull Down, Water Efficient"
+            },
+            {
+              "label": "Fitting Material",
+              "value": "Zinc"
+            },
+            {
+              "label": "Side Spray Included",
+              "value": "No"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Dimensions",
+              "value": "Height: 17-7/8 in, Weight: 5.009 lb"
+            },
+            {
+              "label": "Fitting Connection Size",
+              "value": "14.29 mm"
+            },
+            {
+              "label": "Fitting Handle Height",
+              "value": "10-1/4 in"
+            },
+            {
+              "label": "Fitting Hose Length",
+              "value": "38 in"
+            },
+            {
+              "label": "Fitting Max Deck Thickness",
+              "value": "3-1/4 in"
+            },
+            {
+              "label": "Fitting Max Deck Thickness with Escutcheon",
+              "value": "3-5/8 in"
+            },
+            {
+              "label": "Fitting Spout Reach",
+              "value": "7-15/16 in"
+            },
+            {
+              "label": "Fitting Swivel Degrees",
+              "value": "360 °"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.5 GPM"
+            }
+          ]
+        }
+      ],
+      "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/4803300/docs/specSheet__166457_spec_4803300_StudioS_pd_kitch_faucet_1_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/4803300/docs/installationGuide__137954_M985011_Studio-S_pd_kitchen_faucet_4803300_EFS_0_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/4803300/docs/repairPartsDiagram__137955_RP_M985011_Studio-S_pd_kitchen_faucet_4803300_EFS_1_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        },
+        {
+          "docType": "revit",
+          "externalUrl": "https://lixil.cdn.celum.cloud/245815_Faucet-Kitchen-American_Standard-Studio_S-4803300_Series_original.rfa",
+          "displayName": "Revit Files"
+        }
+      ],
+      "youtubeVideoId": "YU9r_cDhkzA",
+      "facetMeta": {
+        "gpf": "1.5 GPM"
+      },
+      "primaryImage": "assets/4803300/images/4803300.002/00_main_56537.jpg",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "4803300.002",
+          "finish": "Polished Chrome",
+          "name": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Polished Chrome",
+          "listPrice": 346.45,
+          "msrp": 533,
+          "upc": "012611682483",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/4803300/images/4803300.002/00_main_56537.jpg",
+            "assets/4803300/images/4803300.002/01_gallery_56542.jpg",
+            "assets/4803300/images/4803300.002/02_gallery_72735.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4803300.075",
+          "finish": "Stainless Steel",
+          "name": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Stainless Steel",
+          "listPrice": 468,
+          "msrp": 720,
+          "upc": "012611682063",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/4803300/images/4803300.075/00_main_56543.jpg",
+            "assets/4803300/images/4803300.075/01_gallery_56544.jpg",
+            "assets/4803300/images/4803300.075/02_gallery_101217.jpg",
+            "assets/4803300/images/4803300.075/03_gallery_101241.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4803300.243",
+          "finish": "Matte Black",
+          "name": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Matte Black",
+          "listPrice": 468,
+          "msrp": 720,
+          "upc": "012611682209",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/4803300/images/4803300.243/00_main_56549.jpg",
+            "assets/4803300/images/4803300.243/01_gallery_56551.jpg",
+            "assets/4803300/images/4803300.243/02_gallery_101267.jpg",
+            "assets/4803300/images/4803300.243/03_gallery_101294.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "4803300.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "name": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Brushed Cool Sunrise",
+          "listPrice": 502.45,
+          "msrp": 773,
+          "upc": "012611955198",
+          "inStock": false,
+          "discontinued": true,
+          "images": [
+            "assets/4803300/images/4803300.GN0/00_main_168586.jpg",
+            "assets/4803300/images/4803300.GN0/01_gallery_168591.jpg",
+            "assets/4803300/images/4803300.GN0/02_gallery_168971.jpg",
+            "assets/4803300/images/4803300.GN0/03_gallery_166628.jpg"
+          ],
+          "specs": {}
+        }
+      ]
+    },
+    {
+      "slug": "southport-touchless-single-handle-pull-down-dual-spray-kitchen-faucet-1-8-gpm-6-8-l-min",
+      "name": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min",
+      "modelNumber": "7441381",
+      "productCollection": "Southport",
+      "catalogCategory": "kitchen-faucet",
+      "breadcrumbs": [
+        {
+          "label": "Home"
+        },
+        {
+          "label": "Kitchen Faucets"
+        },
+        {
+          "label": "Single Hole Pull Down Faucets"
+        }
+      ],
+      "description": "The Southport Touchless Kitchen Faucet from American Standard is equipped with our dependable Selectronic® sensor that turns the faucet on and off with just a wave of your hand, helping to reduce the spread of germs. Ideal in a transitional-style setting, the Southport hands-free kitchen faucet features a high-arc, swivel spout, providing ample clearance when filling large pots. The pull-down spray head is ergonomically designed for a comfortable grip, making it easy to toggle between stream, spray and pause functions.",
+      "shortBullets": [
+        {
+          "text": "HANDS-FREE KITCHEN FAUCET: Turn on/off by waving your hand"
+        },
+        {
+          "text": "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve"
+        },
+        {
+          "text": "DUAL SPRAY PULL-DOWN: Features stream, spray and pause"
+        }
+      ],
+      "featureBullets": [
+        {
+          "text": "TOUCHLESS HANDS-FREE KITCHEN FAUCET: Wave hand within 2-in. proximity of the infrared sensor to turn the water on and off"
+        },
+        {
+          "text": "sensor can be disabled to make cleaning the faucet easy"
+        },
+        {
+          "text": "PULL-DOWN DUAL-SPRAY FAUCET: Single-hole kitchen faucet with toggle on spray head to switch from regular stream to spray and pause functions"
+        },
+        {
+          "text": "AUTOMATIC SHUT-OFF: Faucet will turn off automatically after 4 minutes to avoid accidental overflow and water waste"
+        },
+        {
+          "text": "DRIP-FREE: This single-handle kitchen faucet features a quality ceramic disc valve ensuring drip-free performance for life"
+        },
+        {
+          "text": "HIGH-ARC SWIVEL SPOUT: Provides ample clearance to fill large pots and access the entire sink"
+        },
+        {
+          "text": "FORWARD ROTATING HANDLE: Will not interfere with the backsplash"
+        },
+        {
+          "text": "INSTALL OPTIONS: For use on single-hole, 2-hole or 3-hole sinks and countertops with included deck plate. Also includes soap dispenser."
+        },
+        {
+          "text": "BATTERY OPERATED: Powered by the included 4 AA batteries with built-in “low battery” reminder or optional AC adapter (sold separately)"
+        },
+        {
+          "text": "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean"
+        },
+        {
+          "text": "WARRANTY: 5-year warranty"
+        }
+      ],
+      "specGroups": [
+        {
+          "groupName": "Style Specifications",
+          "rows": [
+            {
+              "label": "Color/Finish",
+              "value": "Brushed Cool Sunrise"
+            },
+            {
+              "label": "Faucet Type",
+              "value": "Yes"
+            },
+            {
+              "label": "Features",
+              "value": "Touchless, Touchless, Pull Down"
+            },
+            {
+              "label": "Fitting Features",
+              "value": "Touchless"
+            },
+            {
+              "label": "Side Spray Included",
+              "value": "No"
+            }
+          ]
+        },
+        {
+          "groupName": "Technical Specifications",
+          "rows": [
+            {
+              "label": "Dimensions",
+              "value": "Weight: 5.714 lb"
+            },
+            {
+              "label": "Fitting Valve Material",
+              "value": "Ceramic"
+            },
+            {
+              "label": "Flow Rate",
+              "value": "1.8 GPM"
+            },
+            {
+              "label": "Batteries Required",
+              "value": "Yes"
+            }
+          ]
+        },
+        {
+          "groupName": "Other Specs",
+          "rows": [
+            {
+              "label": "Batteries Required",
+              "value": "Yes"
+            }
+          ]
+        }
+      ],
+      "specsTable": [],
+      "documents": [
+        {
+          "docType": "spec-sheet",
+          "file": "assets/7441381/docs/specSheet__168270_spec_7441381_Southport_Touchless_PD_kitch_faucet_v2_original.pdf",
+          "displayName": "Spec Sheet"
+        },
+        {
+          "docType": "install-instructions",
+          "file": "assets/7441381/docs/installationGuide__237842_M985148_AS_Electronic_pd_kitch_faucet_7441381-7442381-7438381_7077380_741838_EFS_V3_original.pdf",
+          "displayName": "Installation Guide"
+        },
+        {
+          "docType": "parts-diagram",
+          "file": "assets/7441381/docs/repairPartsDiagram__169452_RP_7441381_Southport_Touchless_PD_kitchen_faucet_EFS_original.pdf",
+          "displayName": "Repair Parts Diagram"
+        }
+      ],
+      "facetMeta": {
+        "gpf": "1.8 GPM"
+      },
+      "primaryImage": "assets/7441381/images/7441381.002/00_main_61688.jpg",
+      "gallery": [],
+      "variants": [
+        {
+          "sku": "7441381.002",
+          "finish": "Polished Chrome",
+          "name": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Polished Chrome",
+          "listPrice": 350.35,
+          "msrp": 539,
+          "upc": "012611925900",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7441381/images/7441381.002/00_main_61688.jpg",
+            "assets/7441381/images/7441381.002/01_gallery_61690.jpg",
+            "assets/7441381/images/7441381.002/02_gallery_61693.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7441381.075",
+          "finish": "Stainless Steel",
+          "name": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Stainless Steel",
+          "listPrice": 372.45,
+          "msrp": 573,
+          "upc": "012611926105",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7441381/images/7441381.075/00_main_61699.jpg",
+            "assets/7441381/images/7441381.075/01_gallery_61701.jpg",
+            "assets/7441381/images/7441381.075/02_gallery_61705.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7441381.243",
+          "finish": "Matte Black",
+          "name": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Matte Black",
+          "listPrice": 395.85,
+          "msrp": 609,
+          "upc": "012611926402",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7441381/images/7441381.243/00_main_61711.jpg",
+            "assets/7441381/images/7441381.243/01_gallery_61713.jpg",
+            "assets/7441381/images/7441381.243/02_gallery_61716.jpg",
+            "assets/7441381/images/7441381.243/03_gallery_61720.jpg"
+          ],
+          "specs": {}
+        },
+        {
+          "sku": "7441381.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "name": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Brushed Cool Sunrise",
+          "listPrice": 429.65,
+          "msrp": 661,
+          "upc": "012611926204",
+          "inStock": true,
+          "discontinued": false,
+          "images": [
+            "assets/7441381/images/7441381.GN0/00_main_61723.jpg",
+            "assets/7441381/images/7441381.GN0/01_gallery_61725.jpg",
+            "assets/7441381/images/7441381.GN0/02_gallery_61729.jpg",
+            "assets/7441381/images/7441381.GN0/03_gallery_61732.jpg"
+          ],
+          "specs": {}
         }
       ]
     }

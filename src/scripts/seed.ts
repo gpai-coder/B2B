@@ -27,12 +27,18 @@ export const SEED_QUOTE_NUMBER = 'Q-2026-0001'
 export const SEED_STANDARD_PRICE_LIST = '2026 Standard List'
 export const SEED_PACIFIC_PRICE_LIST = 'Pacific Plumbing Contract 2026'
 
+/** Primary demo contract SKU (Townsend Polished Chrome). */
+export const SEED_HERO_SKU = '7353101.002'
+export const SEED_HERO_SLUG =
+  'townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle'
+export const SEED_QUOTE_SECOND_SKU = '2034314.020'
+
 /** Default catalog dataset (override with SEED_CATALOG_PATH). */
 export const SEED_CATALOG_DEFAULT_PATH = path.join(repoRoot, 'scripts/seed/catalog/products.json')
 export const SEED_PLACEHOLDER_REL = 'assets/product-placeholder.png'
 export const SEED_PLACEHOLDER_ALT = 'Product placeholder image'
-/** Demo spec PDF path inside the catalog dataset (American Standard import uses the same shape). */
-export const SEED_CATALOG_SPEC_REL = 'assets/docs/lixom-spec.pdf'
+export const SEED_CATALOG_SPEC_REL =
+  'assets/7353101/docs/specSheet__168938_spec_7353101-101P_Townsend_sc_lav_original.pdf'
 
 /** @deprecated Use {@link seedCatalogMediaFilename} for catalog-backed media. */
 export const SEED_MEDIA_FILENAME = seedMediaStorageName(SEED_CATALOG_SPEC_REL)
@@ -264,28 +270,29 @@ export async function runSeed(payload?: Payload) {
     lines: standardLines,
   })
 
-  const hero = variantBySku.get('LIX-FCT-1001')!
+  const hero = variantBySku.get(SEED_HERO_SKU)!
   await findOrCreatePriceList(p, SEED_PACIFIC_PRICE_LIST, {
     kind: 'company',
     company: pacific.id,
     lines: [
       {
         variant: hero.id,
-        unitPrice: 159,
+        unitPrice: 199,
         currency: 'USD',
         quantityBreaks: [
-          { minQuantity: 10, unitPrice: 149 },
-          { minQuantity: 25, unitPrice: 139 },
+          { minQuantity: 10, unitPrice: 189 },
+          { minQuantity: 25, unitPrice: 179 },
         ],
       },
     ],
   })
 
+  const quoteSecond = variantBySku.get(SEED_QUOTE_SECOND_SKU)!
   const quoteLines = [
-    { sku: 'LIX-FCT-1001', variant: hero.id, quantity: 12, unitPrice: 149 },
+    { sku: SEED_HERO_SKU, variant: hero.id, quantity: 12, unitPrice: 189 },
     {
-      sku: 'LIX-TLT-3000',
-      variant: variantBySku.get('LIX-TLT-3000')!.id,
+      sku: SEED_QUOTE_SECOND_SKU,
+      variant: quoteSecond.id,
       quantity: 4,
       unitPrice: 499,
     },
@@ -309,7 +316,7 @@ export async function runSeed(payload?: Payload) {
       postalCode: '94105',
       country: 'US',
     },
-    lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 159, variant: hero.id }],
+    lines: [{ sku: SEED_HERO_SKU, quantity: 1, unitPrice: 199, variant: hero.id }],
   })
 
   return p

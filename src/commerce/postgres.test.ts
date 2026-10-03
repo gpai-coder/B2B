@@ -19,9 +19,9 @@ describe('postgres commerce service', () => {
     })
     const companyId = String(pacific.docs[0]!.id)
 
-    const prices = await commerce.getPrices(companyId, ['LIX-FCT-1001'])
+    const prices = await commerce.getPrices(companyId, ['7353101.002'])
     expect(prices).toHaveLength(1)
-    expect(prices[0]!.unitPrice.amount).toBe(159)
+    expect(prices[0]!.unitPrice.amount).toBe(199)
     expect(prices[0]!.source).toBe('company')
   })
 
@@ -72,8 +72,8 @@ describe('postgres commerce service', () => {
       limit: 1,
       overrideAccess: true,
     })
-    const prices = await commerce.getPrices(String(bay.docs[0]!.id), ['LIX-FCT-1001'])
-    expect(prices[0]?.unitPrice.amount).toBe(189)
+    const prices = await commerce.getPrices(String(bay.docs[0]!.id), ['7353101.002'])
+    expect(prices[0]?.unitPrice.amount).toBe(234)
     expect(prices[0]?.source).toBe('standard')
   })
 
@@ -100,7 +100,7 @@ describe('postgres commerce service', () => {
         postalCode: '94105',
         country: 'US',
       },
-      lines: [{ sku: 'LIX-FCT-1001', quantity: 2 }],
+      lines: [{ sku: '7353101.002', quantity: 2 }],
     })
 
     const first = await commerce.submitOrder(draft.id, key, companyId)

@@ -3,7 +3,6 @@ import path from 'path'
 
 import type { Payload } from 'payload'
 
-import type { ProductDocumentType } from '@/collections/product-document-types'
 import type { Order, PriceList, Product, ProductVariant, Quote } from '@/payload-types'
 
 import {
@@ -28,13 +27,22 @@ export type SeedCatalogLoaderOptions = {
 }
 
 async function findMediaByStorageName(payload: Payload, storageName: string) {
-  const existing = await payload.find({
+  const exact = await payload.find({
     collection: 'media',
     where: { filename: { equals: storageName } },
     limit: 1,
     overrideAccess: true,
   })
-  return existing.docs[0] ?? null
+  if (exact.docs[0]) return exact.docs[0]
+
+  const base = storageName.replace(/\.[^.]+$/, '')
+  const prefixed = await payload.find({
+    collection: 'media',
+    where: { filename: { contains: base } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  return prefixed.docs[0] ?? null
 }
 
 async function upsertMediaFromFile(
@@ -196,34 +204,54 @@ async function seedVariant(
     variant.images,
     placeholderId,
   )
-  const documents: Array<{
-    docType: ProductDocumentType
-    file: number
-    displayName?: string
-  }> = []
-  for (const doc of variant.documents ?? []) {
-    const { id } = await upsertMediaFromFile(
-      payload,
-      datasetRoot,
-      doc.file,
-      doc.displayName ?? doc.file,
-    )
-    documents.push({
-      docType: doc.docType,
-      file: id,
-      displayName: doc.displayName,
-    })
-  }
 
   const saved = await findOrCreateVariantRecord(payload, variant.sku, {
     name: variant.name,
     product: productId,
     finish: variant.finish,
+    msrp: variant.msrp,
+    upc: variant.upc,
+    inStock: variant.inStock,
+    discontinued: variant.discontinued,
     specs: variant.specs,
     images: imageIds.map((image) => ({ image })),
-    documents,
   })
   variantBySku.set(variant.sku, { id: saved.id, listPrice: variant.listPrice })
+}
+
+async function seedProductDocuments(
+  payload: Payload,
+  datasetRoot: string,
+  documents: SeedCatalogProduct['documents'],
+) {
+  const rows: Array<{
+    docType: string
+    file?: number
+    externalUrl?: string
+    displayName?: string
+  }> = []
+  for (const doc of documents ?? []) {
+    if (doc.file) {
+      const { id } = await upsertMediaFromFile(
+        payload,
+        datasetRoot,
+        doc.file,
+        doc.displayName ?? doc.file,
+      )
+      rows.push({
+        docType: doc.docType,
+        file: id,
+        displayName: doc.displayName,
+      })
+    } else if (doc.externalUrl) {
+      rows.push({
+        docType: doc.docType,
+        externalUrl: doc.externalUrl,
+        displayName: doc.displayName,
+      })
+    }
+  }
+  return rows
 }
 
 async function seedProductFromCatalogEntry(
@@ -246,12 +274,22 @@ async function seedProductFromCatalogEntry(
     galleryRows.push({ image: id })
   }
 
+  const documentRows = await seedProductDocuments(payload, datasetRoot, product.documents)
+
   const savedProduct = await findOrCreateProductRecord(payload, product.slug, {
     name: product.name,
+    modelNumber: product.modelNumber,
     productCollection: product.productCollection,
+    catalogCategory: product.catalogCategory,
+    breadcrumbs: product.breadcrumbs,
     description: product.description ?? '',
+    shortBullets: product.shortBullets,
     featureBullets: product.featureBullets,
+    specGroups: product.specGroups,
     specsTable: product.specsTable,
+    documents: documentRows,
+    youtubeVideoId: product.youtubeVideoId,
+    facetMeta: product.facetMeta,
     primaryImage: primaryImageId,
     gallery: galleryRows,
   })

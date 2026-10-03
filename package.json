@@ -14,6 +14,7 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "db:seed": "cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/seed.ts",
+    "catalog:build": "cross-env NODE_OPTIONS=--no-deprecation tsx scripts/seed/build-american-standard-catalog.mts",
     "db:migrate": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=true payload migrate",
     "db:migrate:down": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_DISABLE_PUSH=true payload migrate:down",
     "db:migrate:check": "bash scripts/migrate-check.sh",

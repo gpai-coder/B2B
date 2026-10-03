@@ -31,7 +31,7 @@ test.describe('vendor order REST access', () => {
           postalCode: '94105',
           country: 'US',
         },
-        lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 0 }],
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 0 }],
       },
     })
     expect(createRes.ok()).toBe(false)
@@ -51,7 +51,7 @@ test.describe('vendor order REST access', () => {
     const patchPrice = await request.patch(`/api/orders/${orderId}`, {
       headers: authHeaders,
       data: {
-        lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 0 }],
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 0 }],
       },
     })
     expect(patchPrice.ok()).toBe(false)

@@ -2,8 +2,6 @@ import type { CollectionConfig } from 'payload'
 
 import { adminPanelAccess, catalogReadAccess, staffOnly } from '../access'
 
-import { PRODUCT_DOCUMENT_TYPES, PRODUCT_DOCUMENT_LABELS } from './product-document-types'
-
 const specFields = [
   { name: 'flowRateGpm', type: 'number' as const, label: 'Flow rate (GPM)' },
   { name: 'spoutHeightIn', type: 'number' as const, label: 'Spout height (in)' },
@@ -50,6 +48,25 @@ export const ProductVariants: CollectionConfig = {
       admin: { description: 'Finish name shown in the PDP finish selector (e.g. Chrome).' },
     },
     {
+      name: 'msrp',
+      type: 'number',
+      admin: { description: 'List / compare-at price (struck through on PDP).' },
+    },
+    {
+      name: 'upc',
+      type: 'text',
+    },
+    {
+      name: 'inStock',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+    {
+      name: 'discontinued',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
       name: 'specs',
       type: 'group',
       fields: specFields,
@@ -68,38 +85,11 @@ export const ProductVariants: CollectionConfig = {
       ],
     },
     {
-      name: 'documents',
-      type: 'array',
-      admin: { description: 'Typed downloads (spec, install, parts diagram).' },
-      fields: [
-        {
-          name: 'docType',
-          type: 'select',
-          required: true,
-          options: PRODUCT_DOCUMENT_TYPES.map((value) => ({
-            label: PRODUCT_DOCUMENT_LABELS[value],
-            value,
-          })),
-        },
-        {
-          name: 'file',
-          type: 'upload',
-          relationTo: 'media',
-          required: true,
-        },
-        {
-          name: 'displayName',
-          type: 'text',
-          admin: { description: 'Optional override for download link text.' },
-        },
-      ],
-    },
-    {
       name: 'specPdf',
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Legacy — prefer documents[] with type spec-sheet.',
+        description: 'Legacy — prefer product documents[].',
         condition: () => false,
       },
     },
@@ -108,7 +98,7 @@ export const ProductVariants: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Legacy — prefer documents[] with type install-instructions.',
+        description: 'Legacy — prefer product documents[].',
         condition: () => false,
       },
     },

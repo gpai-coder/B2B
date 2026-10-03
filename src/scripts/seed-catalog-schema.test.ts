@@ -10,19 +10,20 @@ describe('seed catalog schema', () => {
         {
           slug: 'demo',
           name: 'Demo',
-          productCollection: 'Faucets',
+          productCollection: 'Townsend',
+          documents: [{ docType: 'spec-sheet', file: 'assets/7353101/docs/spec.pdf' }],
           variants: [
             {
-              sku: 'DEMO-1',
+              sku: '7353101.002',
               finish: 'Chrome',
               name: 'Demo Chrome',
-              listPrice: 10,
-              documents: [{ docType: 'spec-sheet', file: 'assets/docs/spec.pdf' }],
+              listPrice: 234,
+              msrp: 360,
             },
           ],
         },
       ],
     })
-    expect(parsed.products[0]?.variants[0]?.documents[0]?.docType).toBe('spec-sheet')
+    expect(parsed.products[0]?.documents[0]?.docType).toBe('spec-sheet')
   })
 })

@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test'
 import path from 'path'
 
+const SEED_HERO_SLUG =
+  'townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle'
+const SEED_HERO_SKU = '7353101.002'
+const SEED_HERO_SKU_NICKEL = '7353101.013'
+
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test'
 const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password'
 const vendorEmail = process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local'
@@ -120,12 +125,25 @@ test.describe('B2B foundations smoke', () => {
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('777')
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('company')
 
-      await page.goto('/products/lixom-pull-down')
+      await page.goto(`/products/${SEED_HERO_SLUG}`)
       await expect(page.getByTestId('product-primary-image')).toBeVisible()
       const specDownload = page.waitForEvent('download')
-      await page.getByTestId('product-doc-LIX-FCT-1001-spec').click()
+      await page.getByTestId(`product-doc-${SEED_HERO_SKU}-spec`).click()
       const specFile = await specDownload
       expect(specFile.suggestedFilename()).toMatch(/\.pdf$/i)
+
+      await page.goto('/catalog')
+      await expect(page.getByTestId('catalog-page')).toBeVisible()
+      await page.getByTestId('filter-finish-Matte-Black').check()
+      await expect(page.getByTestId('catalog-result-count')).toBeVisible()
+
+      await page.goto(`/products/${SEED_HERO_SLUG}`)
+      await page.getByTestId('pdp-finish-Polished-Nickel').click()
+      await expect(page.getByTestId('product-active-sku')).toContainText(SEED_HERO_SKU_NICKEL)
+      await expect(page.getByTestId(`product-price-${SEED_HERO_SKU_NICKEL}`)).toBeVisible()
+
+      const mediaRes = await request.get('/api/vendor/media/1')
+      expect(mediaRes.status()).toBeGreaterThanOrEqual(401)
 
       await page.goto('/quotes/Q-2026-0001/order')
       await page.getByTestId('submit-quote-order').click()
