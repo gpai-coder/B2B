@@ -12,5 +12,7 @@ export const Media: CollectionConfig = {
       required: true,
     },
   ],
-  upload: true,
+  upload: {
+    mimeTypes: ['image/*', 'application/pdf'],
+  },
 }

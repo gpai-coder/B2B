@@ -67,8 +67,14 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    companies: Company;
     users: User;
     media: Media;
+    products: Product;
+    'product-variants': ProductVariant;
+    'price-lists': PriceList;
+    quotes: Quote;
+    orders: Order;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -76,8 +82,14 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
+    companies: CompaniesSelect<false> | CompaniesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-variants': ProductVariantsSelect<false> | ProductVariantsSelect<true>;
+    'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
+    quotes: QuotesSelect<false> | QuotesSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -119,10 +131,35 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companies".
+ */
+export interface Company {
+  id: number;
+  name: string;
+  /**
+   * Optional SAP S/4 customer number for a future MuleSoft integration.
+   */
+  sapCustomerNumber?: string | null;
+  /**
+   * When false, vendor users for this company cannot sign in.
+   */
+  accountApproved?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
+  name?: string | null;
+  role: 'admin' | 'sales' | 'vendor-buyer';
+  company?: (number | null) | Company;
+  /**
+   * Vendor buyers must be approved before they can sign in.
+   */
+  approved?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -164,6 +201,145 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  name: string;
+  /**
+   * URL-friendly identifier for PDP routes.
+   */
+  slug: string;
+  /**
+   * Merchandising collection (e.g. Faucets, Toilets).
+   */
+  productCollection: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants".
+ */
+export interface ProductVariant {
+  id: number;
+  sku: string;
+  name: string;
+  product: number | Product;
+  finish?: string | null;
+  specs?: {
+    flowRateGpm?: number | null;
+    spoutHeightIn?: number | null;
+    material?: string | null;
+    /**
+     * e.g. WaterSense, ADA
+     */
+    certifications?: string | null;
+  };
+  images?:
+    | {
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Specification sheet PDF.
+   */
+  specPdf?: (number | null) | Media;
+  /**
+   * Installation guide PDF.
+   */
+  installPdf?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-lists".
+ */
+export interface PriceList {
+  id: number;
+  name: string;
+  kind: 'standard' | 'company';
+  company?: (number | null) | Company;
+  validFrom?: string | null;
+  validTo?: string | null;
+  lines: {
+    variant: number | ProductVariant;
+    unitPrice: number;
+    currency?: string | null;
+    quantityBreaks?:
+      | {
+          minQuantity: number;
+          unitPrice: number;
+          id?: string | null;
+        }[]
+      | null;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes".
+ */
+export interface Quote {
+  id: number;
+  quoteNumber: string;
+  company: number | Company;
+  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled';
+  expiresAt: string;
+  lines: {
+    sku: string;
+    variant?: (number | null) | ProductVariant;
+    quantity: number;
+    unitPrice: number;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  /**
+   * Generated on submit if empty.
+   */
+  orderNumber?: string | null;
+  company: number | Company;
+  status: 'draft' | 'submitted' | 'confirmed' | 'shipped' | 'cancelled';
+  poNumber?: string | null;
+  quote?: (number | null) | Quote;
+  /**
+   * Client-supplied key to dedupe submit requests.
+   */
+  idempotencyKey?: string | null;
+  shipTo: {
+    name: string;
+    line1: string;
+    line2?: string | null;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+  lines: {
+    sku: string;
+    variant?: (number | null) | ProductVariant;
+    quantity: number;
+    unitPrice: number;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -187,12 +363,36 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
+        relationTo: 'companies';
+        value: number | Company;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
       } | null)
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'product-variants';
+        value: number | ProductVariant;
+      } | null)
+    | ({
+        relationTo: 'price-lists';
+        value: number | PriceList;
+      } | null)
+    | ({
+        relationTo: 'quotes';
+        value: number | Quote;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -238,9 +438,24 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "companies_select".
+ */
+export interface CompaniesSelect<T extends boolean = true> {
+  name?: T;
+  sapCustomerNumber?: T;
+  accountApproved?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  company?: T;
+  approved?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -276,6 +491,129 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  productCollection?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-variants_select".
+ */
+export interface ProductVariantsSelect<T extends boolean = true> {
+  sku?: T;
+  name?: T;
+  product?: T;
+  finish?: T;
+  specs?:
+    | T
+    | {
+        flowRateGpm?: T;
+        spoutHeightIn?: T;
+        material?: T;
+        certifications?: T;
+      };
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  specPdf?: T;
+  installPdf?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "price-lists_select".
+ */
+export interface PriceListsSelect<T extends boolean = true> {
+  name?: T;
+  kind?: T;
+  company?: T;
+  validFrom?: T;
+  validTo?: T;
+  lines?:
+    | T
+    | {
+        variant?: T;
+        unitPrice?: T;
+        currency?: T;
+        quantityBreaks?:
+          | T
+          | {
+              minQuantity?: T;
+              unitPrice?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quotes_select".
+ */
+export interface QuotesSelect<T extends boolean = true> {
+  quoteNumber?: T;
+  company?: T;
+  status?: T;
+  expiresAt?: T;
+  lines?:
+    | T
+    | {
+        sku?: T;
+        variant?: T;
+        quantity?: T;
+        unitPrice?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderNumber?: T;
+  company?: T;
+  status?: T;
+  poNumber?: T;
+  quote?: T;
+  idempotencyKey?: T;
+  shipTo?:
+    | T
+    | {
+        name?: T;
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+      };
+  lines?:
+    | T
+    | {
+        sku?: T;
+        variant?: T;
+        quantity?: T;
+        unitPrice?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
