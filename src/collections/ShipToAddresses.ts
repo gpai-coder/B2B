@@ -1,11 +1,61 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
 import {
   adminPanelAccess,
-  approvedVendorCompanyWriteAccess,
-  companyReadAccess,
+  approvedVendorCompanyReadAccess,
+  getUserCompanyId,
+  isStaff,
+  staffFieldAccess,
   staffOnly,
 } from '../access'
+import type { User } from '../payload-types'
+
+export const SHIP_TO_TRUSTED_MUTATION = 'shipToTrustedMutation'
+
+function assertShipToCompanyImmutable({
+  data,
+  originalDoc,
+  req,
+  operation,
+}: Parameters<CollectionBeforeChangeHook>[0]) {
+  const user = req.user as User | undefined
+  if (!user || isStaff(user)) return data
+
+  const companyId = getUserCompanyId(user)
+  if (!companyId) {
+    throw new Error('Forbidden')
+  }
+
+  const trusted = Boolean(
+    (req.context as Record<string, unknown> | undefined)?.[SHIP_TO_TRUSTED_MUTATION],
+  )
+  if (!trusted) {
+    throw new Error('Ship-to address changes must use the account portal.')
+  }
+
+  if (operation === 'update' && originalDoc) {
+    const prevCompany =
+      typeof originalDoc.company === 'object' ? originalDoc.company?.id : originalDoc.company
+    if (Number(prevCompany) !== companyId) {
+      throw new Error('Address not found.')
+    }
+  }
+
+  const nextCompany =
+    data?.company != null
+      ? typeof data.company === 'object'
+        ? (data.company as { id?: number }).id
+        : data.company
+      : undefined
+  if (nextCompany != null && Number(nextCompany) !== companyId) {
+    throw new Error('Address not found.')
+  }
+
+  return {
+    ...(data ?? {}),
+    company: companyId,
+  }
+}
 
 export const ShipToAddresses: CollectionConfig = {
   slug: 'ship-to-addresses',
@@ -15,10 +65,13 @@ export const ShipToAddresses: CollectionConfig = {
   },
   access: {
     admin: adminPanelAccess,
-    read: companyReadAccess('company'),
-    create: approvedVendorCompanyWriteAccess('company'),
-    update: approvedVendorCompanyWriteAccess('company'),
-    delete: approvedVendorCompanyWriteAccess('company'),
+    read: approvedVendorCompanyReadAccess('company'),
+    create: staffOnly,
+    update: staffOnly,
+    delete: staffOnly,
+  },
+  hooks: {
+    beforeChange: [assertShipToCompanyImmutable],
   },
   fields: [
     {
@@ -27,6 +80,10 @@ export const ShipToAddresses: CollectionConfig = {
       relationTo: 'companies',
       required: true,
       index: true,
+      access: {
+        create: staffFieldAccess,
+        update: staffFieldAccess,
+      },
     },
     {
       name: 'label',
@@ -46,6 +103,10 @@ export const ShipToAddresses: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       admin: { description: 'One default per company; synced to company default ship-to at checkout.' },
+      access: {
+        create: staffFieldAccess,
+        update: staffFieldAccess,
+      },
     },
   ],
 }

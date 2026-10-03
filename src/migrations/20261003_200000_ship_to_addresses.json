@@ -3041,6 +3041,22 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "ship_to_addresses_one_default_per_company": {
+          "name": "ship_to_addresses_one_default_per_company",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "where": "\"ship_to_addresses\".\"is_default\" = true",
+          "with": {}
         }
       },
       "foreignKeys": {

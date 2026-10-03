@@ -3,6 +3,7 @@ import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { getUserCompanyId } from '@/access'
+import { SHIP_TO_TRUSTED_MUTATION } from '@/collections/ShipToAddresses'
 import { shipToFromCompanyDefault, type ShipToFields } from '@/lib/checkout/ship-to'
 import { createPayloadReq } from '@/lib/payload-req'
 
@@ -31,6 +32,12 @@ function assertApprovedVendor(user: User, companyId: string): void {
   }
 }
 
+function trustedReq(payload: Payload, user: User | null): PayloadRequest {
+  const req = createPayloadReq(payload, user)
+  req.context = { ...(req.context as Record<string, unknown>), [SHIP_TO_TRUSTED_MUTATION]: true }
+  return req
+}
+
 async function resolveTransactionId(req: PayloadRequest): Promise<string | number | null | undefined> {
   let id = req.transactionID
   if (id instanceof Promise) id = await id
@@ -54,6 +61,31 @@ async function lockCompanyRow(payload: Payload, companyId: number, req: PayloadR
     drizzle,
     sql: sql`SELECT id FROM companies WHERE id = ${companyId} FOR UPDATE`,
   })
+}
+
+async function withCompanyLock<T>(
+  payload: Payload,
+  user: User | null,
+  companyId: number,
+  fn: (req: PayloadRequest) => Promise<T>,
+): Promise<T> {
+  const req = trustedReq(payload, user)
+  let transactionID: string | number | null | undefined
+  try {
+    transactionID = await payload.db.beginTransaction()
+  } catch (err) {
+    throw err
+  }
+  if (transactionID != null) req.transactionID = transactionID
+  try {
+    await lockCompanyRow(payload, companyId, req)
+    const result = await fn(req)
+    if (transactionID != null) await payload.db.commitTransaction(transactionID)
+    return result
+  } catch (err) {
+    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
+    throw err
+  }
 }
 
 function parseShipToInput(input: {
@@ -147,6 +179,74 @@ function mapDoc(doc: Record<string, unknown>): ShipToAddressRecord {
   }
 }
 
+async function clearDefaultFlagsExcept(
+  payload: Payload,
+  companyId: number,
+  keepId: string | number | null,
+  req: PayloadRequest,
+): Promise<void> {
+  const all = await payload.find({
+    collection: 'ship-to-addresses',
+    where: {
+      and: [{ company: { equals: companyId } }, { isDefault: { equals: true } }],
+    },
+    limit: 200,
+    req,
+    overrideAccess: true,
+  })
+  for (const row of all.docs) {
+    if (keepId != null && String(row.id) === String(keepId)) continue
+    await payload.update({
+      collection: 'ship-to-addresses',
+      id: row.id,
+      data: { isDefault: false },
+      req,
+      overrideAccess: true,
+    })
+  }
+}
+
+async function findDefaultAddressId(
+  payload: Payload,
+  companyId: number,
+  req: PayloadRequest,
+): Promise<string | null> {
+  const rows = await payload.find({
+    collection: 'ship-to-addresses',
+    where: {
+      and: [{ company: { equals: companyId } }, { isDefault: { equals: true } }],
+    },
+    limit: 2,
+    req,
+    overrideAccess: true,
+  })
+  if (rows.docs.length === 0) return null
+  return String(rows.docs[0]!.id)
+}
+
+async function syncDefaultFromAddressUnderLock(
+  payload: Payload,
+  companyId: number,
+  addressId: string,
+  req: PayloadRequest,
+): Promise<void> {
+  const defaultId = await findDefaultAddressId(payload, companyId, req)
+  if (defaultId !== addressId) return
+  const doc = await payload.findByID({
+    collection: 'ship-to-addresses',
+    id: addressId,
+    req,
+    overrideAccess: true,
+  })
+  if (!doc?.isDefault) return
+  await syncCompanyDefaultShipTo(
+    payload,
+    companyId,
+    mapDoc(doc as unknown as Record<string, unknown>).shipTo,
+    req,
+  )
+}
+
 export async function listVendorShipToAddresses(
   payload: Payload,
   user: User,
@@ -160,7 +260,7 @@ export async function listVendorShipToAddresses(
     sort: '-isDefault,label',
     limit: 100,
     overrideAccess: false,
-    req: req ?? createPayloadReq(payload, user),
+    req: req ?? trustedReq(payload, user),
   })
   return rows.docs.map((d) => mapDoc(d as unknown as Record<string, unknown>))
 }
@@ -173,43 +273,52 @@ export async function createVendorShipToAddress(
 ): Promise<ShipToAddressRecord> {
   assertApprovedVendor(user, companyId)
   const parsed = parseShipToInput(input)
-  const req = createPayloadReq(payload, user)
-  const existing = await payload.find({
-    collection: 'ship-to-addresses',
-    where: { company: { equals: Number(companyId) } },
-    limit: 1,
-    overrideAccess: false,
-    req,
-  })
-  const makeDefault = existing.docs.length === 0
-  const created = await payload.create({
-    collection: 'ship-to-addresses',
-    data: {
-      company: Number(companyId),
-      label: parsed.label,
-      name: parsed.shipTo.name,
-      line1: parsed.shipTo.line1,
-      line2: parsed.shipTo.line2,
-      city: parsed.shipTo.city,
-      state: parsed.shipTo.state,
-      postalCode: parsed.shipTo.postalCode,
-      country: parsed.shipTo.country,
-      isDefault: makeDefault,
-    },
-    req,
-    overrideAccess: false,
-  })
-  if (makeDefault) {
-    await syncCompanyDefaultFromAddress(payload, user, companyId, String(created.id))
+  const numericCompany = Number(companyId)
+
+  return withCompanyLock(payload, user, numericCompany, async (req) => {
+    const existing = await payload.find({
+      collection: 'ship-to-addresses',
+      where: { company: { equals: numericCompany } },
+      limit: 1,
+      req,
+      overrideAccess: true,
+    })
+    const makeDefault = existing.totalDocs === 0
+
+    if (makeDefault) {
+      await clearDefaultFlagsExcept(payload, numericCompany, null, req)
+    }
+
+    const created = await payload.create({
+      collection: 'ship-to-addresses',
+      data: {
+        company: numericCompany,
+        label: parsed.label,
+        name: parsed.shipTo.name,
+        line1: parsed.shipTo.line1,
+        line2: parsed.shipTo.line2,
+        city: parsed.shipTo.city,
+        state: parsed.shipTo.state,
+        postalCode: parsed.shipTo.postalCode,
+        country: parsed.shipTo.country,
+        isDefault: makeDefault,
+      },
+      req,
+      overrideAccess: true,
+    })
+
+    if (makeDefault) {
+      await syncDefaultFromAddressUnderLock(payload, numericCompany, String(created.id), req)
+    }
+
     const refreshed = await payload.findByID({
       collection: 'ship-to-addresses',
       id: created.id,
-      overrideAccess: false,
       req,
+      overrideAccess: true,
     })
     return mapDoc(refreshed as unknown as Record<string, unknown>)
-  }
-  return mapDoc(created as unknown as Record<string, unknown>)
+  })
 }
 
 export async function updateVendorShipToAddress(
@@ -221,17 +330,21 @@ export async function updateVendorShipToAddress(
 ): Promise<ShipToAddressRecord> {
   assertApprovedVendor(user, companyId)
   const parsed = parseShipToInput(input)
-  const req = createPayloadReq(payload, user)
+  const numericCompany = Number(companyId)
+  const req = trustedReq(payload, user)
+
   const existing = await payload.findByID({
     collection: 'ship-to-addresses',
     id: addressId,
-    overrideAccess: false,
+    overrideAccess: true,
     req,
   })
   if (!existing) throw new ShipToAddressValidationError('Address not found.')
   const docCompany =
     typeof existing.company === 'object' ? existing.company.id : existing.company
   if (String(docCompany) !== companyId) throw new ShipToAddressValidationError('Address not found.')
+
+  const wasDefault = Boolean(existing.isDefault)
 
   const updated = await payload.update({
     collection: 'ship-to-addresses',
@@ -247,42 +360,16 @@ export async function updateVendorShipToAddress(
       country: parsed.shipTo.country,
     },
     req,
-    overrideAccess: false,
+    overrideAccess: true,
   })
-  if (updated.isDefault) {
-    await syncCompanyDefaultFromAddress(payload, user, companyId, String(updated.id))
-  }
-  return mapDoc(updated as unknown as Record<string, unknown>)
-}
 
-async function syncCompanyDefaultFromAddress(
-  payload: Payload,
-  user: User,
-  companyId: string,
-  addressId: string,
-): Promise<void> {
-  const req = createPayloadReq(payload, user)
-  let transactionID: string | number | null | undefined
-  try {
-    transactionID = await payload.db.beginTransaction()
-  } catch (err) {
-    throw err
-  }
-  if (transactionID != null) req.transactionID = transactionID
-  try {
-    await lockCompanyRow(payload, Number(companyId), req)
-    const doc = await payload.findByID({
-      collection: 'ship-to-addresses',
-      id: addressId,
-      req,
-      overrideAccess: true,
+  if (wasDefault) {
+    await withCompanyLock(payload, user, numericCompany, async (txReq) => {
+      await syncDefaultFromAddressUnderLock(payload, numericCompany, addressId, txReq)
     })
-    await syncCompanyDefaultShipTo(payload, Number(companyId), mapDoc(doc as unknown as Record<string, unknown>).shipTo, req)
-    if (transactionID != null) await payload.db.commitTransaction(transactionID)
-  } catch (err) {
-    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
-    throw err
   }
+
+  return mapDoc(updated as unknown as Record<string, unknown>)
 }
 
 export async function deleteVendorShipToAddress(
@@ -292,69 +379,64 @@ export async function deleteVendorShipToAddress(
   addressId: string,
 ): Promise<void> {
   assertApprovedVendor(user, companyId)
-  const req = createPayloadReq(payload, user)
-  const existing = await payload.findByID({
-    collection: 'ship-to-addresses',
-    id: addressId,
-    overrideAccess: false,
-    req,
-  })
-  if (!existing) throw new ShipToAddressValidationError('Address not found.')
-  const docCompany =
-    typeof existing.company === 'object' ? existing.company.id : existing.company
-  if (String(docCompany) !== companyId) throw new ShipToAddressValidationError('Address not found.')
+  const numericCompany = Number(companyId)
 
-  const wasDefault = Boolean(existing.isDefault)
-  await payload.delete({
-    collection: 'ship-to-addresses',
-    id: addressId,
-    req,
-    overrideAccess: false,
-  })
+  await withCompanyLock(payload, user, numericCompany, async (req) => {
+    const existing = await payload.findByID({
+      collection: 'ship-to-addresses',
+      id: addressId,
+      overrideAccess: true,
+      req,
+    })
+    if (!existing) throw new ShipToAddressValidationError('Address not found.')
+    const docCompany =
+      typeof existing.company === 'object' ? existing.company.id : existing.company
+    if (String(docCompany) !== companyId) throw new ShipToAddressValidationError('Address not found.')
 
-  if (!wasDefault) return
+    const wasDefault = Boolean(existing.isDefault)
 
-  let transactionID: string | number | null | undefined
-  const txReq = createPayloadReq(payload, user)
-  try {
-    transactionID = await payload.db.beginTransaction()
-  } catch (err) {
-    throw err
-  }
-  if (transactionID != null) txReq.transactionID = transactionID
-  try {
-    await lockCompanyRow(payload, Number(companyId), txReq)
+    await payload.delete({
+      collection: 'ship-to-addresses',
+      id: addressId,
+      req,
+      overrideAccess: true,
+    })
+
+    if (!wasDefault) return
+
+    let defaultId = await findDefaultAddressId(payload, numericCompany, req)
+    if (defaultId) {
+      await syncDefaultFromAddressUnderLock(payload, numericCompany, defaultId, req)
+      return
+    }
+
     const remaining = await payload.find({
       collection: 'ship-to-addresses',
-      where: { company: { equals: Number(companyId) } },
+      where: { company: { equals: numericCompany } },
       sort: '-createdAt',
       limit: 1,
-      req: txReq,
+      req,
       overrideAccess: true,
     })
     const next = remaining.docs[0]
-    if (next) {
-      await payload.update({
-        collection: 'ship-to-addresses',
-        id: next.id,
-        data: { isDefault: true },
-        req: txReq,
-        overrideAccess: true,
-      })
-      await syncCompanyDefaultShipTo(
-        payload,
-        Number(companyId),
-        mapDoc(next as unknown as Record<string, unknown>).shipTo,
-        txReq,
-      )
-    } else {
-      await syncCompanyDefaultShipTo(payload, Number(companyId), null, txReq)
+    if (!next) {
+      await syncCompanyDefaultShipTo(payload, numericCompany, null, req)
+      return
     }
-    if (transactionID != null) await payload.db.commitTransaction(transactionID)
-  } catch (err) {
-    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
-    throw err
-  }
+
+    await clearDefaultFlagsExcept(payload, numericCompany, next.id, req)
+    await payload.update({
+      collection: 'ship-to-addresses',
+      id: next.id,
+      data: { isDefault: true },
+      req,
+      overrideAccess: true,
+    })
+    defaultId = await findDefaultAddressId(payload, numericCompany, req)
+    if (defaultId) {
+      await syncDefaultFromAddressUnderLock(payload, numericCompany, defaultId, req)
+    }
+  })
 }
 
 export async function setVendorDefaultShipToAddress(
@@ -364,46 +446,20 @@ export async function setVendorDefaultShipToAddress(
   addressId: string,
 ): Promise<ShipToAddressRecord> {
   assertApprovedVendor(user, companyId)
-  const req = createPayloadReq(payload, user)
-  const target = await payload.findByID({
-    collection: 'ship-to-addresses',
-    id: addressId,
-    overrideAccess: false,
-    req,
-  })
-  if (!target) throw new ShipToAddressValidationError('Address not found.')
-  const docCompany = typeof target.company === 'object' ? target.company.id : target.company
-  if (String(docCompany) !== companyId) throw new ShipToAddressValidationError('Address not found.')
+  const numericCompany = Number(companyId)
 
-  let transactionID: string | number | null | undefined
-  try {
-    transactionID = await payload.db.beginTransaction()
-  } catch (err) {
-    throw err
-  }
-  if (transactionID != null) req.transactionID = transactionID
-
-  try {
-    await lockCompanyRow(payload, Number(companyId), req)
-
-    const all = await payload.find({
+  return withCompanyLock(payload, user, numericCompany, async (req) => {
+    const target = await payload.findByID({
       collection: 'ship-to-addresses',
-      where: { company: { equals: Number(companyId) } },
-      limit: 200,
-      req,
+      id: addressId,
       overrideAccess: true,
+      req,
     })
-    for (const row of all.docs) {
-      if (!row.isDefault) continue
-      if (String(row.id) === String(addressId)) continue
-      await payload.update({
-        collection: 'ship-to-addresses',
-        id: row.id,
-        data: { isDefault: false },
-        req,
-        overrideAccess: true,
-      })
-    }
+    if (!target) throw new ShipToAddressValidationError('Address not found.')
+    const docCompany = typeof target.company === 'object' ? target.company.id : target.company
+    if (String(docCompany) !== companyId) throw new ShipToAddressValidationError('Address not found.')
+
+    await clearDefaultFlagsExcept(payload, numericCompany, addressId, req)
     await payload.update({
       collection: 'ship-to-addresses',
       id: addressId,
@@ -412,20 +468,16 @@ export async function setVendorDefaultShipToAddress(
       overrideAccess: true,
     })
 
+    await syncDefaultFromAddressUnderLock(payload, numericCompany, addressId, req)
+
     const fresh = await payload.findByID({
       collection: 'ship-to-addresses',
       id: addressId,
       req,
       overrideAccess: true,
     })
-    const mapped = mapDoc(fresh as unknown as Record<string, unknown>)
-    await syncCompanyDefaultShipTo(payload, Number(companyId), mapped.shipTo, req)
-    if (transactionID != null) await payload.db.commitTransaction(transactionID)
-    return mapped
-  } catch (err) {
-    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
-    throw err
-  }
+    return mapDoc(fresh as unknown as Record<string, unknown>)
+  })
 }
 
 export async function ensureCompanyDefaultShipToAddressFromGroup(
@@ -440,98 +492,69 @@ export async function ensureCompanyDefaultShipToAddressFromGroup(
   const ship = shipToFromCompanyDefault(company.defaultShipTo)
   if (!ship) return
 
-  const existingDefault = await payload.find({
-    collection: 'ship-to-addresses',
-    where: {
-      and: [{ company: { equals: companyId } }, { isDefault: { equals: true } }],
-    },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existingDefault.docs[0]) return
-
   const any = await payload.find({
     collection: 'ship-to-addresses',
     where: { company: { equals: companyId } },
     limit: 1,
     overrideAccess: true,
   })
-  if (any.docs[0]) {
-    await applyDefaultAddressInternal(payload, companyId, String(any.docs[0].id))
-    return
-  }
+  if (any.docs[0]) return
 
-  const created = await payload.create({
-    collection: 'ship-to-addresses',
-    data: {
-      company: companyId,
-      label: 'Primary',
-      name: ship.name,
-      line1: ship.line1,
-      line2: ship.line2,
-      city: ship.city,
-      state: ship.state,
-      postalCode: ship.postalCode,
-      country: ship.country,
-      isDefault: true,
-    },
-    overrideAccess: true,
-  })
-  await applyDefaultAddressInternal(payload, companyId, String(created.id))
-}
-
-async function applyDefaultAddressInternal(
-  payload: Payload,
-  companyId: number,
-  addressId: string,
-): Promise<void> {
-  const req = createPayloadReq(payload, null)
-  const transactionID = await payload.db.beginTransaction()
-  if (transactionID != null) req.transactionID = transactionID
-  try {
-    await lockCompanyRow(payload, companyId, req)
-    const all = await payload.find({
+  await withCompanyLock(payload, null, companyId, async (req) => {
+    const again = await payload.find({
       collection: 'ship-to-addresses',
       where: { company: { equals: companyId } },
-      limit: 200,
+      limit: 1,
       req,
       overrideAccess: true,
     })
-    for (const row of all.docs) {
-      if (!row.isDefault) continue
-      if (String(row.id) === String(addressId)) continue
+    if (again.docs[0]) return
+
+    await clearDefaultFlagsExcept(payload, companyId, null, req)
+    const created = await payload.create({
+      collection: 'ship-to-addresses',
+      data: {
+        company: companyId,
+        label: 'Primary',
+        name: ship.name,
+        line1: ship.line1,
+        line2: ship.line2,
+        city: ship.city,
+        state: ship.state,
+        postalCode: ship.postalCode,
+        country: ship.country,
+        isDefault: true,
+      },
+      req,
+      overrideAccess: true,
+    })
+    await syncDefaultFromAddressUnderLock(payload, companyId, String(created.id), req)
+  })
+}
+
+/** Restore Pacific (or any company) default address + company defaultShipTo for tests. */
+export async function restoreCompanyDefaultShipToState(
+  payload: Payload,
+  companyId: number,
+  defaultAddressId: string | null,
+  defaultShipTo: ShipToFields | null,
+): Promise<void> {
+  await withCompanyLock(payload, null, companyId, async (req) => {
+    if (defaultAddressId) {
+      await clearDefaultFlagsExcept(payload, companyId, defaultAddressId, req)
       await payload.update({
         collection: 'ship-to-addresses',
-        id: row.id,
-        data: { isDefault: false },
+        id: defaultAddressId,
+        data: { isDefault: true },
         req,
         overrideAccess: true,
       })
+      await syncDefaultFromAddressUnderLock(payload, companyId, defaultAddressId, req)
+    } else {
+      await clearDefaultFlagsExcept(payload, companyId, null, req)
+      await syncCompanyDefaultShipTo(payload, companyId, defaultShipTo, req)
     }
-    await payload.update({
-      collection: 'ship-to-addresses',
-      id: addressId,
-      data: { isDefault: true },
-      req,
-      overrideAccess: true,
-    })
-    const fresh = await payload.findByID({
-      collection: 'ship-to-addresses',
-      id: addressId,
-      req,
-      overrideAccess: true,
-    })
-    await syncCompanyDefaultShipTo(
-      payload,
-      companyId,
-      mapDoc(fresh as unknown as Record<string, unknown>).shipTo,
-      req,
-    )
-    if (transactionID != null) await payload.db.commitTransaction(transactionID)
-  } catch (err) {
-    if (transactionID != null) await payload.db.rollbackTransaction(transactionID)
-    throw err
-  }
+  })
 }
 
 export async function loadDefaultShipToForCheckout(
@@ -540,7 +563,7 @@ export async function loadDefaultShipToForCheckout(
   companyId: string,
 ): Promise<{ defaultShipTo: ShipToFields | null; savedAddresses: ShipToAddressRecord[] }> {
   assertApprovedVendor(user, companyId)
-  const req = createPayloadReq(payload, user)
+  const req = trustedReq(payload, user)
   const savedAddresses = await listVendorShipToAddresses(payload, user, companyId, req)
   const defaultRow = savedAddresses.find((a) => a.isDefault)
   if (defaultRow) {

@@ -16,6 +16,8 @@ import type { User } from '@/payload-types'
 
 export type AccountActionResult = { ok: true } | { ok: false; error: string }
 
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
 function actionError(err: unknown): string {
   if (err instanceof ShipToAddressValidationError) return err.message
   console.error('[account]', err)
@@ -41,6 +43,9 @@ async function vendorContext(): Promise<
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     return { error: 'Authentication required.' }
+  }
+  if (!user.approved) {
+    return { error: PENDING_APPROVAL }
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) return { error: 'Vendor account is missing a company.' }
