@@ -29,6 +29,9 @@ export default async function CatalogPage() {
     collection: 'products',
     limit: 100,
     depth: 1,
+    where: {
+      catalogHidden: { equals: false },
+    },
     overrideAccess: false,
     req: createPayloadReq(payload, user),
   })
