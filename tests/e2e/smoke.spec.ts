@@ -171,7 +171,7 @@ test.describe('B2B foundations smoke', () => {
       await page.getByRole('textbox', { name: 'Slug *' }).fill(slug)
       await page.getByRole('textbox', { name: 'Product Collection *' }).fill('Faucets')
       await page.getByRole('button', { name: 'Save' }).click()
-      await page.waitForURL('**/admin/collections/products/**')
+      await page.waitForURL(/\/admin\/collections\/products\/\d+$/)
 
       const productRes = await request.get(
         `/api/products?where[slug][equals]=${encodeURIComponent(slug)}&limit=1`,
