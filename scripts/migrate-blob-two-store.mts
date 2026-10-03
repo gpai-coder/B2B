@@ -2,17 +2,19 @@
 /**
  * Copy catalog media from the legacy PUBLIC Vercel Blob store to a new PRIVATE store.
  *
- * Default is dry-run. Requires separate source/dest tokens (public vs private stores).
+ * Default is dry-run. Tokens default to BLOB_READ_WRITE_TOKEN (source) and
+ * BLOB_PRIVATE_READ_WRITE_TOKEN (dest); override with BLOB_SOURCE_* / BLOB_DEST_*.
  *
  * Usage:
- *   BLOB_SOURCE_READ_WRITE_TOKEN=... BLOB_DEST_READ_WRITE_TOKEN=... DATABASE_URL=... PAYLOAD_SECRET=... \\
+ *   DATABASE_URL=... PAYLOAD_SECRET=... BLOB_READ_WRITE_TOKEN=... BLOB_PRIVATE_READ_WRITE_TOKEN=... \\
  *     pnpm exec tsx scripts/migrate-blob-two-store.mts
  *
- *   ... --execute              # perform copies (still no source deletes unless --delete-source)
+ *   ... --execute              # perform copies (no source deletes unless --delete-source)
  *   ... --execute --delete-source
  *   ... --checkpoint=.blob-migrate.json
  *   ... --backup-dir=./blob-backup
  *   ... --batch-size=25
+ *   ... --max-attempts=3
  */
 import crypto from 'crypto'
 import fs from 'fs/promises'
@@ -22,10 +24,13 @@ import { get, head, put } from '@vercel/blob'
 import { getPayload } from 'payload'
 
 import config from '../src/payload.config.ts'
+import { blobMigrationDestToken, blobMigrationSourceToken } from '../src/lib/blob-store-env.ts'
+
+type FailureRecord = { id: number; filename: string; error: string; attempts: number }
 
 type Checkpoint = {
   completedIds: number[]
-  failures: Array<{ id: number; filename: string; error: string }>
+  failures: FailureRecord[]
 }
 
 const args = new Set(process.argv.slice(2))
@@ -38,11 +43,18 @@ const backupDir =
 const batchSize = Number(
   [...args].find((a) => a.startsWith('--batch-size='))?.split('=')[1] ?? '25',
 )
+const maxAttempts = Number(
+  [...args].find((a) => a.startsWith('--max-attempts='))?.split('=')[1] ?? '3',
+)
 
 async function loadCheckpoint(): Promise<Checkpoint> {
   try {
     const raw = await fs.readFile(checkpointPath, 'utf8')
-    return JSON.parse(raw) as Checkpoint
+    const parsed = JSON.parse(raw) as Checkpoint
+    return {
+      completedIds: parsed.completedIds ?? [],
+      failures: (parsed.failures ?? []).map((f) => ({ ...f, attempts: f.attempts ?? 1 })),
+    }
   } catch {
     return { completedIds: [], failures: [] }
   }
@@ -57,10 +69,10 @@ async function sha256(buffer: Buffer): Promise<string> {
 }
 
 async function backupFile(mediaId: number, filename: string, data: Buffer) {
-  await fs.mkdir(backupDir, { recursive: true })
+  await fs.mkdir(backupDir, { recursive: true, mode: 0o700 })
   const safe = filename.replace(/[^\w.-]+/g, '_')
   const out = path.join(backupDir, `${mediaId}__${safe}`)
-  await fs.writeFile(out, data)
+  await fs.writeFile(out, data, { mode: 0o600 })
   return out
 }
 
@@ -92,11 +104,44 @@ async function verifyDest(
   }
 }
 
+function failureForId(cp: Checkpoint, id: number) {
+  return cp.failures.find((f) => f.id === id)
+}
+
+function recordFailure(cp: Checkpoint, id: number, filename: string, error: string) {
+  const existing = failureForId(cp, id)
+  if (existing) {
+    existing.error = error
+    existing.attempts += 1
+    existing.filename = filename
+  } else {
+    cp.failures.push({ id, filename, error, attempts: 1 })
+  }
+}
+
+function clearFailure(cp: Checkpoint, id: number) {
+  cp.failures = cp.failures.filter((f) => f.id !== id)
+}
+
+function exhaustedIds(cp: Checkpoint): number[] {
+  return cp.failures.filter((f) => f.attempts >= maxAttempts).map((f) => f.id)
+}
+
+function buildExcludeIds(cp: Checkpoint, failedThisRun: Set<number>): number[] {
+  return [...new Set([...cp.completedIds, ...failedThisRun, ...exhaustedIds(cp)])]
+}
+
+function activeFailures(cp: Checkpoint): FailureRecord[] {
+  return cp.failures.filter((f) => !cp.completedIds.includes(f.id) && f.attempts < maxAttempts)
+}
+
 async function main() {
-  const sourceToken = process.env.BLOB_SOURCE_READ_WRITE_TOKEN
-  const destToken = process.env.BLOB_DEST_READ_WRITE_TOKEN
+  const sourceToken = blobMigrationSourceToken()
+  const destToken = blobMigrationDestToken()
   if (!sourceToken || !destToken) {
-    throw new Error('BLOB_SOURCE_READ_WRITE_TOKEN and BLOB_DEST_READ_WRITE_TOKEN are required')
+    throw new Error(
+      'Missing tokens: set BLOB_READ_WRITE_TOKEN + BLOB_PRIVATE_READ_WRITE_TOKEN (or BLOB_SOURCE_* / BLOB_DEST_*)',
+    )
   }
   if (deleteSource && !execute) {
     throw new Error('--delete-source requires --execute')
@@ -132,13 +177,13 @@ async function main() {
     return
   }
 
+  const failedThisRun = new Set<number>()
+
   while (true) {
+    const excludeIds = buildExcludeIds(cp, failedThisRun)
     const batch = await payload.find({
       collection: 'media',
-      where:
-        cp.completedIds.length > 0
-          ? { id: { not_in: cp.completedIds } }
-          : {},
+      where: excludeIds.length > 0 ? { id: { not_in: excludeIds } } : {},
       sort: 'id',
       limit: batchSize,
       overrideAccess: true,
@@ -148,6 +193,8 @@ async function main() {
     for (const doc of batch.docs) {
       if (!doc.filename) {
         cp.completedIds.push(doc.id)
+        clearFailure(cp, doc.id)
+        await saveCheckpoint(cp)
         continue
       }
 
@@ -179,29 +226,34 @@ async function main() {
         }
 
         cp.completedIds.push(doc.id)
+        clearFailure(cp, doc.id)
+        failedThisRun.delete(doc.id)
         processed++
         console.log(`ok id=${doc.id} ${filename} backup=${backupPath}`)
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
-        cp.failures.push({ id: doc.id, filename, error: message })
-        console.error(`fail id=${doc.id} ${filename}:`, message)
+        recordFailure(cp, doc.id, filename, message)
+        failedThisRun.add(doc.id)
+        console.error(`fail id=${doc.id} ${filename} attempts=${failureForId(cp, doc.id)?.attempts}:`, message)
       }
 
       await saveCheckpoint(cp)
     }
-
-    if (batch.docs.length < batchSize) break
   }
 
+  const remaining = activeFailures(cp)
   console.log({
-    mode: execute ? (deleteSource ? 'execute+delete-source' : 'execute') : 'dry-run',
+    mode: deleteSource ? 'execute+delete-source' : 'execute',
     processed,
     completed: cp.completedIds.length,
-    failures: cp.failures.length,
+    activeFailures: remaining.length,
+    exhausted: cp.failures.filter((f) => f.attempts >= maxAttempts).length,
     checkpointPath,
   })
 
-  if (cp.failures.length > 0) process.exitCode = 1
+  if (remaining.length > 0) {
+    process.exitCode = 1
+  }
 }
 
 main().catch((err) => {

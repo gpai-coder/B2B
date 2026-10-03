@@ -1,4 +1,8 @@
-import type { BlobStoreAccess } from '@/lib/blob-server-read'
+import {
+  blobReadWriteTokenFromEnv,
+  blobStoreAccessFromEnv,
+  type BlobStoreAccess,
+} from '@/lib/blob-store-env'
 import { BlobReadError, openBlobReadStream } from '@/lib/blob-server-read'
 
 type ServeBlobFileArgs = {
@@ -13,8 +17,8 @@ export async function serveBlobFileResponse({
   filename,
   mimeType,
   disposition,
-  token = process.env.BLOB_READ_WRITE_TOKEN,
-  access,
+  token = blobReadWriteTokenFromEnv(),
+  access = blobStoreAccessFromEnv(),
 }: ServeBlobFileArgs): Promise<Response> {
   if (!token) {
     return Response.json({ error: 'Blob store not configured' }, { status: 503 })

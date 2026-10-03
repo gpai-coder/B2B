@@ -4,6 +4,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import { getCatalogMediaAuthFailure } from '@/access'
+import { blobReadWriteTokenFromEnv } from '@/lib/blob-store-env'
 import { resolveBlobMediaUrl } from '@/lib/blob-media-url'
 import { serveBlobFileResponse } from '@/lib/serve-blob-file'
 import { createPayloadReq } from '@/lib/payload-req'
@@ -94,7 +95,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     })
   }
 
-  const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+  const blobToken = blobReadWriteTokenFromEnv()
   if (blobToken) {
     return serveBlobFileResponse({
       filename,

@@ -15,13 +15,14 @@ import { ProductVariants } from './collections/ProductVariants'
 import { Quotes } from './collections/Quotes'
 import { Users } from './collections/Users'
 import { getEnv } from './env'
+import { blobPluginStorageOptionsFromEnv } from './lib/blob-store-env'
 import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const env = getEnv()
-const blobEnabled = Boolean(env.BLOB_READ_WRITE_TOKEN)
+const blobStorage = blobPluginStorageOptionsFromEnv(process.env)
 
 export default buildConfig({
   admin: {
@@ -54,15 +55,14 @@ export default buildConfig({
   }),
   plugins: [
     vercelBlobStorage({
-      enabled: blobEnabled,
-      /** Keep media schema stable in migrations whether or not BLOB_READ_WRITE_TOKEN is set. */
+      enabled: blobStorage.enabled,
       alwaysInsertFields: true,
       collections: {
         media: true,
       },
-      token: env.BLOB_READ_WRITE_TOKEN ?? '',
-      // Seed idempotency relies on stable `media.filename` keys — never enable random suffixes.
-      addRandomSuffix: false,
+      token: blobStorage.token,
+      access: blobStorage.access,
+      addRandomSuffix: blobStorage.addRandomSuffix,
     }),
   ],
   sharp,
