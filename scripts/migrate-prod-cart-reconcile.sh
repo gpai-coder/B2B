@@ -27,7 +27,7 @@ cleanup() {
 trap cleanup EXIT
 
 mv src/migrations/20261003_134743.ts src/migrations/20261003_134743.json "$CART_MIGRATION_STASH/"
-git show f4170a8:src/migrations/index.ts > src/migrations/index.ts
+cp scripts/fixtures/migrations-index-f4170a8.ts src/migrations/index.ts
 
 echo "-- migrate:fresh at f4170a8 migration set"
 pnpm payload migrate:fresh --force-accept-warning
