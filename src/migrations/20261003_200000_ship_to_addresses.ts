@@ -58,7 +58,11 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     now(),
     now()
   FROM "companies" c
-  WHERE c."default_ship_to_line1" IS NOT NULL
+  WHERE c."default_ship_to_name" IS NOT NULL
+    AND c."default_ship_to_line1" IS NOT NULL
+    AND c."default_ship_to_city" IS NOT NULL
+    AND c."default_ship_to_state" IS NOT NULL
+    AND c."default_ship_to_postal_code" IS NOT NULL
     AND NOT EXISTS (
       SELECT 1 FROM "ship_to_addresses" s WHERE s."company_id" = c."id"
     );`)

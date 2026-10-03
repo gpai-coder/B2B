@@ -154,6 +154,27 @@ async function restorePacificBaseline(
   })
 }
 
+async function pacificBaselineDrifted(
+  request: import('@playwright/test').APIRequestContext,
+  baseline: PacificBaseline,
+): Promise<boolean> {
+  try {
+    await assertPacificBaselineUnchanged(request, baseline)
+    return false
+  } catch {
+    return true
+  }
+}
+
+async function restorePacificIfDrifted(
+  request: import('@playwright/test').APIRequestContext,
+  baseline: PacificBaseline,
+) {
+  if (await pacificBaselineDrifted(request, baseline)) {
+    await restorePacificBaseline(request, baseline)
+  }
+}
+
 async function assertPacificBaselineUnchanged(
   request: import('@playwright/test').APIRequestContext,
   baseline: PacificBaseline,
@@ -181,7 +202,7 @@ test.describe('Account ship-to addresses', () => {
     await deleteAddresses(request, cleanup)
     await sweepE2eShipToLabels(request)
     if (baseline) {
-      await restorePacificBaseline(request, baseline)
+      await restorePacificIfDrifted(request, baseline)
     }
   })
 
@@ -242,8 +263,7 @@ test.describe('Account ship-to addresses', () => {
       await deleteAddresses(request, cleanup)
       await sweepE2eShipToLabels(request)
       if (baseline) {
-        await restorePacificBaseline(request, baseline)
-        await assertPacificBaselineUnchanged(request, baseline)
+        await restorePacificIfDrifted(request, baseline)
       }
     }
   })

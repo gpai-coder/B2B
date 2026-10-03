@@ -8,9 +8,15 @@ import {
   staffFieldAccess,
   staffOnly,
 } from '../access'
+import {
+  shipToStaffAfterChange,
+  shipToStaffAfterDelete,
+  shipToStaffBeforeChange,
+} from '../lib/vendor/ship-to-staff-hooks'
+import { SHIP_TO_TRUSTED_MUTATION } from '../lib/vendor/ship-to-trusted'
 import type { User } from '../payload-types'
 
-export const SHIP_TO_TRUSTED_MUTATION = 'shipToTrustedMutation'
+export { SHIP_TO_TRUSTED_MUTATION } from '../lib/vendor/ship-to-trusted'
 
 function assertShipToCompanyImmutable({
   data,
@@ -71,7 +77,9 @@ export const ShipToAddresses: CollectionConfig = {
     delete: staffOnly,
   },
   hooks: {
-    beforeChange: [assertShipToCompanyImmutable],
+    beforeChange: [shipToStaffBeforeChange, assertShipToCompanyImmutable],
+    afterChange: [shipToStaffAfterChange],
+    afterDelete: [shipToStaffAfterDelete],
   },
   fields: [
     {

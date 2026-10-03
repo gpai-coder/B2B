@@ -3,9 +3,11 @@ import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { getUserCompanyId } from '@/access'
-import { SHIP_TO_TRUSTED_MUTATION } from '@/collections/ShipToAddresses'
+import { SHIP_TO_TRUSTED_MUTATION } from '@/lib/vendor/ship-to-trusted'
 import { shipToFromCompanyDefault, type ShipToFields } from '@/lib/checkout/ship-to'
 import { createPayloadReq } from '@/lib/payload-req'
+
+export const SHIP_TO_DEFAULT_INDEX_NAME = 'ship_to_addresses_one_default_per_company'
 
 const PENDING_APPROVAL = 'Your account is pending administrator approval.'
 
@@ -61,6 +63,29 @@ async function lockCompanyRow(payload: Payload, companyId: number, req: PayloadR
     drizzle,
     sql: sql`SELECT id FROM companies WHERE id = ${companyId} FOR UPDATE`,
   })
+}
+
+async function withCompanyLockOnReq(
+  payload: Payload,
+  _user: User | null,
+  companyId: number,
+  req: PayloadRequest,
+  fn: (req: PayloadRequest) => Promise<void>,
+): Promise<void> {
+  const ownsTx = req.transactionID == null
+  let ownedTransactionId: string | number | null | undefined
+  if (ownsTx) {
+    ownedTransactionId = await payload.db.beginTransaction()
+    if (ownedTransactionId != null) req.transactionID = ownedTransactionId
+  }
+  try {
+    await lockCompanyRow(payload, companyId, req)
+    await fn(req)
+    if (ownsTx && ownedTransactionId != null) await payload.db.commitTransaction(ownedTransactionId)
+  } catch (err) {
+    if (ownsTx && ownedTransactionId != null) await payload.db.rollbackTransaction(ownedTransactionId)
+    throw err
+  }
 }
 
 async function withCompanyLock<T>(
@@ -179,6 +204,15 @@ function mapDoc(doc: Record<string, unknown>): ShipToAddressRecord {
   }
 }
 
+export function companyIdFromDoc(doc: Record<string, unknown>): number | null {
+  const raw = doc.company
+  if (raw == null) return null
+  if (typeof raw === 'object' && raw !== null && 'id' in raw) {
+    return Number((raw as { id: number }).id)
+  }
+  return Number(raw)
+}
+
 async function clearDefaultFlagsExcept(
   payload: Payload,
   companyId: number,
@@ -205,6 +239,43 @@ async function clearDefaultFlagsExcept(
     })
   }
 }
+
+export async function clearDefaultFlagsExceptSql(
+  payload: Payload,
+  companyId: number,
+  keepId: string | number | null,
+  req: PayloadRequest,
+): Promise<void> {
+  const txId = await resolveTransactionId(req)
+  if (txId == null) {
+    await clearDefaultFlagsExcept(payload, companyId, keepId, req)
+    return
+  }
+  const drizzle = drizzleForTransaction(payload, txId)
+  if (keepId == null) {
+    await payload.db.execute({
+      drizzle,
+      sql: sql`
+        UPDATE "ship_to_addresses"
+        SET "is_default" = false
+        WHERE "company_id" = ${companyId} AND "is_default" = true
+      `,
+    })
+    return
+  }
+  await payload.db.execute({
+    drizzle,
+    sql: sql`
+      UPDATE "ship_to_addresses"
+      SET "is_default" = false
+      WHERE "company_id" = ${companyId} AND "is_default" = true AND "id" <> ${keepId}
+    `,
+  })
+}
+
+export const clearDefaultFlagsExceptForStaff = clearDefaultFlagsExcept
+
+export { withCompanyLockOnReq }
 
 async function findDefaultAddressId(
   payload: Payload,
@@ -245,6 +316,47 @@ async function syncDefaultFromAddressUnderLock(
     mapDoc(doc as unknown as Record<string, unknown>).shipTo,
     req,
   )
+}
+
+export const syncDefaultFromAddressUnderLockForStaff = syncDefaultFromAddressUnderLock
+
+export async function promoteDefaultAfterDelete(
+  payload: Payload,
+  companyId: number,
+  req: PayloadRequest,
+): Promise<void> {
+  let defaultId = await findDefaultAddressId(payload, companyId, req)
+  if (defaultId) {
+    await syncDefaultFromAddressUnderLock(payload, companyId, defaultId, req)
+    return
+  }
+
+  const remaining = await payload.find({
+    collection: 'ship-to-addresses',
+    where: { company: { equals: companyId } },
+    sort: 'createdAt',
+    limit: 1,
+    req,
+    overrideAccess: true,
+  })
+  const next = remaining.docs[0]
+  if (!next) {
+    await syncCompanyDefaultShipTo(payload, companyId, null, req)
+    return
+  }
+
+  await clearDefaultFlagsExcept(payload, companyId, next.id, req)
+  await payload.update({
+    collection: 'ship-to-addresses',
+    id: next.id,
+    data: { isDefault: true },
+    req,
+    overrideAccess: true,
+  })
+  defaultId = await findDefaultAddressId(payload, companyId, req)
+  if (defaultId) {
+    await syncDefaultFromAddressUnderLock(payload, companyId, defaultId, req)
+  }
 }
 
 export async function listVendorShipToAddresses(
@@ -404,38 +516,7 @@ export async function deleteVendorShipToAddress(
 
     if (!wasDefault) return
 
-    let defaultId = await findDefaultAddressId(payload, numericCompany, req)
-    if (defaultId) {
-      await syncDefaultFromAddressUnderLock(payload, numericCompany, defaultId, req)
-      return
-    }
-
-    const remaining = await payload.find({
-      collection: 'ship-to-addresses',
-      where: { company: { equals: numericCompany } },
-      sort: '-createdAt',
-      limit: 1,
-      req,
-      overrideAccess: true,
-    })
-    const next = remaining.docs[0]
-    if (!next) {
-      await syncCompanyDefaultShipTo(payload, numericCompany, null, req)
-      return
-    }
-
-    await clearDefaultFlagsExcept(payload, numericCompany, next.id, req)
-    await payload.update({
-      collection: 'ship-to-addresses',
-      id: next.id,
-      data: { isDefault: true },
-      req,
-      overrideAccess: true,
-    })
-    defaultId = await findDefaultAddressId(payload, numericCompany, req)
-    if (defaultId) {
-      await syncDefaultFromAddressUnderLock(payload, numericCompany, defaultId, req)
-    }
+    await promoteDefaultAfterDelete(payload, numericCompany, req)
   })
 }
 
