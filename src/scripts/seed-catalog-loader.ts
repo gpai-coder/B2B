@@ -26,7 +26,7 @@ export type SeedCatalogLoaderOptions = {
   placeholderImageAlt: string
 }
 
-async function findMediaByStorageName(payload: Payload, storageName: string) {
+export async function findMediaByStorageName(payload: Payload, storageName: string) {
   const exact = await payload.find({
     collection: 'media',
     where: { filename: { equals: storageName } },

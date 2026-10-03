@@ -4,11 +4,9 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
-import {
-  PRODUCT_DOCUMENT_LABELS,
-  PRODUCT_EXTERNAL_RESOURCE_LABELS,
-} from '@/collections/product-document-types'
+import { PRODUCT_EXTERNAL_RESOURCE_LABELS } from '@/collections/product-document-types'
 import { finishSwatchColor } from '@/lib/finish-swatches'
+import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { PriceDTO } from '@/lib/catalog/types'
 import { vendorMediaPath } from '@/lib/product-media'
 
@@ -48,7 +46,10 @@ type Props = {
 export function ProductDetailView({ product, prices, contractListName }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const initialSku = searchParams.get('sku') ?? product.variants[0]?.sku
+  const initialSku =
+    searchParams.get('sku') ??
+    pickDefaultVariantSku(product.variants, prices) ??
+    product.variants[0]?.sku
   const [activeSku, setActiveSku] = useState(initialSku ?? '')
   const [qty, setQty] = useState(1)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -329,16 +330,4 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
   )
 }
 
-function docLabel(docType: string, fallback: string) {
-  if (docType in PRODUCT_DOCUMENT_LABELS) {
-    return PRODUCT_DOCUMENT_LABELS[docType as keyof typeof PRODUCT_DOCUMENT_LABELS]
-  }
-  if (docType in PRODUCT_EXTERNAL_RESOURCE_LABELS) {
-    return PRODUCT_EXTERNAL_RESOURCE_LABELS[docType as keyof typeof PRODUCT_EXTERNAL_RESOURCE_LABELS]
-  }
-  return fallback
-}
 
-export function mapDocumentLabel(docType: string, displayName?: string | null) {
-  return displayName ?? docLabel(docType, docType)
-}

@@ -125,8 +125,18 @@ test.describe('B2B foundations smoke', () => {
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('777')
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('company')
 
-      await page.goto(`/products/${SEED_HERO_SLUG}`)
-      await expect(page.getByTestId('product-primary-image')).toBeVisible()
+      const heroResponse = await page.goto(`/products/${SEED_HERO_SLUG}`)
+      expect(heroResponse?.ok()).toBeTruthy()
+      await expect(page.getByTestId('product-page')).toBeVisible()
+      await expect(page.getByTestId('product-active-sku')).toContainText(SEED_HERO_SKU)
+      await expect(page.getByTestId(`product-price-${SEED_HERO_SKU}`)).toContainText('199')
+      await expect(page.getByTestId(`product-price-${SEED_HERO_SKU}`)).toContainText('189')
+      await expect(page.getByTestId(`product-price-${SEED_HERO_SKU}`)).toContainText('179')
+      const heroImg = page.getByTestId('product-primary-image').locator('img')
+      await expect(heroImg).toBeVisible()
+      await expect
+        .poll(async () => heroImg.evaluate((el: HTMLImageElement) => el.naturalWidth))
+        .toBeGreaterThan(0)
       const specDownload = page.waitForEvent('download')
       await page.getByTestId(`product-doc-${SEED_HERO_SKU}-spec`).click()
       const specFile = await specDownload

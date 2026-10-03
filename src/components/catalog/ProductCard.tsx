@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react'
 import { finishSwatchColor } from '@/lib/finish-swatches'
 import { vendorMediaPath } from '@/lib/product-media'
 
+import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { CatalogProductDTO, PriceDTO } from '@/lib/catalog/types'
 
 type Props = {
@@ -14,8 +15,10 @@ type Props = {
 }
 
 export function ProductCard({ product, prices }: Props) {
+  const defaultSku =
+    pickDefaultVariantSku(product.variants, prices) ?? product.variants[0]?.sku ?? ''
   const defaultVariant =
-    product.variants.find((v) => v.inStock && !v.discontinued) ?? product.variants[0]!
+    product.variants.find((v) => v.sku === defaultSku) ?? product.variants[0]!
   const [activeSku, setActiveSku] = useState(defaultVariant.sku)
 
   const activeVariant = product.variants.find((v) => v.sku === activeSku) ?? defaultVariant

@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { createPayloadReq } from '@/lib/payload-req'
 import { runSeed, SEED_MEDIA_FILENAME } from '@/scripts/seed'
+import { findMediaByStorageName } from '@/scripts/seed-catalog-loader'
 
 describe('catalog media collection access', () => {
   let pacificUserId: number
@@ -15,13 +16,11 @@ describe('catalog media collection access', () => {
     const payload = await getPayload({ config: payloadConfig })
     await runSeed(payload)
 
-    const media = await payload.find({
-      collection: 'media',
-      where: { filename: { equals: SEED_MEDIA_FILENAME } },
-      limit: 1,
-      overrideAccess: true,
-    })
-    mediaId = media.docs[0]!.id
+    const media = await findMediaByStorageName(payload, SEED_MEDIA_FILENAME)
+    if (!media) {
+      throw new Error(`Seed media not found for ${SEED_MEDIA_FILENAME}`)
+    }
+    mediaId = media.id
 
     const pacificUser = await payload.find({
       collection: 'users',

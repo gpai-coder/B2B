@@ -253,9 +253,14 @@
 
 .as-pdp__hero {
   display: grid;
-  grid-template-columns: 1fr 549px;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, min(549px, 42%));
+  gap: 24px;
   margin-bottom: 32px;
+}
+
+.as-pdp__gallery,
+.as-pdp__buybox {
+  min-width: 0;
 }
 
 .as-pdp__gallery {
