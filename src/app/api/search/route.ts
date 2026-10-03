@@ -2,8 +2,7 @@ import { getPayload } from 'payload'
 
 import { getCommerce } from '@/commerce'
 import config from '@/payload.config'
-import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
-import type { PriceDTO } from '@/lib/catalog/types'
+import { resolveCatalogDefaultPricingForProducts } from '@/lib/catalog/catalog-default-pricing'
 import { getSearchProvider } from '@/lib/search'
 import { applyPostPricingSearch } from '@/lib/search/search-pagination'
 import { parseSearchRequestParams } from '@/lib/search/validate'
@@ -55,44 +54,13 @@ export async function GET(request: Request) {
     ctx,
   )
 
-  const productIds = result.hits.map((h) => h.productId)
-  const variantsResult = await payload.find({
-    collection: 'product-variants',
-    where: { product: { in: productIds.length ? productIds : [-1] } },
-    limit: 500,
-    depth: 0,
-    overrideAccess: false,
-    req: createPayloadReq(payload, user),
+  const productIds = [...new Set(result.hits.map((h) => h.productId))]
+  const { defaultSkuByProduct, priceBySku, prices } = await resolveCatalogDefaultPricingForProducts({
+    payload,
+    user,
+    companyId,
+    productIds,
   })
-
-  const variantsByProduct = new Map<number, typeof variantsResult.docs>()
-  for (const variant of variantsResult.docs) {
-    const productId = typeof variant.product === 'object' ? variant.product.id : variant.product
-    const list = variantsByProduct.get(productId) ?? []
-    list.push(variant)
-    variantsByProduct.set(productId, list)
-  }
-
-  const defaultSkuByProduct = new Map<number, string>()
-  for (const [productId, variants] of variantsByProduct) {
-    const sku = pickDefaultVariantSku(
-      variants.map((v) => ({
-        sku: v.sku,
-        inStock: v.inStock === true,
-        discontinued: v.discontinued === true,
-      })),
-      {},
-    )
-    if (sku) defaultSkuByProduct.set(productId, sku)
-  }
-
-  const skus = [...new Set(defaultSkuByProduct.values())]
-  const commerce = await getCommerce({ user })
-  const priceRows = skus.length ? await commerce.getPrices(companyId, skus) : []
-  const priceBySku = new Map<string, PriceDTO>()
-  for (const row of priceRows) {
-    priceBySku.set(row.sku, row as PriceDTO)
-  }
 
   const priced = applyPostPricingSearch(result.hits, {
     sort: parsed.sort,
@@ -103,12 +71,6 @@ export async function GET(request: Request) {
     priceBySku,
     defaultSkuByProduct,
   })
-
-  const prices: Record<string, PriceDTO> = {}
-  for (const sku of skus) {
-    const row = priceBySku.get(sku)
-    if (row) prices[sku] = row
-  }
 
   return Response.json(
     {

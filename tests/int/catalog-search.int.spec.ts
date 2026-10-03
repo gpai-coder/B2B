@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
+import { resolveCatalogDefaultPricingForProducts } from '@/lib/catalog/catalog-default-pricing'
 import { SEED_HERO_SKU } from '@/scripts/seed'
 import { getSearchProvider } from '@/lib/search'
 
@@ -97,6 +98,49 @@ describe('catalog search (postgres)', () => {
     const pacific = await search.search({ q: '7353101', pageSize: 5 }, { companyId: '1' })
     const bay = await search.search({ q: '7353101', pageSize: 5 }, { companyId: '2' })
     expect(pacific.hits.map((h) => h.productId).sort()).toEqual(bay.hits.map((h) => h.productId).sort())
+  })
+
+  it('category facet counts match distinct products (not summed per finish)', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
+    const search = getSearchProvider(payload)
+    const result = await search.search({ q: '7353101', pageSize: 50 }, { companyId: '1' })
+    expect(result.hits.length).toBeGreaterThan(0)
+
+    const categoryTotal = result.facets.categories.reduce((sum, row) => sum + row.count, 0)
+    expect(categoryTotal).toBe(result.hits.length)
+    expect(result.facets.categories.find((c) => c.value === 'bathroom-faucet')?.count).toBe(
+      result.hits.length,
+    )
+  })
+
+  it('uses PLP default SKU and Pacific contract price for Townsend search pricing', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+
+    const search = getSearchProvider(payload)
+    const result = await search.search({ q: '7353101', pageSize: 10 }, { companyId: '1' })
+    const hit = result.hits.find((h) => h.modelNumber === '7353101')
+    expect(hit).toBeDefined()
+
+    const users = await payload.find({
+      collection: 'users',
+      where: { email: { equals: process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local' } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    const vendor = users.docs[0]
+    expect(vendor).toBeDefined()
+
+    const { defaultSkuByProduct, priceBySku } = await resolveCatalogDefaultPricingForProducts({
+      payload,
+      user: vendor!,
+      companyId: '1',
+      productIds: [hit!.productId],
+    })
+
+    expect(defaultSkuByProduct.get(hit!.productId)).toBe(SEED_HERO_SKU)
+    expect(priceBySku.get(SEED_HERO_SKU)?.unitPrice.amount).toBe(199)
   })
 
   it('loads hidden Delancey product by slug for PDP (not in search)', async () => {

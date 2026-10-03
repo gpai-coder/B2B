@@ -60,6 +60,8 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   const variant = product.variants.find((v) => v.sku === activeSku) ?? product.variants[0]!
+  const allDiscontinued =
+    product.variants.length > 0 && product.variants.every((v) => v.discontinued)
   const price = variant.discontinued ? undefined : prices[variant.sku]
   const images = variant.imageMediaIds.length ? variant.imageMediaIds : []
 
@@ -191,7 +193,8 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
               ) : null}
             </div>
           ) : null}
-          <div className="as-pdp__cta-row">
+          {!allDiscontinued ? (
+          <div className="as-pdp__cta-row" data-testid="product-order-cta">
             <input
               type="number"
               min={1}
@@ -199,21 +202,15 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
               onChange={(e) => setQty(Number(e.target.value) || 1)}
               className="as-qty"
               aria-label="Quantity"
-              disabled={variant.discontinued}
             />
-            <button type="button" className="as-btn-primary" disabled={variant.discontinued}>
+            <button type="button" className="as-btn-primary">
               Add to order
             </button>
-            <Link
-              href="/quotes/Q-2026-0001/order"
-              className={`as-btn-secondary${variant.discontinued ? ' as-btn-secondary--disabled' : ''}`}
-              aria-disabled={variant.discontinued}
-              tabIndex={variant.discontinued ? -1 : undefined}
-              onClick={variant.discontinued ? (e) => e.preventDefault() : undefined}
-            >
+            <Link href="/quotes/Q-2026-0001/order" className="as-btn-secondary">
               Add to quote
             </Link>
           </div>
+          ) : null}
         </div>
       </div>
 

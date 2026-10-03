@@ -26,33 +26,26 @@ function mapRow(row: Row): SearchHit {
 }
 
 function parseFacetRows(
-  rows: Array<{ category: string | null; finish: string | null; cnt: number }>,
+  categoryRows: Array<{ category: string | null; cnt: number }>,
+  finishRows: Array<{ finish: string | null; cnt: number }>,
 ): SearchFacets {
-  const categories = new Map<string, number>()
-  const finishes = new Map<string, number>()
-  for (const row of rows) {
-    if (row.category) {
-      categories.set(row.category, (categories.get(row.category) ?? 0) + row.cnt)
-    }
-    if (row.finish) {
-      finishes.set(row.finish, (finishes.get(row.finish) ?? 0) + row.cnt)
-    }
-  }
   const categoryLabels: Record<string, string> = {
     'bathroom-faucet': 'Bathroom faucet',
     'kitchen-faucet': 'Kitchen faucet',
     toilet: 'Toilet',
   }
   return {
-    categories: [...categories.entries()]
-      .map(([value, count]) => ({
-        value,
-        label: categoryLabels[value] ?? value,
-        count,
+    categories: categoryRows
+      .filter((row) => row.category)
+      .map((row) => ({
+        value: row.category!,
+        label: categoryLabels[row.category!] ?? row.category!,
+        count: row.cnt,
       }))
       .sort((a, b) => a.label.localeCompare(b.label)),
-    finishes: [...finishes.entries()]
-      .map(([value, count]) => ({ value, count }))
+    finishes: finishRows
+      .filter((row) => row.finish)
+      .map((row) => ({ value: row.finish!, count: row.cnt }))
       .sort((a, b) => a.value.localeCompare(b.value)),
   }
 }
@@ -107,13 +100,11 @@ export class PostgresSearchProvider implements SearchProvider {
       }
     }
 
-    const [rows, countRows, facetRows] = await Promise.all([
+    const [rows, countRows, categoryFacetRows, finishFacetRows] = await Promise.all([
       executeRows<Row>(this.payload, built.listSql),
       executeRows<{ total: number }>(this.payload, built.countSql),
-      executeRows<{ category: string | null; finish: string | null; cnt: number }>(
-        this.payload,
-        built.facetSql,
-      ),
+      executeRows<{ category: string | null; cnt: number }>(this.payload, built.categoryFacetSql),
+      executeRows<{ finish: string | null; cnt: number }>(this.payload, built.finishFacetSql),
     ])
 
     let hits = rows.map(mapRow)
@@ -126,7 +117,7 @@ export class PostgresSearchProvider implements SearchProvider {
       total: countRows[0]?.total ?? hits.length,
       page,
       pageSize,
-      facets: parseFacetRows(facetRows),
+      facets: parseFacetRows(categoryFacetRows, finishFacetRows),
     }
   }
 }

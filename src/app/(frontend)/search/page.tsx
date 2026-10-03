@@ -4,11 +4,9 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
-import { getCommerce } from '@/commerce'
 import { SearchPageClient } from '@/components/catalog/SearchPageClient'
+import { resolveCatalogDefaultPricingForProducts } from '@/lib/catalog/catalog-default-pricing'
 import { mapProductToDTO } from '@/lib/catalog/map-payload'
-import type { PriceDTO } from '@/lib/catalog/types'
-import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import { getSearchProvider } from '@/lib/search'
 import { isEmptySearchQuery, sanitizeSearchQuery } from '@/lib/search/postgres-query'
 import { applyPostPricingSearch } from '@/lib/search/search-pagination'
@@ -94,45 +92,13 @@ export default async function SearchPage({ searchParams }: PageProps) {
     )
   }
 
-  const variantsResult = await payload.find({
-    collection: 'product-variants',
-    where: { product: { in: productIds } },
-    limit: 500,
-    depth: 1,
-    overrideAccess: false,
-    req: createPayloadReq(payload, user),
-  })
-
-  const variantsByProduct = new Map<number, typeof variantsResult.docs>()
-  for (const variant of variantsResult.docs) {
-    const productId = typeof variant.product === 'object' ? variant.product.id : variant.product
-    const list = variantsByProduct.get(productId) ?? []
-    list.push(variant)
-    variantsByProduct.set(productId, list)
-  }
-
-  const defaultSkuByProduct = new Map<number, string>()
-  for (const [productId, variants] of variantsByProduct) {
-    const sku = pickDefaultVariantSku(
-      variants.map((v) => ({
-        sku: v.sku,
-        inStock: v.inStock === true,
-        discontinued: v.discontinued === true,
-      })),
-      {},
-    )
-    if (sku) defaultSkuByProduct.set(productId, sku)
-  }
-
-  const skus = [...new Set(defaultSkuByProduct.values())]
-  const commerce = await getCommerce({ user })
-  const priceRows = skus.length ? await commerce.getPrices(companyId, skus) : []
-  const priceBySku = new Map<string, PriceDTO>()
-  const prices: Record<string, PriceDTO> = {}
-  for (const row of priceRows) {
-    priceBySku.set(row.sku, row as PriceDTO)
-    prices[row.sku] = row as PriceDTO
-  }
+  const { variantsByProduct, defaultSkuByProduct, priceBySku, prices } =
+    await resolveCatalogDefaultPricingForProducts({
+      payload,
+      user,
+      companyId,
+      productIds,
+    })
 
   const priced = applyPostPricingSearch(pageResult.hits, {
     sort: params.sort,

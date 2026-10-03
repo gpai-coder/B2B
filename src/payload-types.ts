@@ -227,7 +227,7 @@ export interface Product {
   /**
    * Hide from vendor PLP and catalog search.
    */
-  catalogHidden?: boolean | null;
+  catalogHidden: boolean;
   breadcrumbs?:
     | {
         label: string;

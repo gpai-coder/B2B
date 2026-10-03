@@ -2,6 +2,7 @@ import type { Product, ProductVariant } from '@/payload-types'
 
 import { resolveMediaId } from '@/lib/product-media'
 
+import { sortVariantsById } from './catalog-default-pricing'
 import type { CatalogProductDTO, CatalogVariantDTO } from './types'
 
 export function mapVariantToDTO(variant: ProductVariant): CatalogVariantDTO {
@@ -29,7 +30,7 @@ export function mapProductToDTO(product: Product, variants: ProductVariant[]): C
     productCollection: product.productCollection,
     catalogCategory: product.catalogCategory,
     primaryImageId: resolveMediaId(product.primaryImage),
-    variants: variants.map(mapVariantToDTO),
+    variants: sortVariantsById(variants).map(mapVariantToDTO),
     facetMeta: product.facetMeta ?? null,
   }
 }
