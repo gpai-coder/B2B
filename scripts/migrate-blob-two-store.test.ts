@@ -83,22 +83,53 @@ describe('migrate-blob-two-store.mts', () => {
       }
 
       const payloadConfig = await config
-      const payload = await getPayload({ config: payloadConfig })
+      let fakeMediaId: number | undefined
       const checkpointPath = path.join(
         os.tmpdir(),
         `blob-migrate-test-${Date.now()}-${Math.random().toString(36).slice(2)}.json`,
       )
 
       try {
-        const existing = await payload.find({
-          collection: 'media',
-          limit: 500,
-          sort: 'id',
-          overrideAccess: true,
+        const seedProc = await new Promise<{ id: number }>((resolve, reject) => {
+          const chunks: string[] = []
+          const child = spawn(
+            process.execPath,
+            ['--import', 'tsx/esm', path.join(repoRoot, 'scripts/seed-blob-migrate-test-media.mts')],
+            {
+              cwd: repoRoot,
+              env: {
+                ...process.env,
+                PAYLOAD_DISABLE_PUSH: 'true',
+                PAYLOAD_SECRET: process.env.PAYLOAD_SECRET ?? 'test-secret-min-16-chars',
+              },
+              stdio: ['ignore', 'pipe', 'pipe'],
+            },
+          )
+          child.stdout.on('data', (c) => chunks.push(String(c)))
+          child.stderr.on('data', (c) => chunks.push(String(c)))
+          child.on('close', (code) => {
+            if (code !== 0) {
+              reject(new Error(chunks.join('')))
+              return
+            }
+            const line = chunks.join('').trim().split('\n').pop()
+            resolve(JSON.parse(line ?? '{}') as { id: number })
+          })
         })
-        expect(existing.docs.length).toBeGreaterThan(0)
-        const target = existing.docs[existing.docs.length - 1]!
-        const completedIds = existing.docs.filter((d) => d.id !== target.id).map((d) => d.id)
+        fakeMediaId = seedProc.id
+
+        const setupPayload = await getPayload({ config: payloadConfig })
+        let completedIds: number[]
+        try {
+          const existing = await setupPayload.find({
+            collection: 'media',
+            limit: 500,
+            overrideAccess: true,
+          })
+          completedIds = existing.docs.filter((d) => d.id !== fakeMediaId).map((d) => d.id)
+        } finally {
+          await setupPayload.destroy()
+        }
 
         await fs.writeFile(
           checkpointPath,
@@ -126,9 +157,23 @@ describe('migrate-blob-two-store.mts', () => {
           failures: Array<{ id: number }>
         }
         expect(checkpoint.failures).toHaveLength(1)
-        expect(checkpoint.failures[0]?.id).toBe(target.id)
+        expect(checkpoint.failures[0]?.id).toBe(fakeMediaId)
       } finally {
-        await payload.destroy()
+        if (fakeMediaId) {
+          await new Promise<void>((resolve, reject) => {
+            const child = spawn(
+              process.execPath,
+              [
+                '--import',
+                'tsx/esm',
+                '-e',
+                `import { getPayload } from 'payload'; import config from './src/payload.config.ts'; const p = await getPayload({ config }); await p.delete({ collection: 'media', id: ${fakeMediaId}, overrideAccess: true }); await p.destroy(); process.exit(0);`,
+              ],
+              { cwd: repoRoot, env: process.env, stdio: 'ignore' },
+            )
+            child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`cleanup exit ${code}`))))
+          })
+        }
         await fs.unlink(checkpointPath).catch(() => {})
       }
     },
