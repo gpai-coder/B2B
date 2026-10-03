@@ -7,6 +7,7 @@ import * as migration_20261003_120000_catalog_search from './20261003_120000_cat
 import * as migration_20261003_120001_fix_search_trigger from './20261003_120001_fix_search_trigger';
 import * as migration_20261003_120002_variant_product_id_search_trigger from './20261003_120002_variant_product_id_search_trigger';
 import * as migration_20261003_134743 from './20261003_134743';
+import * as migration_20261003_145046 from './20261003_145046';
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20261003_134743.up,
     down: migration_20261003_134743.down,
     name: '20261003_134743',
+  },
+  {
+    up: migration_20261003_145046.up,
+    down: migration_20261003_145046.down,
+    name: '20261003_145046'
   },
 ];

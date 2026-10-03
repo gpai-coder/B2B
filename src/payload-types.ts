@@ -76,6 +76,7 @@ export interface Config {
     quotes: Quote;
     orders: Order;
     carts: Cart;
+    'cart-bulk-adds': CartBulkAdd;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -92,6 +93,7 @@ export interface Config {
     quotes: QuotesSelect<false> | QuotesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
+    'cart-bulk-adds': CartBulkAddsSelect<false> | CartBulkAddsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -492,6 +494,27 @@ export interface Cart {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cart-bulk-adds".
+ */
+export interface CartBulkAdd {
+  id: number;
+  user: number | User;
+  company: number | Company;
+  idempotencyKey: string;
+  addedSkus:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -549,6 +572,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'carts';
         value: number | Cart;
+      } | null)
+    | ({
+        relationTo: 'cart-bulk-adds';
+        value: number | CartBulkAdd;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -862,6 +889,18 @@ export interface CartsSelect<T extends boolean = true> {
         quantity?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cart-bulk-adds_select".
+ */
+export interface CartBulkAddsSelect<T extends boolean = true> {
+  user?: T;
+  company?: T;
+  idempotencyKey?: T;
+  addedSkus?: T;
   updatedAt?: T;
   createdAt?: T;
 }

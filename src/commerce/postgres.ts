@@ -21,6 +21,7 @@ import {
   loadVariantForOrdering,
   unavailableReason,
 } from './cart-helpers'
+import { applyQuickOrderLines, previewQuickOrderLines } from './quick-order'
 
 export { CartValidationError } from './cart-helpers'
 
@@ -325,6 +326,41 @@ export function createPostgresCommerceService(
 
     async removeCartLine(companyId, sku) {
       return this.setCartLine(companyId, sku, 0)
+    },
+
+    async previewQuickOrder(companyId, lines) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      if (!actingUser) throw new Error('Authentication required')
+      return previewQuickOrderLines(
+        {
+          payload,
+          actingUser,
+          companyId,
+          readOpts,
+          resolveUnitPrice,
+          setCartLine: (cid, sku, qty) => this.setCartLine(cid, sku, qty),
+          getCart: (cid) => this.getCart(cid),
+        },
+        lines,
+      )
+    },
+
+    async applyQuickOrder(companyId, lines, idempotencyKey) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      if (!actingUser) throw new Error('Authentication required')
+      return applyQuickOrderLines(
+        {
+          payload,
+          actingUser,
+          companyId,
+          readOpts,
+          resolveUnitPrice,
+          setCartLine: (cid, sku, qty) => this.setCartLine(cid, sku, qty),
+          getCart: (cid) => this.getCart(cid),
+        },
+        lines,
+        idempotencyKey,
+      )
     },
 
     async listQuotes(companyId) {
