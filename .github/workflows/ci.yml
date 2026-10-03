@@ -85,7 +85,7 @@ jobs:
         env:
           PAYLOAD_DISABLE_PUSH: 'true'
           B2B_BASE_URL: http://localhost:3000
-        run: pnpm test:e2e tests/e2e/smoke.spec.ts 2>&1 | tee e2e-test-output.txt
+        run: pnpm test:e2e 2>&1 | tee e2e-test-output.txt
 
       - name: Upload test output
         if: always()

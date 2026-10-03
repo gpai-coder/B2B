@@ -22,6 +22,7 @@
     "test": "pnpm run test:unit",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
     "test:unit": "vitest run --environment node",
+    "test:commerce": "vitest run --environment node src/commerce/postgres.test.ts",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts"
   },
   "dependencies": {

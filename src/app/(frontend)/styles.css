@@ -111,3 +111,44 @@ a {
   color: var(--muted);
   font-size: 0.95rem;
 }
+
+.login-form,
+.price-table {
+  width: 100%;
+  max-width: 480px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.login-form input {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.error {
+  color: #b00020;
+}
+
+.success {
+  color: #0d6832;
+  font-weight: 600;
+}
+
+.price-table {
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: var(--surface);
+}
+
+.price-table th,
+.price-table td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}

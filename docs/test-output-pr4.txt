@@ -1,0 +1,33 @@
+# PR4 verification output (local / CI-equivalent)
+
+## pnpm typecheck
+(exit 0)
+
+## pnpm lint
+(exit 0, warnings only in template e2e stubs)
+
+## pnpm db:migrate:check
+Migration up/down check passed.
+- migrate:fresh --force-accept-warning
+- migrate:down
+- migrate
+
+## pnpm db:migrate && pnpm db:seed && pnpm test:unit
+
+ Test Files  4 passed (4)
+      Tests  10 passed (10)
+
+Includes:
+- src/env.test.ts
+- src/commerce/postgres.test.ts (company price + order submit)
+- tests/access/access-control.test.ts (cross-company isolation, unapproved login, idempotency)
+- tests/int/api.int.spec.ts
+
+## pnpm test:e2e tests/e2e/smoke.spec.ts
+
+  1 passed (B2B foundations smoke)
+  - Admin UI: product create + media PDF upload
+  - Vendor: PDP company price + quote order submit
+
+## B2B_BASE_URL
+Set `B2B_BASE_URL` (or `PLAYWRIGHT_BASE_URL`) to target a remote deployment; local webServer is skipped for non-localhost URLs.

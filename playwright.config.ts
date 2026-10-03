@@ -1,30 +1,24 @@
+import { config as loadEnv } from 'dotenv'
+
+loadEnv({ path: '.env.local' })
+loadEnv()
+
 import { defineConfig, devices } from '@playwright/test'
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import 'dotenv/config'
+const baseURL =
+  process.env.B2B_BASE_URL ?? process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000'
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const useLocalServer = baseURL.includes('localhost') || baseURL.includes('127.0.0.1')
+
 export default defineConfig({
   testDir: './tests/e2e',
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  timeout: 120_000,
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  reporter: process.env.CI ? 'line' : 'html',
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    baseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -33,9 +27,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], channel: 'chromium' },
     },
   ],
-  webServer: {
-    command: 'pnpm dev',
-    reuseExistingServer: true,
-    url: 'http://localhost:3000',
-  },
+  webServer: useLocalServer
+    ? {
+        command: 'pnpm db:migrate && pnpm db:seed && pnpm dev',
+        reuseExistingServer: !process.env.CI,
+        url: baseURL,
+        timeout: 180_000,
+      }
+    : undefined,
 })

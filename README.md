@@ -108,6 +108,13 @@ Schema changes apply via Payload’s Postgres adapter (`push` in development). R
 
 Uploads use **local disk** (`/media`) when `BLOB_READ_WRITE_TOKEN` is unset; enable `@payloadcms/storage-vercel-blob` in production.
 
+## Commerce module
+
+All pricing, quote, and order reads/writes go through **`src/commerce/`** (`getPrices`, `createDraftOrder`, `submitOrder`, `getOrder`, `listQuotes`, `getQuote`). V1 uses Postgres via Payload; swap the implementation later for MuleSoft/SAP without changing callers.
+
+- Health check: `GET /api/health` (DB connectivity + app version)
+- Vendor UI: `/login`, `/catalog`, quote conversion at `/quotes/[quoteNumber]/order`
+
 ## PR plan (foundations)
 
 1. **App skeleton** (this baseline) — Next.js + Payload, lint/format, env schema, README
