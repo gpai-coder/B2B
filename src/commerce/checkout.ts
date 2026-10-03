@@ -47,27 +47,34 @@ type CheckoutDeps = {
   mapOrder: (doc: Record<string, unknown>) => CommerceOrder
 }
 
+export function isOrderNumberCollision(err: unknown): boolean {
+  if (!isUniqueViolation(err)) return false
+  const record = err as Record<string, unknown>
+  const data = record.data
+  if (data && typeof data === 'object') {
+    const errors = (data as { errors?: Array<{ path?: string }> }).errors
+    if (errors?.some((e) => e.path === 'orderNumber')) return true
+  }
+  const cause = record.cause
+  if (cause && typeof cause === 'object') {
+    const constraint = (cause as Record<string, unknown>).constraint
+    if (constraint === 'orders_order_number_idx') return true
+  }
+  return false
+}
+
 async function allocateOrderNumber(payload: Payload, req: PayloadRequest): Promise<string> {
   const year = new Date().getFullYear()
-  let uniqueRetries = 0
   for (let attempt = 0; attempt < 12; attempt++) {
     const candidate = `ORD-${year}-${String(Math.floor(Math.random() * 900000) + 100000)}`
-    try {
-      const existing = await payload.find({
-        collection: 'orders',
-        where: { orderNumber: { equals: candidate } },
-        limit: 1,
-        overrideAccess: true,
-        req,
-      })
-      if (!existing.docs[0]) return candidate
-    } catch (err) {
-      if (isUniqueViolation(err) && uniqueRetries < 3) {
-        uniqueRetries++
-        continue
-      }
-      throw err
-    }
+    const existing = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: candidate } },
+      limit: 1,
+      overrideAccess: true,
+      req,
+    })
+    if (!existing.docs[0]) return candidate
   }
   throw new Error('Could not allocate order number.')
 }
@@ -149,22 +156,14 @@ async function createSubmittedOrderDoc(
   req: PayloadRequest,
   data: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      const orderNumber = await allocateOrderNumber(deps.payload, req)
-      const created = await deps.payload.create({
-        collection: 'orders',
-        data: { ...data, orderNumber } as never,
-        req,
-        overrideAccess: true,
-      })
-      return created as unknown as Record<string, unknown>
-    } catch (err) {
-      if (isUniqueViolation(err) && attempt < 2) continue
-      throw err
-    }
-  }
-  throw new Error('Could not allocate order number.')
+  const orderNumber = await allocateOrderNumber(deps.payload, req)
+  const created = await deps.payload.create({
+    collection: 'orders',
+    data: { ...data, orderNumber } as never,
+    req,
+    overrideAccess: true,
+  })
+  return created as unknown as Record<string, unknown>
 }
 
 export async function submitCartCheckout(
@@ -185,64 +184,68 @@ export async function submitCartCheckout(
   if (replay) return replay
 
   let createdOrder: CommerceOrder | undefined
-  try {
-    await deps.runCartMutation(async ({ req, cartId, lines }) => {
-      const replayInLock = await findOrderByCompanyIdempotency(deps, key, req)
-      if (replayInLock) {
-        createdOrder = replayInLock
-        return lines
-      }
+  for (let attempt = 0; attempt < 3; attempt++) {
+    createdOrder = undefined
+    try {
+      await deps.runCartMutation(async ({ req, cartId, lines }) => {
+        const replayInLock = await findOrderByCompanyIdempotency(deps, key, req)
+        if (replayInLock) {
+          createdOrder = replayInLock
+          return lines
+        }
 
-      if (lines.length === 0) {
-        throw new CartValidationError('Cart is empty.')
-      }
+        if (lines.length === 0) {
+          throw new CartValidationError('Cart is empty.')
+        }
 
-      const enriched: Array<{
-        sku: string
-        variant: number
-        quantity: number
-        unitPrice: number
-      }> = []
+        const enriched: Array<{
+          sku: string
+          variant: number
+          quantity: number
+          unitPrice: number
+        }> = []
 
-      for (const line of lines) {
-        await loadVariantForOrdering(deps.payload, line.sku, deps.txReadOpts(req))
-        const meta = await loadVariantCartMeta(deps.payload, line.sku, deps.txReadOpts(req))
-        const blocked = unavailableReason(meta)
-        if (blocked) throw new CartValidationError(blocked)
-        assertValidCartQuantity(line.quantity, meta)
-        const price = await deps.resolveUnitPrice(
-          deps.companyId,
-          meta.variantId,
-          line.sku,
-          line.quantity,
-          req,
-        )
-        if (!price) throw new CartValidationError(`No price available for ${line.sku}.`)
-        enriched.push({
-          sku: line.sku,
-          variant: meta.variantId,
-          quantity: line.quantity,
-          unitPrice: price.unitPrice.amount,
+        for (const line of lines) {
+          await loadVariantForOrdering(deps.payload, line.sku, deps.txReadOpts(req))
+          const meta = await loadVariantCartMeta(deps.payload, line.sku, deps.txReadOpts(req))
+          const blocked = unavailableReason(meta)
+          if (blocked) throw new CartValidationError(blocked)
+          assertValidCartQuantity(line.quantity, meta)
+          const price = await deps.resolveUnitPrice(
+            deps.companyId,
+            meta.variantId,
+            line.sku,
+            line.quantity,
+            req,
+          )
+          if (!price) throw new CartValidationError(`No price available for ${line.sku}.`)
+          enriched.push({
+            sku: line.sku,
+            variant: meta.variantId,
+            quantity: line.quantity,
+            unitPrice: price.unitPrice.amount,
+          })
+        }
+
+        const created = await createSubmittedOrderDoc(deps, req, {
+          company: Number(deps.companyId),
+          status: 'submitted',
+          poNumber: po.poNumber,
+          idempotencyKey: key,
+          orderNotes: input.orderNotes?.trim() || undefined,
+          shipTo: input.shipTo,
+          lines: enriched,
         })
-      }
 
-      const created = await createSubmittedOrderDoc(deps, req, {
-        company: Number(deps.companyId),
-        status: 'submitted',
-        poNumber: po.poNumber,
-        idempotencyKey: key,
-        orderNotes: input.orderNotes?.trim() || undefined,
-        shipTo: input.shipTo,
-        lines: enriched,
+        await deps.persistCartLines(cartId, [], req)
+        createdOrder = deps.mapOrder(created)
+        return []
       })
-
-      await deps.persistCartLines(cartId, [], req)
-      createdOrder = deps.mapOrder(created)
-      return []
-    })
-  } catch (err) {
-    if (createdOrder) return createdOrder
-    return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
+      break
+    } catch (err) {
+      if (isOrderNumberCollision(err) && attempt < 2) continue
+      return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
+    }
   }
 
   if (!createdOrder) {
@@ -288,75 +291,80 @@ export async function convertQuoteToOrder(
   const replay = await findOrderByCompanyIdempotency(deps, key)
   if (replay) return replay
 
-  const req = deps.createReq()
-  let transactionID: string | number | null | undefined
-  try {
-    transactionID = await deps.payload.db.beginTransaction()
-  } catch (err) {
-    rethrowCartMutationError(err)
-  }
-  if (transactionID != null) req.transactionID = transactionID
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const req = deps.createReq()
+    let transactionID: string | number | null | undefined
+    try {
+      transactionID = await deps.payload.db.beginTransaction()
+    } catch (err) {
+      rethrowCartMutationError(err)
+    }
+    if (transactionID != null) req.transactionID = transactionID
 
-  try {
-    await lockQuoteRow(deps.payload, Number(input.quoteId), req)
+    try {
+      await lockQuoteRow(deps.payload, Number(input.quoteId), req)
 
-    const freshQuote = await deps.payload.findByID({
-      collection: 'quotes',
-      id: input.quoteId,
-      req,
-      overrideAccess: true,
-    })
+      const freshQuote = await deps.payload.findByID({
+        collection: 'quotes',
+        id: input.quoteId,
+        req,
+        overrideAccess: true,
+      })
 
-    if (freshQuote.convertedOrder) {
-      const existingId =
-        typeof freshQuote.convertedOrder === 'object'
-          ? String((freshQuote.convertedOrder as { id: number }).id)
-          : String(freshQuote.convertedOrder)
-      const order = await deps.payload.findByID({
-        collection: 'orders',
-        id: existingId,
+      if (freshQuote.convertedOrder) {
+        const existingId =
+          typeof freshQuote.convertedOrder === 'object'
+            ? String((freshQuote.convertedOrder as { id: number }).id)
+            : String(freshQuote.convertedOrder)
+        const order = await deps.payload.findByID({
+          collection: 'orders',
+          id: existingId,
+          req,
+          overrideAccess: true,
+        })
+        if (transactionID != null) {
+          await deps.payload.db.commitTransaction(transactionID)
+        }
+        return deps.mapOrder(order as unknown as Record<string, unknown>)
+      }
+
+      assertQuoteEligible(freshQuote, deps.companyId)
+
+      const lines = (freshQuote.lines ?? []).map((line) => ({
+        sku: line.sku,
+        variant: typeof line.variant === 'object' ? line.variant?.id : line.variant,
+        quantity: line.quantity,
+        unitPrice: line.unitPrice,
+      }))
+      const created = await createSubmittedOrderDoc(deps, req, {
+        company: Number(deps.companyId),
+        status: 'submitted',
+        poNumber: po.poNumber,
+        idempotencyKey: key,
+        orderNotes: input.orderNotes?.trim() || undefined,
+        quote: Number(input.quoteId),
+        shipTo: input.shipTo,
+        lines,
+      })
+      await deps.payload.update({
+        collection: 'quotes',
+        id: input.quoteId,
+        data: { convertedOrder: Number(created.id) },
         req,
         overrideAccess: true,
       })
       if (transactionID != null) {
         await deps.payload.db.commitTransaction(transactionID)
       }
-      return deps.mapOrder(order as unknown as Record<string, unknown>)
+      return deps.mapOrder(created)
+    } catch (err) {
+      if (transactionID != null) {
+        await deps.payload.db.rollbackTransaction(transactionID)
+      }
+      if (isOrderNumberCollision(err) && attempt < 2) continue
+      return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
     }
-
-    assertQuoteEligible(freshQuote, deps.companyId)
-
-    const lines = (freshQuote.lines ?? []).map((line) => ({
-      sku: line.sku,
-      variant: typeof line.variant === 'object' ? line.variant?.id : line.variant,
-      quantity: line.quantity,
-      unitPrice: line.unitPrice,
-    }))
-    const created = await createSubmittedOrderDoc(deps, req, {
-      company: Number(deps.companyId),
-      status: 'submitted',
-      poNumber: po.poNumber,
-      idempotencyKey: key,
-      orderNotes: input.orderNotes?.trim() || undefined,
-      quote: Number(input.quoteId),
-      shipTo: input.shipTo,
-      lines,
-    })
-    await deps.payload.update({
-      collection: 'quotes',
-      id: input.quoteId,
-      data: { convertedOrder: Number(created.id) },
-      req,
-      overrideAccess: true,
-    })
-    if (transactionID != null) {
-      await deps.payload.db.commitTransaction(transactionID)
-    }
-    return deps.mapOrder(created)
-  } catch (err) {
-    if (transactionID != null) {
-      await deps.payload.db.rollbackTransaction(transactionID)
-    }
-    return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
   }
+
+  throw new Error('Could not complete quote conversion.')
 }

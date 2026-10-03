@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
@@ -93,7 +93,94 @@ describe('checkout commerce', () => {
         shipTo: pacificShipTo,
         idempotencyKey: `k2-${Date.now()}`,
       }),
-    ).rejects.toBeInstanceOf(CartValidationError)
+    ).rejects.toMatchObject({
+      message: 'PO number is already used for this company.',
+    })
+  })
+
+  it('duplicate PO attempts exactly one in-transaction order create', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const svc = await pacificCommerce()
+    const po = `PO-SPY-${Date.now()}`
+    await svc.setCartLine(pacificCompanyId, SEED_HERO_SKU, 1)
+    await svc.submitCartCheckout(pacificCompanyId, {
+      poNumber: po,
+      shipTo: pacificShipTo,
+      idempotencyKey: `po-spy-1-${Date.now()}`,
+    })
+    await svc.setCartLine(pacificCompanyId, SEED_HERO_SKU, 1)
+
+    const baseCreate = payload.create.bind(payload)
+    let orderCreates = 0
+    const createSpy = vi.spyOn(payload, 'create').mockImplementation((args) => {
+      if (args.collection === 'orders') orderCreates++
+      return baseCreate(args)
+    })
+
+    try {
+      await expect(
+        svc.submitCartCheckout(pacificCompanyId, {
+          poNumber: po,
+          shipTo: pacificShipTo,
+          idempotencyKey: `po-spy-2-${Date.now()}`,
+        }),
+      ).rejects.toMatchObject({
+        message: 'PO number is already used for this company.',
+      })
+      expect(orderCreates).toBe(1)
+    } finally {
+      createSpy.mockRestore()
+    }
+  })
+
+  it('retries order-number collision in a fresh transaction and clears cart once', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const svc = await pacificCommerce()
+    await svc.setCartLine(pacificCompanyId, SEED_HERO_SKU, 2)
+    const key = `ord-coll-${Date.now()}`
+    const po = `PO-COLL-${Date.now()}`
+
+    const baseCreate = payload.create.bind(payload)
+    let orderCreateCalls = 0
+    const createSpy = vi.spyOn(payload, 'create').mockImplementation(async (args) => {
+      if (args.collection === 'orders') {
+        orderCreateCalls++
+        if (orderCreateCalls === 1) {
+          const err = {
+            code: '23505',
+            data: { errors: [{ path: 'orderNumber', message: 'unique' }] },
+          }
+          throw err
+        }
+      }
+      return baseCreate(args)
+    })
+
+    try {
+      const order = await svc.submitCartCheckout(pacificCompanyId, {
+        poNumber: po,
+        shipTo: pacificShipTo,
+        idempotencyKey: key,
+      })
+      expect(order.id).toBeTruthy()
+      expect(orderCreateCalls).toBe(2)
+      const cart = await svc.getCart(pacificCompanyId)
+      expect(cart).toHaveLength(0)
+      const rows = await payload.find({
+        collection: 'orders',
+        where: {
+          and: [
+            { company: { equals: Number(pacificCompanyId) } },
+            { idempotencyKey: { equals: key } },
+          ],
+        },
+        limit: 5,
+        overrideAccess: true,
+      })
+      expect(rows.docs).toHaveLength(1)
+    } finally {
+      createSpy.mockRestore()
+    }
   })
 
   it('convertQuoteToOrder links quote exactly once', async () => {
