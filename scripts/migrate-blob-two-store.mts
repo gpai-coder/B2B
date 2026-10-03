@@ -4,18 +4,9 @@
  *
  * Default is dry-run. Tokens default to BLOB_READ_WRITE_TOKEN (source) and
  * BLOB_PRIVATE_READ_WRITE_TOKEN (dest); override with BLOB_SOURCE_* / BLOB_DEST_*.
- *
- * Usage:
- *   DATABASE_URL=... PAYLOAD_SECRET=... BLOB_READ_WRITE_TOKEN=... BLOB_PRIVATE_READ_WRITE_TOKEN=... \\
- *     pnpm exec tsx scripts/migrate-blob-two-store.mts
- *
- *   ... --execute              # perform copies (no source deletes unless --delete-source)
- *   ... --execute --delete-source
- *   ... --checkpoint=.blob-migrate.json
- *   ... --backup-dir=./blob-backup
- *   ... --batch-size=25
- *   ... --max-attempts=3
  */
+process.env.PAYLOAD_DISABLE_PUSH = 'true'
+
 import crypto from 'crypto'
 import fs from 'fs/promises'
 import path from 'path'
@@ -23,8 +14,11 @@ import path from 'path'
 import { get, head, put } from '@vercel/blob'
 import { getPayload } from 'payload'
 
-import config from '../src/payload.config.ts'
-import { blobMigrationDestToken, blobMigrationSourceToken } from '../src/lib/blob-store-env.ts'
+import {
+  assertBlobStoreEnvConfigured,
+  blobMigrationDestToken,
+  blobMigrationSourceToken,
+} from '../src/lib/blob-store-env.ts'
 
 type FailureRecord = { id: number; filename: string; error: string; attempts: number }
 
@@ -123,8 +117,12 @@ function clearFailure(cp: Checkpoint, id: number) {
   cp.failures = cp.failures.filter((f) => f.id !== id)
 }
 
+function exhaustedFailures(cp: Checkpoint): FailureRecord[] {
+  return cp.failures.filter((f) => f.attempts >= maxAttempts && !cp.completedIds.includes(f.id))
+}
+
 function exhaustedIds(cp: Checkpoint): number[] {
-  return cp.failures.filter((f) => f.attempts >= maxAttempts).map((f) => f.id)
+  return exhaustedFailures(cp).map((f) => f.id)
 }
 
 function buildExcludeIds(cp: Checkpoint, failedThisRun: Set<number>): number[] {
@@ -135,7 +133,22 @@ function activeFailures(cp: Checkpoint): FailureRecord[] {
   return cp.failures.filter((f) => !cp.completedIds.includes(f.id) && f.attempts < maxAttempts)
 }
 
-async function main() {
+function resolveExitCode(cp: Checkpoint): number {
+  if (activeFailures(cp).length > 0) return 1
+  if (exhaustedFailures(cp).length > 0) return 1
+  return 0
+}
+
+export async function runBlobTwoStoreMigration(): Promise<number> {
+  process.env.PAYLOAD_DISABLE_PUSH = 'true'
+  process.env.PAYLOAD_MIGRATING = 'true'
+  // Payload connect(): production runs interactive prodMigrations; non-production + push:false skips drizzle push.
+  if (process.env.NODE_ENV === 'production') {
+    process.env.NODE_ENV = 'test'
+  }
+
+  assertBlobStoreEnvConfigured()
+
   const sourceToken = blobMigrationSourceToken()
   const destToken = blobMigrationDestToken()
   if (!sourceToken || !destToken) {
@@ -149,114 +162,130 @@ async function main() {
 
   const cp = await loadCheckpoint()
 
-  const payloadConfig = await config
+  const { default: payloadConfig } = await import('../src/payload.config.ts')
   const payload = await getPayload({ config: payloadConfig })
 
-  let processed = 0
+  try {
+    let processed = 0
 
-  if (!execute) {
-    let page = 1
+    if (!execute) {
+      let page = 1
+      while (true) {
+        const batch = await payload.find({
+          collection: 'media',
+          sort: 'id',
+          page,
+          limit: batchSize,
+          overrideAccess: true,
+        })
+        if (batch.docs.length === 0) break
+        for (const doc of batch.docs) {
+          if (!doc.filename) continue
+          console.log(`[dry-run] would migrate id=${doc.id} ${doc.filename}`)
+          processed++
+        }
+        if (batch.docs.length < batchSize) break
+        page++
+      }
+      console.log({ mode: 'dry-run', processed, checkpointPath })
+      return 0
+    }
+
+    const failedThisRun = new Set<number>()
+
     while (true) {
+      const excludeIds = buildExcludeIds(cp, failedThisRun)
       const batch = await payload.find({
         collection: 'media',
+        where: excludeIds.length > 0 ? { id: { not_in: excludeIds } } : {},
         sort: 'id',
-        page,
         limit: batchSize,
         overrideAccess: true,
       })
       if (batch.docs.length === 0) break
+
       for (const doc of batch.docs) {
-        if (!doc.filename) continue
-        console.log(`[dry-run] would migrate id=${doc.id} ${doc.filename}`)
-        processed++
-      }
-      if (batch.docs.length < batchSize) break
-      page++
-    }
-    console.log({ mode: 'dry-run', processed, checkpointPath })
-    return
-  }
-
-  const failedThisRun = new Set<number>()
-
-  while (true) {
-    const excludeIds = buildExcludeIds(cp, failedThisRun)
-    const batch = await payload.find({
-      collection: 'media',
-      where: excludeIds.length > 0 ? { id: { not_in: excludeIds } } : {},
-      sort: 'id',
-      limit: batchSize,
-      overrideAccess: true,
-    })
-    if (batch.docs.length === 0) break
-
-    for (const doc of batch.docs) {
-      if (!doc.filename) {
-        cp.completedIds.push(doc.id)
-        clearFailure(cp, doc.id)
-        await saveCheckpoint(cp)
-        continue
-      }
-
-      const filename = doc.filename
-      try {
-        const bytes = await readPublicObject(filename, sourceToken)
-        const digest = await sha256(bytes)
-        const backupPath = await backupFile(doc.id, filename, bytes)
-
-        const sourceMeta = await head(filename, { token: sourceToken })
-
-        await put(filename, bytes, {
-          access: 'private',
-          token: destToken,
-          contentType: doc.mimeType ?? 'application/octet-stream',
-          addRandomSuffix: false,
-          allowOverwrite: true,
-        })
-
-        await verifyDest(filename, destToken, bytes.length, digest)
-
-        if (deleteSource) {
-          const destMeta = await head(filename, { token: destToken })
-          if (destMeta.size !== sourceMeta.size) {
-            throw new Error('Refusing to delete source: dest head size mismatch')
-          }
-          const { del } = await import('@vercel/blob')
-          await del(sourceMeta.url, { token: sourceToken })
+        if (!doc.filename) {
+          cp.completedIds.push(doc.id)
+          clearFailure(cp, doc.id)
+          await saveCheckpoint(cp)
+          continue
         }
 
-        cp.completedIds.push(doc.id)
-        clearFailure(cp, doc.id)
-        failedThisRun.delete(doc.id)
-        processed++
-        console.log(`ok id=${doc.id} ${filename} backup=${backupPath}`)
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        recordFailure(cp, doc.id, filename, message)
-        failedThisRun.add(doc.id)
-        console.error(`fail id=${doc.id} ${filename} attempts=${failureForId(cp, doc.id)?.attempts}:`, message)
+        const filename = doc.filename
+        try {
+          const bytes = await readPublicObject(filename, sourceToken)
+          const digest = await sha256(bytes)
+          const backupPath = await backupFile(doc.id, filename, bytes)
+
+          const sourceMeta = await head(filename, { token: sourceToken })
+
+          await put(filename, bytes, {
+            access: 'private',
+            token: destToken,
+            contentType: doc.mimeType ?? 'application/octet-stream',
+            addRandomSuffix: false,
+            allowOverwrite: true,
+          })
+
+          await verifyDest(filename, destToken, bytes.length, digest)
+
+          if (deleteSource) {
+            const destMeta = await head(filename, { token: destToken })
+            if (destMeta.size !== sourceMeta.size) {
+              throw new Error('Refusing to delete source: dest head size mismatch')
+            }
+            const { del } = await import('@vercel/blob')
+            await del(sourceMeta.url, { token: sourceToken })
+          }
+
+          cp.completedIds.push(doc.id)
+          clearFailure(cp, doc.id)
+          failedThisRun.delete(doc.id)
+          processed++
+          console.log(`ok id=${doc.id} ${filename} backup=${backupPath}`)
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err)
+          recordFailure(cp, doc.id, filename, message)
+          failedThisRun.add(doc.id)
+          console.error(
+            `fail id=${doc.id} ${filename} attempts=${failureForId(cp, doc.id)?.attempts}:`,
+            message,
+          )
+        }
+
+        await saveCheckpoint(cp)
       }
-
-      await saveCheckpoint(cp)
     }
-  }
 
-  const remaining = activeFailures(cp)
-  console.log({
-    mode: deleteSource ? 'execute+delete-source' : 'execute',
-    processed,
-    completed: cp.completedIds.length,
-    activeFailures: remaining.length,
-    exhausted: cp.failures.filter((f) => f.attempts >= maxAttempts).length,
-    checkpointPath,
-  })
+    const remaining = activeFailures(cp)
+    const exhausted = exhaustedFailures(cp)
+    console.log({
+      mode: deleteSource ? 'execute+delete-source' : 'execute',
+      processed,
+      completed: cp.completedIds.length,
+      activeFailures: remaining.length,
+      exhausted: exhausted.length,
+      checkpointPath,
+    })
 
-  if (remaining.length > 0) {
-    process.exitCode = 1
+    return resolveExitCode(cp)
+  } finally {
+    await payload.destroy()
   }
 }
 
-main().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+const isMain =
+  process.argv[1]?.includes('migrate-blob-two-store.mts') ||
+  process.argv[1]?.includes('migrate-blob-two-store.mjs')
+
+if (isMain) {
+  runBlobTwoStoreMigration()
+    .then((code) => {
+      process.exit(code)
+    })
+    .catch((err) => {
+      console.error(err)
+      process.exit(1)
+    })
+}

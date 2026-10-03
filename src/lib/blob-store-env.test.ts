@@ -29,6 +29,12 @@ describe('blobReadWriteTokenFromEnv', () => {
       }),
     ).toBe('priv')
   })
+
+  it('requires BLOB_PRIVATE_READ_WRITE_TOKEN when private', () => {
+    expect(() =>
+      blobReadWriteTokenFromEnv({ BLOB_STORE_ACCESS: 'private', BLOB_READ_WRITE_TOKEN: 'pub' }),
+    ).toThrow(/BLOB_PRIVATE_READ_WRITE_TOKEN/)
+  })
 })
 
 describe('blobPluginStorageOptionsFromEnv', () => {

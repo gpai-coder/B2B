@@ -12,9 +12,23 @@ export function blobReadWriteTokenFromEnv(
   env: Record<string, string | undefined> = process.env,
 ): string | undefined {
   if (blobStoreAccessFromEnv(env) === 'private') {
-    return env.BLOB_PRIVATE_READ_WRITE_TOKEN ?? env.BLOB_READ_WRITE_TOKEN
+    if (!env.BLOB_PRIVATE_READ_WRITE_TOKEN) {
+      throw new Error(
+        'BLOB_STORE_ACCESS=private requires BLOB_PRIVATE_READ_WRITE_TOKEN (do not fall back to BLOB_READ_WRITE_TOKEN)',
+      )
+    }
+    return env.BLOB_PRIVATE_READ_WRITE_TOKEN
   }
   return env.BLOB_READ_WRITE_TOKEN
+}
+
+/** Call at script startup when reading blob env (migration + runtime helpers). */
+export function assertBlobStoreEnvConfigured(env: Record<string, string | undefined> = process.env) {
+  if (blobStoreAccessFromEnv(env) === 'private' && !env.BLOB_PRIVATE_READ_WRITE_TOKEN) {
+    throw new Error(
+      'BLOB_STORE_ACCESS=private requires BLOB_PRIVATE_READ_WRITE_TOKEN (do not fall back to BLOB_READ_WRITE_TOKEN)',
+    )
+  }
 }
 
 /** Options passed to `@payloadcms/storage-vercel-blob` (access cast for plugin types). */

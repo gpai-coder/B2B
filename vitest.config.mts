@@ -12,6 +12,7 @@ export default defineConfig({
       'tests/int/**/*.int.spec.ts',
       'tests/access/**/*.test.ts',
       'src/**/*.test.ts',
+      'scripts/**/*.test.ts',
     ],
   },
 })
