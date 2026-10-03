@@ -1,8 +1,8 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { getCommerce } from '@/commerce'
-import { CheckoutForm } from '@/components/checkout/CheckoutForm'
-import { loadDefaultShipToForCheckout } from '@/lib/vendor/ship-to-addresses'
+import { AccountAddressesManager } from '@/components/account/AccountAddressesManager'
+import { listVendorShipToAddresses } from '@/lib/vendor/ship-to-addresses'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
@@ -11,10 +11,10 @@ export const dynamic = 'force-dynamic'
 
 const PENDING_APPROVAL = 'Your account is pending administrator approval.'
 
-export default async function CheckoutPage() {
+export default async function AccountAddressesPage() {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
-    redirect('/login?next=/checkout')
+    redirect('/login?next=/account/addresses')
   }
   if (!user.approved) {
     return <p className="error">{PENDING_APPROVAL}</p>
@@ -24,20 +24,20 @@ export default async function CheckoutPage() {
     return <p className="error">Vendor account is missing a company.</p>
   }
 
-  const commerce = await getCommerce({ user })
-  const summary = await commerce.getCartSummary(companyId)
-  if (summary.lines.length === 0) {
-    redirect('/cart')
-  }
-
   const payload = await getPayload({ config: await config })
-  const { defaultShipTo, savedAddresses } = await loadDefaultShipToForCheckout(payload, user, companyId)
+  const addresses = await listVendorShipToAddresses(payload, user, companyId)
 
   return (
-    <CheckoutForm summary={summary} defaultShipTo={defaultShipTo} savedAddresses={savedAddresses} />
+    <div className="as-account-addresses" data-testid="account-addresses-page">
+      <p>
+        <Link href="/account">← Back to account</Link>
+      </p>
+      <h1 className="as-plp__title">Ship-to addresses</h1>
+      <AccountAddressesManager initialAddresses={addresses} />
+    </div>
   )
 }
 
 export const metadata = {
-  title: 'Checkout | B2B Portal',
+  title: 'Ship-to addresses | B2B Portal',
 }

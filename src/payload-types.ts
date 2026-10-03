@@ -75,6 +75,7 @@ export interface Config {
     'price-lists': PriceList;
     quotes: Quote;
     orders: Order;
+    'ship-to-addresses': ShipToAddress;
     carts: Cart;
     'cart-bulk-adds': CartBulkAdd;
     'payload-kv': PayloadKv;
@@ -92,6 +93,7 @@ export interface Config {
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     quotes: QuotesSelect<false> | QuotesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    'ship-to-addresses': ShipToAddressesSelect<false> | ShipToAddressesSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
     'cart-bulk-adds': CartBulkAddsSelect<false> | CartBulkAddsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -489,6 +491,31 @@ export interface Order {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ship-to-addresses".
+ */
+export interface ShipToAddress {
+  id: number;
+  company: number | Company;
+  /**
+   * Short name shown in checkout (e.g. Main warehouse).
+   */
+  label: string;
+  name: string;
+  line1: string;
+  line2?: string | null;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  /**
+   * One default per company; synced to company default ship-to at checkout.
+   */
+  isDefault?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "carts".
  */
 export interface Cart {
@@ -582,6 +609,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'ship-to-addresses';
+        value: number | ShipToAddress;
       } | null)
     | ({
         relationTo: 'carts';
@@ -898,6 +929,24 @@ export interface OrdersSelect<T extends boolean = true> {
         unitPrice?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ship-to-addresses_select".
+ */
+export interface ShipToAddressesSelect<T extends boolean = true> {
+  company?: T;
+  label?: T;
+  name?: T;
+  line1?: T;
+  line2?: T;
+  city?: T;
+  state?: T;
+  postalCode?: T;
+  country?: T;
+  isDefault?: T;
   updatedAt?: T;
   createdAt?: T;
 }

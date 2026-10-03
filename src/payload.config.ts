@@ -15,6 +15,7 @@ import { PriceLists } from './collections/PriceLists'
 import { Products } from './collections/Products'
 import { ProductVariants } from './collections/ProductVariants'
 import { Quotes } from './collections/Quotes'
+import { ShipToAddresses } from './collections/ShipToAddresses'
 import { Users } from './collections/Users'
 import { getEnv } from './env'
 import { blobPluginStorageOptionsFromEnv } from './lib/blob-store-env'
@@ -41,6 +42,7 @@ export default buildConfig({
     PriceLists,
     Quotes,
     Orders,
+    ShipToAddresses,
     Carts,
     CartBulkAdds,
   ],

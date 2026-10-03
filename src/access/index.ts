@@ -55,6 +55,19 @@ export const companyWriteAccess =
     return false
   }
 
+/** Vendor-buyer writes scoped to own company; requires an approved user (staff bypass). */
+export const approvedVendorCompanyWriteAccess =
+  (companyField = 'company'): Access =>
+  ({ req: { user } }) => {
+    const u = user as AppUser
+    if (!u) return false
+    if (isStaff(u)) return true
+    if (u.role !== 'vendor-buyer' || !u.approved) return false
+    const companyId = getUserCompanyId(u)
+    if (!companyId) return false
+    return { [companyField]: { equals: companyId } }
+  }
+
 export const catalogReadAccess: Access = ({ req: { user } }) => {
   const u = user as AppUser
   if (!u) return false
