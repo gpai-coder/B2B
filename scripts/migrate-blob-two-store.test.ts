@@ -5,11 +5,15 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { getPayload } from 'payload'
-import { afterAll, describe, expect, it } from 'vitest'
-
-import config from '../src/payload.config'
+import { describe, expect, it } from 'vitest'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+
+async function loadPayloadConfig() {
+  process.env.PAYLOAD_DISABLE_PUSH = 'true'
+  const mod = await import('../src/payload.config')
+  return mod.default
+}
 
 const dummySource = 'vercel_blob_rw_aabbccdd_00112233445566778899aabbccdd001122'
 const dummyDest = 'vercel_blob_rw_eeff0011_9988776655443322110099887766554433'
@@ -82,7 +86,7 @@ describe('migrate-blob-two-store.mts', () => {
         return
       }
 
-      const payloadConfig = await config
+      const payloadConfig = await loadPayloadConfig()
       let fakeMediaId: number | undefined
       const checkpointPath = path.join(
         os.tmpdir(),
@@ -169,7 +173,11 @@ describe('migrate-blob-two-store.mts', () => {
                 '-e',
                 `import { getPayload } from 'payload'; import config from './src/payload.config.ts'; const p = await getPayload({ config }); await p.delete({ collection: 'media', id: ${fakeMediaId}, overrideAccess: true }); await p.destroy(); process.exit(0);`,
               ],
-              { cwd: repoRoot, env: process.env, stdio: 'ignore' },
+              {
+                cwd: repoRoot,
+                env: { ...process.env, PAYLOAD_DISABLE_PUSH: 'true' },
+                stdio: 'ignore',
+              },
             )
             child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`cleanup exit ${code}`))))
           })
