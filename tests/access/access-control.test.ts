@@ -68,7 +68,7 @@ describe('access control', () => {
           postalCode: '94105',
           country: 'US',
         },
-        lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 159 }],
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 199 }],
       },
       overrideAccess: true,
     })
@@ -142,7 +142,7 @@ describe('access control', () => {
             postalCode: '94105',
             country: 'US',
           },
-          lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 0 }],
+          lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 0 }],
         },
         overrideAccess: false,
         req: createPayloadReq(payload, pacificUser),
@@ -184,7 +184,7 @@ describe('access control', () => {
         collection: 'orders',
         id: pacificOrderId,
         data: {
-          lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 0 }],
+          lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 0 }],
         },
         overrideAccess: false,
         req: createPayloadReq(payload, pacificUser),
@@ -208,7 +208,7 @@ describe('access control', () => {
         company: bayCompanyId,
         status: 'sent',
         expiresAt: new Date(Date.now() + 86400000).toISOString(),
-        lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 1 }],
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 1 }],
       },
       overrideAccess: true,
     })

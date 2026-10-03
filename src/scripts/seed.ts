@@ -1,13 +1,19 @@
-import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
 import { getPayload, type Payload } from 'payload'
 
-import type { Order, PriceList, Quote } from '../payload-types'
 import config from '../payload.config'
+import {
+  findOrCreatePriceList,
+  findOrCreateQuote,
+  findOrCreateSeedOrder,
+  seedCatalogFromDataset,
+  seedMediaStorageName,
+} from './seed-catalog-loader'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const repoRoot = path.resolve(__dirname, '../..')
 
 export const COMMITTED_SEED_DEFAULTS = {
   SEED_ADMIN_PASSWORD: 'local-dev-admin-password',
@@ -18,10 +24,37 @@ export const COMMITTED_SEED_DEFAULTS = {
 
 export const SEED_ORDER_NUMBER = 'SEED-ORD-PACIFIC-001'
 export const SEED_QUOTE_NUMBER = 'Q-2026-0001'
-export const SEED_MEDIA_FILENAME = 'sample-spec.pdf'
-export const SEED_MEDIA_ALT = 'Sample specification PDF'
 export const SEED_STANDARD_PRICE_LIST = '2026 Standard List'
 export const SEED_PACIFIC_PRICE_LIST = 'Pacific Plumbing Contract 2026'
+
+/** Primary demo contract SKU (Townsend Polished Chrome). */
+export const SEED_HERO_SKU = '7353101.002'
+export const SEED_HERO_SLUG =
+  'townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle'
+export const SEED_QUOTE_SECOND_SKU = '2034314.020'
+
+/** Default catalog dataset (override with SEED_CATALOG_PATH). */
+export const SEED_CATALOG_DEFAULT_PATH = path.join(repoRoot, 'scripts/seed/catalog/products.json')
+export const SEED_PLACEHOLDER_REL = 'assets/product-placeholder.png'
+export const SEED_PLACEHOLDER_ALT = 'Product placeholder image'
+export const SEED_CATALOG_SPEC_REL =
+  'assets/7353101/docs/specSheet__168938_spec_7353101-101P_Townsend_sc_lav_original.pdf'
+
+/** @deprecated Use {@link seedCatalogMediaFilename} for catalog-backed media. */
+export const SEED_MEDIA_FILENAME = seedMediaStorageName(SEED_CATALOG_SPEC_REL)
+export const SEED_MEDIA_ALT = 'Sample specification PDF'
+
+export function seedCatalogMediaFilename(relativePath: string): string {
+  return seedMediaStorageName(relativePath)
+}
+
+export function resolveSeedCatalogPath(): string {
+  const configured = process.env.SEED_CATALOG_PATH
+  if (configured) {
+    return path.isAbsolute(configured) ? configured : path.resolve(repoRoot, configured)
+  }
+  return SEED_CATALOG_DEFAULT_PATH
+}
 
 function assertProductionSeedPasswords() {
   if (process.env.NODE_ENV !== 'production') return
@@ -48,19 +81,6 @@ export const seedConfig = {
   vendorBPassword:
     process.env.SEED_VENDOR_B_PASSWORD ?? COMMITTED_SEED_DEFAULTS.SEED_VENDOR_B_PASSWORD,
 }
-
-const catalog = [
-  { product: 'Lixom Pull-Down Faucet', collection: 'Faucets', slug: 'lixom-pull-down', sku: 'LIX-FCT-1001', finish: 'Chrome', price: 189 },
-  { product: 'Lixom Pull-Down Faucet', collection: 'Faucets', slug: 'lixom-pull-down', sku: 'LIX-FCT-1001-BN', finish: 'Brushed Nickel', price: 209 },
-  { product: 'Arc Single-Hole Faucet', collection: 'Faucets', slug: 'arc-single-hole', sku: 'LIX-FCT-1100', finish: 'Matte Black', price: 245 },
-  { product: 'Wall-Mount Lavatory Faucet', collection: 'Faucets', slug: 'wall-lav-faucet', sku: 'LIX-FCT-1200', finish: 'Polished Chrome', price: 312 },
-  { product: 'Commercial Sensor Faucet', collection: 'Faucets', slug: 'sensor-faucet', sku: 'LIX-FCT-2000', finish: 'Stainless', price: 428 },
-  { product: 'One-Piece Elongated Toilet', collection: 'Toilets', slug: 'one-piece-toilet', sku: 'LIX-TLT-3000', finish: 'Cotton White', price: 520 },
-  { product: 'Two-Piece Round Toilet', collection: 'Toilets', slug: 'two-piece-round', sku: 'LIX-TLT-3100', finish: 'Cotton White', price: 389 },
-  { product: 'Wall-Hung Toilet Bowl', collection: 'Toilets', slug: 'wall-hung-bowl', sku: 'LIX-TLT-3200', finish: 'Cotton White', price: 610 },
-  { product: 'Undermount Lavatory Sink', collection: 'Fixtures', slug: 'undermount-lav', sku: 'LIX-FIX-4000', finish: 'White', price: 165 },
-  { product: 'Vessel Sink', collection: 'Fixtures', slug: 'vessel-sink', sku: 'LIX-FIX-4100', finish: 'Matte White', price: 198 },
-]
 
 async function upsertUser(
   payload: Payload,
@@ -136,187 +156,6 @@ async function findOrCreateCompany(
   })
 }
 
-async function findOrCreateMediaByFilename(payload: Payload, filename: string, alt: string) {
-  const existing = await payload.find({
-    collection: 'media',
-    where: {
-      or: [{ filename: { equals: filename } }, { alt: { equals: alt } }],
-    },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existing.docs[0]) return existing.docs[0]
-
-  const pdfPath = path.resolve(__dirname, '../../scripts/fixtures/sample-spec.pdf')
-  const pdfBuffer = fs.readFileSync(pdfPath)
-  return payload.create({
-    collection: 'media',
-    data: { alt },
-    file: {
-      data: pdfBuffer,
-      mimetype: 'application/pdf',
-      name: filename,
-      size: pdfBuffer.length,
-    },
-    overrideAccess: true,
-  })
-}
-
-async function findOrCreateProduct(
-  payload: Payload,
-  slug: string,
-  data: { name: string; productCollection: string; description: string },
-) {
-  const existing = await payload.find({
-    collection: 'products',
-    where: { slug: { equals: slug } },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existing.docs[0]) {
-    await payload.update({
-      collection: 'products',
-      id: existing.docs[0].id,
-      data,
-      overrideAccess: true,
-    })
-    return existing.docs[0]
-  }
-  return payload.create({
-    collection: 'products',
-    data: { slug, ...data },
-    overrideAccess: true,
-  })
-}
-
-async function findOrCreateVariant(
-  payload: Payload,
-  sku: string,
-  data: {
-    name: string
-    product: number
-    finish: string
-    specs?: Record<string, unknown>
-    specPdf?: number
-  },
-) {
-  const existing = await payload.find({
-    collection: 'product-variants',
-    where: { sku: { equals: sku } },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existing.docs[0]) {
-    await payload.update({
-      collection: 'product-variants',
-      id: existing.docs[0].id,
-      data,
-      overrideAccess: true,
-    })
-    return existing.docs[0]
-  }
-  return payload.create({
-    collection: 'product-variants',
-    data: { sku, ...data },
-    overrideAccess: true,
-  })
-}
-
-async function findOrCreatePriceList(
-  payload: Payload,
-  name: string,
-  data: {
-    kind: 'standard' | 'company'
-    company?: number
-    lines: NonNullable<PriceList['lines']>
-  },
-) {
-  const existing = await payload.find({
-    collection: 'price-lists',
-    where: { name: { equals: name } },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existing.docs[0]) {
-    await payload.update({
-      collection: 'price-lists',
-      id: existing.docs[0].id,
-      data: { lines: data.lines },
-      overrideAccess: true,
-    })
-    return existing.docs[0]
-  }
-  return payload.create({
-    collection: 'price-lists',
-    data: { name, kind: data.kind, company: data.company, lines: data.lines },
-    overrideAccess: true,
-  })
-}
-
-async function findOrCreateQuote(
-  payload: Payload,
-  quoteNumber: string,
-  data: {
-    company: number
-    status: Quote['status']
-    expiresAt: string
-    lines: NonNullable<Quote['lines']>
-  },
-) {
-  const existing = await payload.find({
-    collection: 'quotes',
-    where: { quoteNumber: { equals: quoteNumber } },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existing.docs[0]) {
-    await payload.update({
-      collection: 'quotes',
-      id: existing.docs[0].id,
-      data,
-      overrideAccess: true,
-    })
-    return existing.docs[0]
-  }
-  return payload.create({
-    collection: 'quotes',
-    data: { quoteNumber, ...data },
-    overrideAccess: true,
-  })
-}
-
-async function findOrCreateSeedOrder(
-  payload: Payload,
-  orderNumber: string,
-  data: {
-    company: number
-    status: Order['status']
-    shipTo: NonNullable<Order['shipTo']>
-    lines: NonNullable<Order['lines']>
-  },
-) {
-  const existing = await payload.find({
-    collection: 'orders',
-    where: { orderNumber: { equals: orderNumber } },
-    limit: 1,
-    overrideAccess: true,
-  })
-  if (existing.docs[0]) {
-    await payload.update({
-      collection: 'orders',
-      id: existing.docs[0].id,
-      data,
-      overrideAccess: true,
-    })
-    return existing.docs[0]
-  }
-  return payload.create({
-    collection: 'orders',
-    data: { orderNumber, ...data },
-    overrideAccess: true,
-  })
-}
-
 export type SeedEntityCounts = {
   companies: number
   users: number
@@ -329,18 +168,14 @@ export type SeedEntityCounts = {
 }
 
 export async function countSeedScopeEntities(payload: Payload): Promise<SeedEntityCounts> {
+  const catalogMediaPrefix = 'seed-catalog__'
   const [companies, users, media, products, variants, priceLists, quotes, orders] =
     await Promise.all([
       payload.count({ collection: 'companies', overrideAccess: true }),
       payload.count({ collection: 'users', overrideAccess: true }),
       payload.count({
         collection: 'media',
-        where: {
-          or: [
-            { filename: { equals: SEED_MEDIA_FILENAME } },
-            { alt: { equals: SEED_MEDIA_ALT } },
-          ],
-        },
+        where: { filename: { contains: catalogMediaPrefix } },
         overrideAccess: true,
       }),
       payload.count({ collection: 'products', overrideAccess: true }),
@@ -417,40 +252,16 @@ export async function runSeed(payload?: Payload) {
     company: bay.id,
   })
 
-  const specMedia = await findOrCreateMediaByFilename(p, SEED_MEDIA_FILENAME, SEED_MEDIA_ALT)
-
-  const productIds = new Map<string, number>()
-  const variantBySku = new Map<string, { id: number; price: number }>()
-
-  for (const row of catalog) {
-    let productId = productIds.get(row.slug)
-    if (!productId) {
-      const product = await findOrCreateProduct(p, row.slug, {
-        name: row.product,
-        productCollection: row.collection,
-        description: `${row.product} for commercial and residential pro channels.`,
-      })
-      productId = product.id
-      productIds.set(row.slug, productId)
-    }
-
-    const variant = await findOrCreateVariant(p, row.sku, {
-      name: `${row.product} — ${row.finish}`,
-      product: productId,
-      finish: row.finish,
-      specs: {
-        flowRateGpm: row.collection === 'Faucets' ? 1.2 : undefined,
-        material: row.collection === 'Faucets' ? 'Brass' : 'Vitreous china',
-        certifications: 'WaterSense',
-      },
-      specPdf: row.sku === 'LIX-FCT-1001' ? specMedia.id : undefined,
-    })
-    variantBySku.set(row.sku, { id: variant.id, price: row.price })
-  }
+  const catalogFilePath = resolveSeedCatalogPath()
+  const variantBySku = await seedCatalogFromDataset(p, {
+    catalogFilePath,
+    placeholderImagePath: path.join(repoRoot, 'scripts/fixtures/product-placeholder.png'),
+    placeholderImageAlt: SEED_PLACEHOLDER_ALT,
+  })
 
   const standardLines = [...variantBySku.entries()].map(([_, v]) => ({
     variant: v.id,
-    unitPrice: v.price,
+    unitPrice: v.listPrice,
     currency: 'USD',
   }))
 
@@ -459,28 +270,29 @@ export async function runSeed(payload?: Payload) {
     lines: standardLines,
   })
 
-  const hero = variantBySku.get('LIX-FCT-1001')!
+  const hero = variantBySku.get(SEED_HERO_SKU)!
   await findOrCreatePriceList(p, SEED_PACIFIC_PRICE_LIST, {
     kind: 'company',
     company: pacific.id,
     lines: [
       {
         variant: hero.id,
-        unitPrice: 159,
+        unitPrice: 199,
         currency: 'USD',
         quantityBreaks: [
-          { minQuantity: 10, unitPrice: 149 },
-          { minQuantity: 25, unitPrice: 139 },
+          { minQuantity: 10, unitPrice: 189 },
+          { minQuantity: 25, unitPrice: 179 },
         ],
       },
     ],
   })
 
+  const quoteSecond = variantBySku.get(SEED_QUOTE_SECOND_SKU)!
   const quoteLines = [
-    { sku: 'LIX-FCT-1001', variant: hero.id, quantity: 12, unitPrice: 149 },
+    { sku: SEED_HERO_SKU, variant: hero.id, quantity: 12, unitPrice: 189 },
     {
-      sku: 'LIX-TLT-3000',
-      variant: variantBySku.get('LIX-TLT-3000')!.id,
+      sku: SEED_QUOTE_SECOND_SKU,
+      variant: quoteSecond.id,
       quantity: 4,
       unitPrice: 499,
     },
@@ -504,7 +316,7 @@ export async function runSeed(payload?: Payload) {
       postalCode: '94105',
       country: 'US',
     },
-    lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 159, variant: hero.id }],
+    lines: [{ sku: SEED_HERO_SKU, quantity: 1, unitPrice: 199, variant: hero.id }],
   })
 
   return p
@@ -513,6 +325,7 @@ export async function runSeed(payload?: Payload) {
 async function main() {
   await runSeed()
   console.log('Seed complete.')
+  console.log(`Catalog: ${resolveSeedCatalogPath()}`)
   console.log(`Admin: ${seedConfig.adminEmail}`)
   console.log(`Sales: ${seedConfig.salesEmail}`)
   console.log(`Vendor (approved): ${seedConfig.vendorAEmail}`)

@@ -1,0 +1,3090 @@
+{
+  "meta": {
+    "source": "https://www.americanstandard-us.com",
+    "scrapedAt": "2026-10-02T23:02:52-0400",
+    "notes": [
+      "listPrice = Shopify compare_at_price (shown on site as 'List price'); price = current online selling price (shown as sale/regular price).",
+      "Images are originals (CDN returned JPEG for plain requests; URL ends .webp) from cdn.shopify.com; main = variant featured_media; gallery = up to 3 further images tagged to that SKU/finish (alt '[SKU]' or '// FINISH //').",
+      "Documents are product-level (same for all finishes) on the source site; PDFs downloaded, CAD (.dwg) and Revit (.rfa) recorded as URLs only.",
+      "Usage approved by user (LIXIL) for seeding the B2B portal."
+    ],
+    "counts": {
+      "products": 10,
+      "variants": 41
+    }
+  },
+  "products": [
+    {
+      "category": "bathroom-faucet",
+      "title": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle",
+      "brand": "American Standard",
+      "collection": "Townsend",
+      "modelNumber": "7353101",
+      "sourceUrl": "https://www.americanstandard-us.com/products/townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle",
+      "handle": "townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Bathroom Sink Faucets",
+        "Single Hole Bathroom Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 234.0,
+        "max": 339.3
+      },
+      "shortBullets": [
+        "BATHROOM SINK FAUCET: Single-handle fits a single-hole sink",
+        "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve",
+        "EASY INSTALLATION: Includes a metal push pop-up drain"
+      ],
+      "features": [
+        "SINGLE-HANDLE FAUCET: For use on single-hole bathroom sink or on two- and three-hole sinks and countertops with deck plate, sold separately",
+        "DRIP-FREE: This one-handle bathroom faucet features quality ceramic disc valves ensuring drip-free performance for life",
+        "INCLUDES PUSH POP-UP DRAIN AND HOSES: Metal push pop-up drain and flexible stainless steel hoses for quick, easy installation",
+        "BUILT FOR RELIABILITY: Metal spout and handle ensures long-lasting dependability",
+        "SAVES WATER: Features 1.2 gpm/4.5 Lpm pressure-compensating aerator",
+        "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean",
+        "WARRANTY: Limited lifetime warranty on function and finish",
+        "Water-conserving 1.2 gpm/4.5 Lpm pressure-compensating aerator"
+      ],
+      "description": "The Townsend Single-Handle Single-Hole Bathroom Sink Faucet from American Standard is an elegant style defined by a single lever top handle and architectural details. Designed for durability, this metal bathroom faucet features an ADA-compliant metal lever handle and a push pop-up drain that is simple to use and quick to install, requiring fewer parts than a standard drain. The Townsend bathroom sink faucet is available in an array of beautiful, on-trend finishes to complement any bathroom style.",
+      "specs": {
+        "Style Specifications": {
+          "Features": "Ceramic Disc Valves, Water Efficient"
+        },
+        "Technical Specifications": {
+          "Fitting Connection Size": "9.52 mm",
+          "Fitting Handle Height": "7-13/16 in",
+          "Fitting Handle Type": "Lever",
+          "Fitting Material": "Brass",
+          "Fitting Max Deck Thickness": "1-7/8 in",
+          "Fitting Speed Connect": "No",
+          "Fitting Spout Reach": "5-1/4 in",
+          "Fitting Swivel Degrees": "0 °",
+          "Fitting Valve Material": "Ceramic",
+          "Fitting Valve Needed for Install": "Not Applicable",
+          "Flow Rate": "1.2 GPM"
+        },
+        "Other Specs": {
+          "Warranty": "Limited Lifetime Warranty"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/168938_spec_7353101-101P_Townsend_sc_lav_original.pdf",
+          "localPath": "assets/7353101/docs/specSheet__168938_spec_7353101-101P_Townsend_sc_lav_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/137844_M965722_Townsend_mb_lav_faucet_7353.101_EFS_original.pdf",
+          "localPath": "assets/7353101/docs/installationGuide__137844_M965722_Townsend_mb_lav_faucet_7353.101_EFS_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/137863_RP_M965722_Townsend_mb_lav_faucet_7353.101_EFS_original.pdf",
+          "localPath": "assets/7353101/docs/repairPartsDiagram__137863_RP_M965722_Townsend_mb_lav_faucet_7353.101_EFS_original.pdf"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/245807_Faucet_Single_Control-American_Standard-Towsend-7353.101_original.rfa"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "Vkpr6SQSfmM",
+          "url": "https://www.youtube.com/watch?v=Vkpr6SQSfmM"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "7353101.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Polished Chrome",
+          "listPrice": 360.0,
+          "price": 234.0,
+          "currency": "USD",
+          "upc": "012611581076",
+          "availableOnline": true,
+          "shopifyVariantId": 43622378340399,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59837_7353101.002_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.002/00_main_59837.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59840_7353101.002_1_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.002/01_gallery_59840.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59842_7353101.002_2_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.002/02_gallery_59842.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7353101.013",
+          "finish": "Polished Nickel",
+          "options": {
+            "Finish": "Polished Nickel"
+          },
+          "variantTitle": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Polished Nickel",
+          "listPrice": 487.0,
+          "price": 316.55,
+          "currency": "USD",
+          "upc": "012611581045",
+          "availableOnline": true,
+          "shopifyVariantId": 43622378373167,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59846_7353101.013_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.013/00_main_59846.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59849_7353101.013_1_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.013/01_gallery_59849.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/238756_Townsend_EnvironmentCloseUp_7353101.013_0001_Jan2024_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.013/02_gallery_238756.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/77743_B-7353101013_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.013/03_gallery_77743.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7353101.278",
+          "finish": "Legacy Bronze",
+          "options": {
+            "Finish": "Legacy Bronze"
+          },
+          "variantTitle": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Legacy Bronze",
+          "listPrice": 483.0,
+          "price": 313.95,
+          "currency": "USD",
+          "upc": "012611581069",
+          "availableOnline": false,
+          "shopifyVariantId": 43622378405935,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59852_7353101.278_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.278/00_main_59852.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59854_7353101.278_1_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.278/01_gallery_59854.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/238752_Townsend_EnvironmentCloseUp_7353101.278_0001_Jan2024_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.278/02_gallery_238752.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/77761_B-7353101278_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.278/03_gallery_77761.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7353101.295",
+          "finish": "Brushed Nickel",
+          "options": {
+            "Finish": "Brushed Nickel"
+          },
+          "variantTitle": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Brushed Nickel",
+          "listPrice": 487.0,
+          "price": 316.55,
+          "currency": "USD",
+          "upc": "012611581052",
+          "availableOnline": true,
+          "shopifyVariantId": 43622378438703,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59857_7353101.295_1_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.295/00_main_59857.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59858_7353101.295_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.295/01_gallery_59858.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/238753_Townsend_EnvironmentCloseUp_7353101.295_0001_Jan2024_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.295/02_gallery_238753.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7353101.243",
+          "finish": "Matte Black",
+          "options": {
+            "Finish": "Matte Black"
+          },
+          "variantTitle": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Matte Black",
+          "listPrice": 487.0,
+          "price": 316.55,
+          "currency": "USD",
+          "upc": "012611915178",
+          "availableOnline": true,
+          "shopifyVariantId": 43622378471471,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168307_7353101.243_4_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.243/00_main_168307.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/77720_B-7353101.243_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.243/01_gallery_77720.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/77724_B-7353101.243_7353101P.243_CDNwebp_555d1164-cb67-42ff-b0b7-895fe13c901d.webp",
+              "localPath": "assets/7353101/images/7353101.243/02_gallery_77724.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7353101.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "options": {
+            "Finish": "Brushed Cool Sunrise"
+          },
+          "variantTitle": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle - Brushed Cool Sunrise",
+          "listPrice": 522.0,
+          "price": 339.3,
+          "currency": "USD",
+          "upc": "012611956706",
+          "availableOnline": false,
+          "shopifyVariantId": 43622378504239,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168581_Townsend_SiloLeft_7353101.GN0_0002_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.GN0/00_main_168581.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168598_Townsend_SiloRight_7353101.GN0_0001_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.GN0/01_gallery_168598.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168856_Townsend_SiloSide_7353101.GN0_0003_Mar2023_0_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.GN0/02_gallery_168856.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/238754_Townsend_EnvironmentCloseUp_7353101.GN0_0001_Jan2024_CDNwebp.webp",
+              "localPath": "assets/7353101/images/7353101.GN0/03_gallery_238754.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle",
+        "name": "Townsend® Single Hole Single-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handle",
+        "description": "The Townsend Single-Handle Single-Hole Bathroom Sink Faucet from American Standard is an elegant style defined by a single lever top handle and architectural details. Designed for durability, this metal bathroom faucet features an ADA-compliant metal lever handle and a push pop-up drain that is simple to use and quick to install, requiring fewer parts than a standard drain. The Townsend bathroom sink faucet is available in an array of beautiful, on-trend finishes to complement any bathroom style.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/59837_7353101.002_CDNwebp.webp?v=1744856620&width=1200"
+        ],
+        "sku": "7353101.002",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 234.0,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle"
+        }
+      }
+    },
+    {
+      "category": "bathroom-faucet",
+      "title": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+      "brand": "American Standard",
+      "collection": "Town Square® S",
+      "modelNumber": "7455207",
+      "sourceUrl": "https://www.americanstandard-us.com/products/town-square-r-s-4-inch-centerset-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "handle": "town-square-r-s-4-inch-centerset-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Bathroom Faucets",
+        "Centerset Bathroom Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 224.9,
+        "max": 326.3
+      },
+      "shortBullets": [
+        "Solid Brass Construction: Excellent in high use applications"
+      ],
+      "features": [
+        "Solid Brass Construction: Durable – Excellent in high use applications. Ideal for prolonged contact with water. Provides the finest surface for application of all colors and finishes",
+        "Ceramic Disc Valve Cartridges: Assures a lifetime of drip-free performance",
+        "Includes Push-Pop drain for ease of installation and use",
+        "Lead Free",
+        "WaterSense Certified",
+        "CEC Compliant Product"
+      ],
+      "description": "The Town Square S Centerset Faucet by American Standard is a paragon of classic elegance, featuring architecturally inspired details reminiscent of crown molding. This stately faucet is crafted from solid brass, making it a durable choice, ideal for prolonged contact with water. Available in tarnish- and scratch-resistant finishes, the Town Square S faucet will stay looking like new for years. A pop-up drain is included, for easy installation and use. Part of the Town Square S collection, the faucet is easy to match with the rest of the suite’s fittings and fixtures, for a total design solution that makes remodeling a perfectly matched bathroom effortless.",
+      "specs": {
+        "Style Specifications": {
+          "Fitting Handle Material": "Metal"
+        },
+        "Technical Specifications": {
+          "Fitting Connection Size": "12.70 mm",
+          "Fitting Handle Height": "3-3/4 in",
+          "Fitting Handle Type": "Lever",
+          "Fitting Material": "Metal",
+          "Fitting Speed Connect": "No",
+          "Fitting Spout Reach": "5-3/16 in",
+          "Fitting Swivel Degrees": "0 °",
+          "Fitting Valve Material": "Ceramic",
+          "Fitting Valve Needed for Install": "No",
+          "Flow Rate": "1.2 GPM"
+        },
+        "Other Specs": {
+          "Warranty": "Limited Lifetime Warranty"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/168932_spec_7455207_TownSquare_S_2handle_sc_lav_faucet_original.pdf",
+          "localPath": "assets/7455207/docs/specSheet__168932_spec_7455207_TownSquare_S_2handle_sc_lav_faucet_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/137840_M965910_TownSqS_centerset_lav_745521X_EFS_original.pdf",
+          "localPath": "assets/7455207/docs/installationGuide__137840_M965910_TownSqS_centerset_lav_745521X_EFS_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/137867_RP_M965910_TownSqS_centerset_lav_745521X_EFS_original.pdf",
+          "localPath": "assets/7455207/docs/repairPartsDiagram__137867_RP_M965910_TownSqS_centerset_lav_745521X_EFS_original.pdf"
+        },
+        {
+          "type": "cad2d",
+          "label": "CAD Drawings 2D",
+          "fileType": "dwg",
+          "url": "https://lixil.cdn.celum.cloud/251964_Faucet-Two-Handle-American_Standard-Town_Square-7455207_original.dwg"
+        },
+        {
+          "type": "cad2d",
+          "label": "CAD Drawings 2D",
+          "fileType": "dwg",
+          "url": "https://lixil.cdn.celum.cloud/255449_Faucet-Two-Handle-American_Standard-Town_Square-7455207_original.dwg"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/245797_Faucet-Two-Handle-American_Standard-Town_Square-7455207_Series_original.rfa"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/254023_Faucet-Two-Handle-American_Standard-Town_Square-7455207_Series_original.rfa"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "MY8e9nno410",
+          "url": "https://www.youtube.com/watch?v=MY8e9nno410"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "7455207.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Chrome",
+          "listPrice": 346.0,
+          "price": 224.9,
+          "currency": "USD",
+          "upc": "012611627101",
+          "availableOnline": true,
+          "shopifyVariantId": 43782953435183,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61889_7455207002_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.002/00_main_61889.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61892_7455207002_1_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.002/01_gallery_61892.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/79664_B-7455207002_0297400020_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.002/02_gallery_79664.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7455207.013",
+          "finish": "Polished Nickel",
+          "options": {
+            "Finish": "Polished Nickel"
+          },
+          "variantTitle": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Nickel",
+          "listPrice": 467.0,
+          "price": 303.55,
+          "currency": "USD",
+          "upc": "012611627095",
+          "availableOnline": false,
+          "shopifyVariantId": 43782953467951,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61894_7455207013_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.013/00_main_61894.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61896_7455207013_1_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.013/01_gallery_61896.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7455207.278",
+          "finish": "Legacy Bronze",
+          "options": {
+            "Finish": "Legacy Bronze"
+          },
+          "variantTitle": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Legacy Bronze",
+          "listPrice": 465.0,
+          "price": 302.25,
+          "currency": "USD",
+          "upc": "012611627071",
+          "availableOnline": false,
+          "shopifyVariantId": 43622367002671,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61901_7455207278_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.278/00_main_61901.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61903_7455207278_1_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.278/01_gallery_61903.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7455207.295",
+          "finish": "Brushed Nickel",
+          "options": {
+            "Finish": "Brushed Nickel"
+          },
+          "variantTitle": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Nickel",
+          "listPrice": 467.0,
+          "price": 303.55,
+          "currency": "USD",
+          "upc": "012611627149",
+          "availableOnline": false,
+          "shopifyVariantId": 43782953500719,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61904_7455207295_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.295/00_main_61904.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61905_7455207295_1_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.295/01_gallery_61905.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7455207.243",
+          "finish": "Matte Black",
+          "options": {
+            "Finish": "Matte Black"
+          },
+          "variantTitle": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Matte Black",
+          "listPrice": 467.0,
+          "price": 303.55,
+          "currency": "USD",
+          "upc": "012611956867",
+          "availableOnline": false,
+          "shopifyVariantId": 43782953533487,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168575_TownSquareS_SiloLeft_7455207.243_0001_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.243/00_main_168575.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168578_TownSquareS_SiloRight_7455207.243_0001_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.243/01_gallery_168578.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168864_TownSquareS_SiloSide_7455207.243_0003_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.243/02_gallery_168864.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/176856_BrandStory_Infographic_Bathroom_0001_JUL2025_1_CDNwebp_780c0dcb-45ef-449e-b2aa-c173c2d4df39.webp",
+              "localPath": "assets/7455207/images/7455207.243/03_gallery_176856.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7455207.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "options": {
+            "Finish": "Brushed Cool Sunrise"
+          },
+          "variantTitle": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Cool Sunrise",
+          "listPrice": 502.0,
+          "price": 326.3,
+          "currency": "USD",
+          "upc": "012611956874",
+          "availableOnline": false,
+          "shopifyVariantId": 43782953599023,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168536_TownSquare_SiloRight_7455207.GN0_0001_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/7455207/images/7455207.GN0/00_main_168536.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/176856_BrandStory_Infographic_Generic_0001_JUL2023_CDNwebp_b8e5ceef-3493-4842-869d-d092680ca2b6.webp",
+              "localPath": "assets/7455207/images/7455207.GN0/01_gallery_176856.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/town-square-r-s-4-inch-centerset-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+        "name": "Town Square® S 4-Inch Centerset 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+        "description": "The Town Square S Centerset Faucet by American Standard is a paragon of classic elegance, featuring architecturally inspired details reminiscent of crown molding. This stately faucet is crafted from solid brass, making it a durable choice, ideal for prolonged contact with water. Available in tarnish- and scratch-resistant finishes, the Town Square S faucet will stay looking like new for years. A pop-up drain is included, for easy installation and use. Part of the Town Square S collection, the faucet is easy to match with the rest of the suite’s fittings and fixtures, for a total design solution that makes remodeling a perfectly matched bathroom effortless.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/61889_7455207002_CDNwebp.webp?v=1745613062&width=1200"
+        ],
+        "sku": "7455207.002",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 224.9,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/town-square-r-s-4-inch-centerset-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles"
+        }
+      }
+    },
+    {
+      "category": "bathroom-faucet",
+      "title": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+      "brand": "American Standard",
+      "collection": "Studio S",
+      "modelNumber": "7105801",
+      "sourceUrl": "https://www.americanstandard-us.com/products/studio-r-s-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "handle": "studio-r-s-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Bathroom Faucets",
+        "Widespread Bathroom Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 396.5,
+        "max": 575.25
+      },
+      "shortBullets": [
+        "Easy installation system",
+        "Brass spout for a durable and long-lasting design",
+        "Metal lever handles"
+      ],
+      "features": [
+        "Easy installation system includes cast brass valve bodies with integral flexible hose connections for 6\"-12\" (152 - 305 mm) installations",
+        "Brass spout for a durable and long-lasting design",
+        "Metal lever handles",
+        "WaterSense Certified – Water-saving maximum flow rate of 1.2 gallons per minute (1.2 gpm/4.5 L/min) without sacrificing performance",
+        "Brass push pop-up drain uses fewer parts and installs in less time",
+        "1/4 turn washerless ceramic disc valve cartridges",
+        "Integrated, color-coded flexible braided stainless steel supply hoses with 3/8\" (10 mm) compression connectors",
+        "Limited Lifetime Warrany on function and finish"
+      ],
+      "description": "The sleek geometric design and soft edges of the Studio S Widespread Bathroom Faucet provides a metropolitan update for modern bathrooms. Engineered with ceramic disc valves, the handles operate smoothly with drip-free performance. The WaterSense certified faucet provides up to 32% water-savings when compared to standard faucets and is CEC listed.",
+      "specs": {
+        "Style Specifications": {
+          "Features": "Water Efficient",
+          "Fitting Handle Material": "Metal"
+        },
+        "Technical Specifications": {
+          "Fitting Connection Size": "9.52 mm",
+          "Fitting Handle Height": "2-5/8 in",
+          "Fitting Handle Type": "Lever",
+          "Fitting Material": "Brass",
+          "Fitting Max Deck Thickness": "1-1/4 in",
+          "Fitting Max Deck Thickness with Escutcheon": "2 in",
+          "Fitting Speed Connect": "Yes",
+          "Fitting Spout Reach": "4-7/8 in",
+          "Fitting Valve Material": "Ceramic",
+          "Fitting Valve Needed for Install": "No",
+          "Flow Rate": "1.2 GPM"
+        },
+        "Other Specs": {
+          "Warranty": "Limited Lifetime Warranty"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/252025_spec_7105801-Studio%C2%AE%20S%208-Inch%20Widespread%202-Handle%20Bathroom%20Faucet%201_2%20gpm_4_5%20L_min%20With%20Lever%20Handles_original.pdf",
+          "localPath": "assets/7105801/docs/specSheet__252025_spec_7105801-Studio®_S_8-Inch_Widespread_2-Handle_Bathroom_Faucet_1_2_gpm_4_5_L_min_With_Lever_Handles_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/171524_as_us_bath_install__7105%20%285504%29_2_original.pdf",
+          "localPath": "assets/7105801/docs/installationGuide__171524_as_us_bath_install__7105_5504_2_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/168359_RP_7105801-821_M965780_StudioS_DC_ws_lav_faucet_EFS_original.pdf",
+          "localPath": "assets/7105801/docs/repairPartsDiagram__168359_RP_7105801-821_M965780_StudioS_DC_ws_lav_faucet_EFS_original.pdf"
+        },
+        {
+          "type": "cad2d",
+          "label": "CAD Drawings 2D",
+          "fileType": "dwg",
+          "url": "https://lixil.cdn.celum.cloud/255459_Faucet-Two_Handle-American_Standard-Studio_S-7105.801_original.dwg"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/173958_as_us_bath_cad_RFA__7105%20%282525%29_original.rfa"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/254029_Faucet-Two_Handle-American_Standard-Studio_S-71058X1_Series_original.rfa"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "CYsq7b2iCTU",
+          "url": "https://www.youtube.com/watch?v=CYsq7b2iCTU"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "7105801.243",
+          "finish": "Matte Black",
+          "options": {
+            "Finish": "Matte Black"
+          },
+          "variantTitle": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Matte Black",
+          "listPrice": 823.0,
+          "price": 534.95,
+          "currency": "USD",
+          "upc": "012611627576",
+          "availableOnline": true,
+          "shopifyVariantId": 43622400786479,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59079_7105801243_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.243/00_main_59079.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59080_7105801243_1_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.243/01_gallery_59080.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/67904_B-1298008020_8726033477_7105801243_CDNwebp_bdda560c-773b-43e9-8955-918f03fe8b2a.webp",
+              "localPath": "assets/7105801/images/7105801.243/02_gallery_67904.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7105801.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Chrome",
+          "listPrice": 610.0,
+          "price": 396.5,
+          "currency": "USD",
+          "upc": "012611597947",
+          "availableOnline": true,
+          "shopifyVariantId": 43622400819247,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59077_7105801002_1_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.002/00_main_59077.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/63350_8722000002_8726033020_1298008020_8727000020_7105801002_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.002/01_gallery_63350.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/63352_8722000002_8726033020_1298008020_8727000020_7105801002_1_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.002/02_gallery_63352.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/81486_B-9035804002_7105801002_CDNwebp_7adece24-66da-4102-9fa1-ad133bfbf916.webp",
+              "localPath": "assets/7105801/images/7105801.002/03_gallery_81486.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7105801.295",
+          "finish": "Brushed Nickel",
+          "options": {
+            "Finish": "Brushed Nickel"
+          },
+          "variantTitle": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Nickel",
+          "listPrice": 823.0,
+          "price": 534.95,
+          "currency": "USD",
+          "upc": "012611597930",
+          "availableOnline": true,
+          "shopifyVariantId": 43622400852015,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59070_7105801.295_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.295/00_main_59070.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/59084_7105801295_1_0_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.295/01_gallery_59084.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/81055_B-8726033.020_1298008.020_7105801.295_7105018.295_CDNwebp.webp",
+              "localPath": "assets/7105801/images/7105801.295/02_gallery_81055.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7105801.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "options": {
+            "Finish": "Brushed Cool Sunrise"
+          },
+          "variantTitle": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Cool Sunrise",
+          "listPrice": 885.0,
+          "price": 575.25,
+          "currency": "USD",
+          "upc": "012611955709",
+          "availableOnline": true,
+          "shopifyVariantId": 43622400884783,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168588_StudioS_SiloRight_7105801.GN0_0001_Jan2023_0_CDNwebp_a43e4edf-8f6a-4991-9db4-803bf8e353d8.webp",
+              "localPath": "assets/7105801/images/7105801.GN0/00_main_168588.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168590_StudioS_SiloLeft_7105801.GN0_0001_Mar2023_0_CDNwebp_28e166a4-7c37-4bd2-a66c-45c7c1edd79a.webp",
+              "localPath": "assets/7105801/images/7105801.GN0/01_gallery_168590.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168831_StudioS_SiloSide_7105801.GN0_0001_Apr2023_0_CDNwebp_7a619964-57c8-41ec-bf53-feae8770550c.webp",
+              "localPath": "assets/7105801/images/7105801.GN0/02_gallery_168831.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/169419_StudioS_EnvironmentFull_7105801.GN0_TU105740.GN0_0001_Jul2023_0_CDNwebp_99991839-cf8a-40e8-a6b3-e6b47539b47e.webp",
+              "localPath": "assets/7105801/images/7105801.GN0/03_gallery_169419.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/studio-r-s-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+        "name": "Studio® S 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+        "description": "The sleek geometric design and soft edges of the Studio S Widespread Bathroom Faucet provides a metropolitan update for modern bathrooms. Engineered with ceramic disc valves, the handles operate smoothly with drip-free performance. The WaterSense certified faucet provides up to 32% water-savings when compared to standard faucets and is CEC listed.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/59079_7105801243_CDNwebp.webp?v=1744857464&width=1200"
+        ],
+        "sku": "7105801.243",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 534.95,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/studio-r-s-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles"
+        }
+      }
+    },
+    {
+      "category": "bathroom-faucet",
+      "title": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+      "brand": "American Standard",
+      "collection": "Edgemere",
+      "modelNumber": "7018801",
+      "sourceUrl": "https://www.americanstandard-us.com/products/edgemere-r-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "handle": "edgemere-r-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Bathroom Faucets",
+        "Widespread Bathroom Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 290.55,
+        "max": 391.95
+      },
+      "shortBullets": [
+        "All metal construction",
+        "Exclusive SpeedConnect Drain for a simple installation process",
+        "Meets EPA WaterSense Criteria"
+      ],
+      "features": [
+        "All metal construction",
+        "Exclusive SpeedConnect Drain for a simple installation process",
+        "Meets EPA WaterSense Criteria",
+        "ADA Compliant",
+        "1.2 gallons per minute (4.5 liters per minute) maximum flow rate to conserve water",
+        "24” stainless steel braided flexible supply hoses with 3/8” compression connections",
+        "20” long flexible stainless steel drain cable"
+      ],
+      "description": "The Edgemere Widespread Bathroom Faucet is ideal for traditional and contemporary style bathrooms. This transitional inspired bathroom faucet is EPA WaterSense certified and includes a SpeedConnect drain for a smooth installation process. It is constructed of all metal and is available in three beautiful finishes.",
+      "specs": {
+        "Style Specifications": {
+          "Fitting Handle Material": "Metal"
+        },
+        "Technical Specifications": {
+          "Fitting Connection Size": "9.52 mm",
+          "Fitting Handle Height": "4-1/8 in",
+          "Fitting Handle Type": "Lever",
+          "Fitting Material": "Brass",
+          "Fitting Max Deck Thickness": "1-1/4 in",
+          "Fitting Speed Connect": "Yes",
+          "Fitting Spout Reach": "4-3/4 in",
+          "Fitting Valve Material": "Ceramic",
+          "Fitting Valve Needed for Install": "No",
+          "Flow Rate": "1.2 GPM"
+        },
+        "Other Specs": {
+          "Warranty": "Limited Lifetime Warranty"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/173217_as_us_bath_spec__7018%20%287918%29_original.pdf",
+          "localPath": "assets/7018801/docs/specSheet__173217_as_us_bath_spec__7018_7918_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/173474_as_us_bath_install__7018%20%285247%29_0_original.pdf",
+          "localPath": "assets/7018801/docs/installationGuide__173474_as_us_bath_install__7018_5247_0_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/172018_as_us_bath_parts__7018%20%285944%29_original.pdf",
+          "localPath": "assets/7018801/docs/repairPartsDiagram__172018_as_us_bath_parts__7018_5944_original.pdf"
+        },
+        {
+          "type": "cad2d",
+          "label": "CAD Drawings 2D",
+          "fileType": "dwg",
+          "url": "https://lixil.cdn.celum.cloud/255326_Faucet-Two_Handle-American_Standard-Edgmere-7018.801_original.dwg"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/244482_Faucet-Two_Handle-American_Standard-Edgmere-7018801_Series_original.rfa"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/253827_Faucet-Two_Handle-American_Standard-Edgmere-7018801_Series_original.rfa"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "CcOm_V_lvys",
+          "url": "https://www.youtube.com/watch?v=CcOm_V_lvys"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "7018801.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Polished Chrome",
+          "listPrice": 447.0,
+          "price": 290.55,
+          "currency": "USD",
+          "upc": "012611599644",
+          "availableOnline": true,
+          "shopifyVariantId": 43622407929903,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57965_7018801002_4_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.002/00_main_57965.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57967_7018801002_5_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.002/01_gallery_57967.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57968_7018801002_6_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.002/02_gallery_57968.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7018801.278",
+          "finish": "Legacy Bronze",
+          "options": {
+            "Finish": "Legacy Bronze"
+          },
+          "variantTitle": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Legacy Bronze",
+          "listPrice": 561.0,
+          "price": 364.65,
+          "currency": "USD",
+          "upc": "012611599637",
+          "availableOnline": false,
+          "shopifyVariantId": 43622407962671,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57979_7018801278_1_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.278/00_main_57979.jpg",
+              "width": 1000,
+              "height": 1000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7018801.295",
+          "finish": "Brushed Nickel",
+          "options": {
+            "Finish": "Brushed Nickel"
+          },
+          "variantTitle": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Brushed Nickel",
+          "listPrice": 603.0,
+          "price": 391.95,
+          "currency": "USD",
+          "upc": "012611599620",
+          "availableOnline": true,
+          "shopifyVariantId": 43622407995439,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57981_7018801295_1_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.295/00_main_57981.jpg",
+              "width": 1000,
+              "height": 1000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57983_7018801295_2_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.295/01_gallery_57983.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7018801.243",
+          "finish": "Matte Black",
+          "options": {
+            "Finish": "Matte Black"
+          },
+          "variantTitle": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles - Matte Black",
+          "listPrice": 603.0,
+          "price": 391.95,
+          "currency": "USD",
+          "upc": "012611914225",
+          "availableOnline": true,
+          "shopifyVariantId": 43622408028207,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/152255_7018801.243_2_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.243/00_main_152255.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57944_7018801.243_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.243/01_gallery_57944.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/57947_7018801.243_1_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.243/02_gallery_57947.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/152298_B-7018801.243_TU018507.243_0_CDNwebp.webp",
+              "localPath": "assets/7018801/images/7018801.243/03_gallery_152298.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/edgemere-r-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles",
+        "name": "Edgemere® 8-Inch Widespread 2-Handle Bathroom Faucet 1.2 gpm/4.5 L/min With Lever Handles",
+        "description": "The Edgemere Widespread Bathroom Faucet is ideal for traditional and contemporary style bathrooms. This transitional inspired bathroom faucet is EPA WaterSense certified and includes a SpeedConnect drain for a smooth installation process. It is constructed of all metal and is available in three beautiful finishes.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/57965_7018801002_4_CDNwebp.webp?v=1744857608&width=1200"
+        ],
+        "sku": "7018801.002",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 290.55,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/edgemere-r-8-inch-widespread-2-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handles"
+        }
+      }
+    },
+    {
+      "category": "toilet",
+      "title": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat",
+      "brand": "American Standard",
+      "collection": "Champion",
+      "modelNumber": "2034314",
+      "sourceUrl": "https://www.americanstandard-us.com/products/champion-r-4-one-piece-1-6-gpf-6-0-lpf-chair-height-elongated-toilet-with-seat",
+      "handle": "champion-r-4-one-piece-1-6-gpf-6-0-lpf-chair-height-elongated-toilet-with-seat",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Toilets",
+        "One-Piece Toilets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 592.15,
+        "max": 691.6
+      },
+      "shortBullets": [
+        "CLOG-FREE RELIABILITY: Large 4-in. flush valve for optimal power",
+        "EASY TO KEEP CLEAN: One-piece toilet has less seams and crevices",
+        "EverClean® antimicrobial surface: Protects against bacteria"
+      ],
+      "features": [
+        "INDUSTRY-LEADING POWER: Equipped with a large 4-in. flush valve (102 mm) and 2-3/8-in. (60 mm) fully-glazed trapway this one-piece toilet is virtually clog-free",
+        "EASY-CLEAN ONE-PIECE TOILET: Sleek, seamless construction eliminates the crevices where dirt can hide, and EverClean® antimicrobial surface protects against mold, mildew, odor- and stain-causing bacteria on toilet",
+        "CHAIR-HEIGHT COMFORT: 16 1/2-in. bowl height makes accessibility, sitting and standing easier and more comfortable",
+        "SLOW-CLOSE TOILET SEAT: Durable toilet seat with slow-close hinge eliminates slamming",
+        "INCLUDES: Chrome trip lever and bolt caps",
+        "12\" (305mm) rough-in",
+        "2-3/8\" (60mm) fully-glazed trapway",
+        "16-1/2\" (419 mm) rim height",
+        "100% factory flush tested"
+      ],
+      "description": "The Champion 4 One-Piece Elongated Toilet from American Standard is engineered for clog-free performance. This one-piece toilet features a 4-in. flush valve, the largest in the industry, to produce a fast, powerful flush that effectively clears the bowl. Designed for comfortable use and ease of accessibility, the chair-height bowl is 16 ½-in. high with an elongated shape that offers a more spacious interior bowl surface. The slow-close toilet seat eliminates the noise and annoyance of slamming. .brand-icons img { width: var(--brand-icon-size-m); height: var(--brand-icon-size-m); } @media (min-width: 1024px) { .brand-icons img { width: var(--brand-icon-size-d); height: var(--brand-icon-size-d); } }",
+      "specs": {
+        "Style Specifications": {
+          "Item Shape": "Bowl Shape: Elongated",
+          "Toilet Type": "One Piece",
+          "Warranty": "10 Year Limited Warranty"
+        },
+        "Technical Specifications": {
+          "Flush Valve Size": "4 in",
+          "Flush Technology": "Gravity Fed",
+          "Flushing Type": "Single Flush",
+          "GPF Maximum": "1.6 gpf",
+          "Tank Included": "Yes",
+          "Toilet Bowl Height with Seat": "18-7/16 in",
+          "Insulated Toilet Tank": "No",
+          "Toilet Seat Included": "Yes",
+          "Toilet Trapway Diameter": "2-3/8 in",
+          "Toilet Type": "One Piece",
+          "Bidet Spray Type": "Yes",
+          "Everclean": "Yes",
+          "No. of Flush Valves": "1"
+        },
+        "Other Specs": {
+          "Warranty": "10 Year Limited Warranty",
+          "Battery Lifetime": "Not Applicable (N/A)"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/167867_as_us_bath_spec__2034%20%287428%29_0_original.pdf",
+          "localPath": "assets/2034314/docs/specSheet__167867_as_us_bath_spec__2034_7428_0_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/172873_as_us_bath_install__2034%20%284489%29_0_original.pdf",
+          "localPath": "assets/2034314/docs/installationGuide__172873_as_us_bath_install__2034_4489_0_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/167408_as_us_bath_parts__2034%20%285596%29_original.pdf",
+          "localPath": "assets/2034314/docs/repairPartsDiagram__167408_as_us_bath_parts__2034_5596_original.pdf"
+        }
+      ],
+      "videos": [],
+      "variants": [
+        {
+          "sku": "2034314.020",
+          "finish": "White",
+          "options": {
+            "Finish": "White"
+          },
+          "variantTitle": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat - White",
+          "listPrice": 911.0,
+          "price": 592.15,
+          "currency": "USD",
+          "upc": "033056697863",
+          "availableOnline": true,
+          "shopifyVariantId": 43622288949295,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153436_2034314.020_2_1_CDNwebp_a3114a68-76f7-4042-bc98-f91e2305b50e.webp",
+              "localPath": "assets/2034314/images/2034314.020/00_main_153436.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153460_2034314.020_1_CDNwebp_f4913810-19ba-4f6f-8e54-e4f1e4a96e64.webp",
+              "localPath": "assets/2034314/images/2034314.020/01_gallery_153460.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153472_2034314.020_3_1_CDNwebp_2a9fec89-e596-436e-a1a9-3eda9214c303.webp",
+              "localPath": "assets/2034314/images/2034314.020/02_gallery_153472.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153473_2034314.020_1_1_CDNwebp_4bb19fa6-09b4-4a3f-8c91-210514fadd45.webp",
+              "localPath": "assets/2034314/images/2034314.020/03_gallery_153473.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "2034314.021",
+          "finish": "Bone",
+          "options": {
+            "Finish": "Bone"
+          },
+          "variantTitle": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat - Bone",
+          "listPrice": 1064.0,
+          "price": 691.6,
+          "currency": "USD",
+          "upc": "033056697870",
+          "availableOnline": false,
+          "shopifyVariantId": 43622288982063,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153430_2034314.021_2_0_CDNwebp_08a23d8e-f350-480f-b077-5885f71fc6dc.webp",
+              "localPath": "assets/2034314/images/2034314.021/00_main_153430.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153455_2034314.021_1_0_CDNwebp_72f0e30f-1bc8-4579-9749-0fe3f4482803.webp",
+              "localPath": "assets/2034314/images/2034314.021/01_gallery_153455.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153457_2034314.021_0_CDNwebp_1a436ed5-45a4-4537-8df3-f00d86132bfc.webp",
+              "localPath": "assets/2034314/images/2034314.021/02_gallery_153457.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153474_2034314.021_3_0_CDNwebp_0cce84e3-3443-430a-ac05-0f33070350d7.webp",
+              "localPath": "assets/2034314/images/2034314.021/03_gallery_153474.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "2034314.222",
+          "finish": "Linen",
+          "options": {
+            "Finish": "Linen"
+          },
+          "variantTitle": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat - Linen",
+          "listPrice": 1064.0,
+          "price": 691.6,
+          "currency": "USD",
+          "upc": "033056697900",
+          "availableOnline": false,
+          "shopifyVariantId": 43622289014831,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153434_2034314.222_2_0_CDNwebp.webp",
+              "localPath": "assets/2034314/images/2034314.222/00_main_153434.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153435_2034314.222_0_CDNwebp.webp",
+              "localPath": "assets/2034314/images/2034314.222/01_gallery_153435.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153448_2034314.222_1_0_CDNwebp.webp",
+              "localPath": "assets/2034314/images/2034314.222/02_gallery_153448.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/153462_2034314.222_3_0_CDNwebp.webp",
+              "localPath": "assets/2034314/images/2034314.222/03_gallery_153462.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/champion-r-4-one-piece-1-6-gpf-6-0-lpf-chair-height-elongated-toilet-with-seat",
+        "name": "Champion® 4 One-Piece 1.6 gpf/6.0 Lpf Chair Height Elongated Toilet With Seat",
+        "description": "The Champion 4 One-Piece Elongated Toilet from American Standard is engineered for clog-free performance. This one-piece toilet features a 4-in. flush valve, the largest in the industry, to produce a fast, powerful flush that effectively clears the bowl. Designed for comfortable use and ease of accessibility, the chair-height bowl is 16 ½-in. high with an elongated shape that offers a more spacious interior bowl surface. The slow-close toilet seat eliminates the noise and annoyance of slamming.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/153436_2034314.020_2_1_CDNwebp_a3114a68-76f7-4042-bc98-f91e2305b50e.webp?v=1758816379&width=1200"
+        ],
+        "sku": "2034314.020",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 592.15,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/champion-r-4-one-piece-1-6-gpf-6-0-lpf-chair-height-elongated-toilet-with-seat"
+        }
+      }
+    },
+    {
+      "category": "toilet",
+      "title": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat",
+      "brand": "American Standard",
+      "collection": "Cadet®",
+      "modelNumber": "215AA104",
+      "sourceUrl": "https://www.americanstandard-us.com/products/cadet-r-pro-two-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-less-seat",
+      "handle": "cadet-r-pro-two-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-less-seat",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Toilets",
+        "Two-Piece Toilets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 303.55,
+        "max": 482.3
+      },
+      "shortBullets": [
+        "Plumber tested, plumber approved: Reliability proven by the pros",
+        "EverClean® antimicrobial surface: Protects against bacteria",
+        "Warranty: Limited Lifetime on chinaware, limited 5-yr. on parts"
+      ],
+      "features": [
+        "Trade-exclusive tank",
+        "12-inch rough-in",
+        "WaterSense® certified: Uses 20 percent less water and performs as well as or better than regular toilets",
+        "Chair-height comfort: Measures 17” tall, including seat, for ease of use compared to standard height. Slight variation in height may occur based on the height of the seat used.",
+        "ADA compliant: Meets Americans with Disabilities Act requirements for use and accessibility",
+        "PowerWash® rim: Scrubs the bowl clean with every flush",
+        "Finishing touches: Includes color-matched bowl caps and trip lever",
+        "Metal parts: Robust metal trip lever and metal shank fill valve",
+        "Durable construction: Made from quality vitreous china for strength and reliability",
+        "Less seat: Toilet seat is sold separately"
+      ],
+      "description": "The Cadet PRO Chair-Height Elongated Toilet from American Standard is plumber tested and plumber approved. The Cadet is backed by an industry-leading warranty that includes limited lifetime on chinaware, limited 5 years on mechanical parts. This chair-height toilet features an elongated bowl for optimal comfort. Engineered for high-efficiency, low consumption, it uses 1.28 gallons per flush, 20% less water than a regular toilet, and is WaterSense® certified, your assurance of optimal water savings, quality and performance. EverClean® antimicrobial surface to protect against mold, mildew, odor- and stain-causing bacteria. .brand-icons img { width: var(--brand-icon-size-m); height: var(--brand-icon-size-m); } @media (min-width: 1024px) { .brand-icons img { width: var(--brand-icon-size-d); height: var(--brand-icon-size-d); } }",
+      "specs": {
+        "Style Specifications": {
+          "Features": "Water Efficient",
+          "Item Shape": "Bowl Shape: Elongated",
+          "Toilet Type": "Two Piece",
+          "Warranty": "5 Year Limited Warranty"
+        },
+        "Technical Specifications": {
+          "Flush Valve Size": "3 in",
+          "Flush Technology": "Gravity Fed",
+          "Flushing Type": "Single Flush",
+          "GPF Maximum": "1.28 gpf",
+          "Tank Included": "Yes",
+          "Insulated Toilet Tank": "No",
+          "Toilet Seat Included": "No",
+          "Toilet Trapway Diameter": "2-1/8 in",
+          "Toilet Type": "Two Piece",
+          "Bidet Spray Type": "Yes",
+          "Everclean": "Yes",
+          "No. of Flush Valves": "1"
+        },
+        "Other Specs": {
+          "Warranty": "5 Year Limited Warranty"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/172117_as_us_bath_spec_215A7102_0_original.pdf",
+          "localPath": "assets/215AA104/docs/specSheet__172117_as_us_bath_spec_215A7102_0_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/232118_139439_Cadet_bowl-7301878-100_EN_FR_SP_original_0_original.pdf",
+          "localPath": "assets/215AA104/docs/installationGuide__232118_139439_Cadet_bowl-7301878-100_EN_FR_SP_original_0_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/247225_CadetPro_Parts_Toilets_July2024_original.pdf",
+          "localPath": "assets/215AA104/docs/repairPartsDiagram__247225_CadetPro_Parts_Toilets_July2024_original.pdf"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "1nLlngA3mDk",
+          "url": "https://www.youtube.com/watch?v=1nLlngA3mDk"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "215AA104.020",
+          "finish": "White",
+          "options": {
+            "Finish": "White"
+          },
+          "variantTitle": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat - White",
+          "listPrice": 467.0,
+          "price": 303.55,
+          "currency": "USD",
+          "upc": "791556010246",
+          "availableOnline": false,
+          "shopifyVariantId": 43622285344815,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/231787_CadetPro_SiloFront_215AA104.020_0001_Oct2023_CDNwebp_50051330-a355-4ca1-afc4-b2619995bd15.webp",
+              "localPath": "assets/215AA104/images/215AA104.020/00_main_231787.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/231799_CadetPro_SiloFront_215AA104.020_0002_Oct2023_CDNwebp_b7ae119a-477a-4dd6-8b2e-c2b2161820f5.webp",
+              "localPath": "assets/215AA104/images/215AA104.020/01_gallery_231799.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/231800_CadetPro_SiloRight_215AA104.020_0002_Oct2023_CDNwebp_ed253cd8-03b3-446b-bf1c-ecd51ce84bae.webp",
+              "localPath": "assets/215AA104/images/215AA104.020/02_gallery_231800.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/231807_CadetPro_SiloLeft_215AA104.020_0001_Oct2023_CDNwebp_afadbc4f-c104-4194-ad64-1fe990a34f3d.webp",
+              "localPath": "assets/215AA104/images/215AA104.020/03_gallery_231807.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "215AA104.021",
+          "finish": "Bone",
+          "options": {
+            "Finish": "Bone"
+          },
+          "variantTitle": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat - Bone",
+          "listPrice": 742.0,
+          "price": 482.3,
+          "currency": "USD",
+          "upc": "791556010253",
+          "availableOnline": true,
+          "shopifyVariantId": 43622285377583,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/29517_215aa104021_0_CDNwebp.webp",
+              "localPath": "assets/215AA104/images/215AA104.021/00_main_29517.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/174340_B-215AA104.021_215AB.004.021_215AB.104.021_215FA.004.021_215FA.021_215FC.004.021_215FC.104.021_0_CDNwebp.webp",
+              "localPath": "assets/215AA104/images/215AA104.021/01_gallery_174340.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/67113_AS_Cadet_PRO_Toilet_215AA104_Info_1_CDNwebp_a2c4925a-d9f7-4164-9d5e-63ad55e44f28.webp",
+              "localPath": "assets/215AA104/images/215AA104.021/02_gallery_67113.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "215AA104.222",
+          "finish": "Linen",
+          "options": {
+            "Finish": "Linen"
+          },
+          "variantTitle": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat - Linen",
+          "listPrice": 742.0,
+          "price": 482.3,
+          "currency": "USD",
+          "upc": "791556010260",
+          "availableOnline": true,
+          "shopifyVariantId": 43622285410351,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/29519_215aa104222_0_CDNwebp.webp",
+              "localPath": "assets/215AA104/images/215AA104.222/00_main_29519.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/174339_B-215AA104.222_215AB.004.222_215AB.104.222_215FA.004.222_215FA.222_215FC.004.222_215FC.104.222_0_CDNwebp.webp",
+              "localPath": "assets/215AA104/images/215AA104.222/01_gallery_174339.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/187734_EverClean_Infographic_ToiletOnly_0001_MAR2025_CDNwebp_58dd6f2c-e45a-4e46-9500-95c3ee064de9.webp",
+              "localPath": "assets/215AA104/images/215AA104.222/02_gallery_187734.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/cadet-r-pro-two-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-less-seat",
+        "name": "Cadet® PRO Two-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet Less Seat",
+        "description": "The Cadet PRO Chair-Height Elongated Toilet from American Standard is plumber tested and plumber approved. The Cadet is backed by an industry-leading warranty that includes limited lifetime on chinaware, limited 5 years on mechanical parts. This chair-height toilet features an elongated bowl for optimal comfort. Engineered for high-efficiency, low consumption, it uses 1.28 gallons per flush, 20% less water than a regular toilet, and is WaterSense® certified, your assurance of optimal water savings, quality and performance. EverClean® antimicrobial surface to protect against mold, mildew, odor- and stain-causing bacteria.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/231787_CadetPro_SiloFront_215AA104.020_0001_Oct2023_CDNwebp_50051330-a355-4ca1-afc4-b2619995bd15.webp?v=1744849846&width=1200"
+        ],
+        "sku": "215AA104.021",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 482.3,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/cadet-r-pro-two-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-less-seat"
+        }
+      }
+    },
+    {
+      "category": "toilet",
+      "title": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat",
+      "brand": "American Standard",
+      "collection": "Town Square® S",
+      "modelNumber": "2851A104",
+      "sourceUrl": "https://www.americanstandard-us.com/products/town-square-r-s-one-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-with-seat",
+      "handle": "town-square-r-s-one-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-with-seat",
+      "breadcrumbs": [
+        "Home",
+        "Bathroom",
+        "Toilets",
+        "One-Piece Toilets"
+      ],
+      "optionNames": [
+        "Trip Lever Location",
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 848.9,
+        "max": 903.5
+      },
+      "shortBullets": [
+        "Powerful flush: High efficiency performance and water savings",
+        "Easy to clean: Skirted 1-piece has nowhere for dirt to hide",
+        "Cleaner bowl: PowerWash® rim scrubs the bowl with every flush"
+      ],
+      "features": [
+        "Richly detailed one-piece design: Edged in crown molding-inspired details for a seamless, architectural look",
+        "Coordinated style: Perfectly complements the American Standard Town Square S Bathroom Collection",
+        "Water-saving: High-efficiency 1.28 gpf (4.8 lpf) uses 20% less water than a 1.6 gpf toilet resulting in water conservation, cost savings, and WaterSense® certification for efficiency and performance",
+        "Comfortable height for all users: 16 ½ inch chair-height bowl makes sitting and standing easier, and is ADA compliant, ideal for adults, seniors, and those with mobility issues",
+        "Antimicrobial surface: EverClean® protects against mold, mildew, odor- and stain-causing bacteria on the toilet",
+        "Includes: Slow-close, no-slam seat and chrome-finish trip lever",
+        "Durable quality: Lifetime warranty on chinaware, 10-year warranty on mechanical parts, and 1-year warranty on seat"
+      ],
+      "description": "Elevate your bathroom with the American Standard Town Square S Chair Height Skirted Elongated Toilet. This luxury performance toilet blends classic architectural design with modern efficiency. Featuring elegant crown molding-inspired details, it seamlessly coordinates with the entire Town Square S collection. Save water with its high-efficiency 1.28 gallons per flush (gpf) rate, meeting WaterSense® requirements. The Chair Height® elongated bowl offers superior comfort, while the EverClean® surface with antimicrobial properties prevents the growth of stain and odor-causing bacteria, mold, and mildew. Enjoy a pristine bowl with every flush thanks to the powerful PowerWash® rim, and the wipe-clean ease of its smooth, skirted sides. .brand-icons img { width: var(--brand-icon-size-m); height: var(--brand-icon-size-m); } @media (min-width: 1024px) { .brand-icons img { width: var(--brand-icon-size-d); height: var(--brand-icon-size-d); } }",
+      "specs": {
+        "Style Specifications": {
+          "Features": "Water Efficient",
+          "Item Shape": "Bowl Shape: Elongated",
+          "Toilet Type": "One Piece",
+          "Warranty": "10 Year Limited Warranty"
+        },
+        "Technical Specifications": {
+          "Flush Valve Size": "3 in",
+          "Flush Technology": "Gravity Fed",
+          "Flushing Type": "Single Flush",
+          "GPF Maximum": "1.28 gpf",
+          "Tank Included": "Yes",
+          "Toilet Bowl Height with Seat": "18-3/4 in",
+          "Insulated Toilet Tank": "No",
+          "Toilet Seat Included": "Yes",
+          "Toilet Trapway Diameter": "2-1/8 in",
+          "Toilet Type": "One Piece",
+          "Bidet Spray Type": "Yes",
+          "Everclean": "Yes",
+          "No. of Flush Valves": "1"
+        },
+        "Other Specs": {
+          "Warranty": "10 Year Limited Warranty",
+          "Battery Lifetime": "Not Applicable (N/A)"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/171460_as_us_bath_spec__2851%20%288615%29_original.pdf",
+          "localPath": "assets/2851A104/docs/specSheet__171460_as_us_bath_spec__2851_8615_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/139566_2851A104_TownSq-1pc_7301450-100_EN_0_original.pdf",
+          "localPath": "assets/2851A104/docs/installationGuide__139566_2851A104_TownSq-1pc_7301450-100_EN_0_original.pdf"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "z_sYTOc7osE",
+          "url": "https://www.youtube.com/watch?v=z_sYTOc7osE"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "2851A104.222",
+          "finish": "Linen",
+          "options": {
+            "Trip Lever Location": "Left",
+            "Finish": "Linen"
+          },
+          "variantTitle": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat - Left / Linen",
+          "listPrice": 1390.0,
+          "price": 903.5,
+          "currency": "USD",
+          "upc": "193406019407",
+          "availableOnline": false,
+          "shopifyVariantId": 43622283051055,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/174411_2851A104222_1_0_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.222/00_main_174411.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/51922_2851A104222_0_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.222/01_gallery_51922.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/51924_2851A104222_1_0_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.222/02_gallery_51924.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "2851A104.020",
+          "finish": "White",
+          "options": {
+            "Trip Lever Location": "Left",
+            "Finish": "White"
+          },
+          "variantTitle": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat - Left / White",
+          "listPrice": 1306.0,
+          "price": 848.9,
+          "currency": "USD",
+          "upc": "193406019544",
+          "availableOnline": true,
+          "shopifyVariantId": 43622283018287,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/226561_2851A104020_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.020/00_main_226561.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/51919_2851A104020_0_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.020/01_gallery_51919.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/51920_2851A104020_1_0_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.020/02_gallery_51920.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/71355_B-2851A104020_CDNwebp.webp",
+              "localPath": "assets/2851A104/images/2851A104.020/03_gallery_71355.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/town-square-r-s-one-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-with-seat",
+        "name": "Town Square® S One-Piece 1.28 gpf/4.8 Lpf Chair Height Elongated Toilet With Seat",
+        "description": "Elevate your bathroom with the American Standard Town Square S Chair Height Skirted Elongated Toilet. This luxury performance toilet blends classic architectural design with modern efficiency. Featuring elegant crown molding-inspired details, it seamlessly coordinates with the entire Town Square S collection. Save water with its high-efficiency 1.28 gallons per flush (gpf) rate, meeting WaterSense® requirements. The Chair Height® elongated bowl offers superior comfort, while the EverClean® surface with antimicrobial properties prevents the growth of stain and odor-causing bacteria, mold, and mildew. Enjoy a pristine bowl with every flush thanks to the powerful PowerWash® rim, and the wipe-clean ease of its smooth, skirted sides.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/226561_2851A104020_CDNwebp.webp?v=1790747124&width=1200"
+        ],
+        "sku": "2851A104.020",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 848.9,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/town-square-r-s-one-piece-1-28-gpf-4-8-lpf-chair-height-elongated-toilet-with-seat"
+        }
+      }
+    },
+    {
+      "category": "kitchen-faucet",
+      "title": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min",
+      "brand": "American Standard",
+      "collection": "Delancey",
+      "modelNumber": "4279300",
+      "sourceUrl": "https://www.americanstandard-us.com/products/delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min",
+      "handle": "delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min",
+      "breadcrumbs": [
+        "Home",
+        "Kitchen Faucets",
+        "Single Hole Pull Down Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 421.2,
+        "max": 611.0
+      },
+      "shortBullets": [
+        "SINGLE-HANDLE KITCHEN FAUCET: Single-hole installation",
+        "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve",
+        "DUAL SPRAY: Easily switch from stream to spray"
+      ],
+      "features": [
+        "PULL-DOWN DUAL-SPRAY FAUCET: Traditional single-hole kitchen faucet with toggle on spray head to easily switch from regular stream to spray functions",
+        "SMOOTH RETRACTION: Re-Trax® system ensures smooth extension, retraction and docking of the faucet spray head",
+        "DRIP-FREE: This single-handle kitchen faucet features a quality ceramic disc valve ensuring drip-free performance for life",
+        "HIGH-ARC SWIVEL SPOUT: Provides ample clearance to fill large pots and access the entire sink",
+        "FORWARD ROTATING HANDLE: Will not interfere with the backsplash",
+        "WATER SAVINGS: Flow rate of 1.5 gallons per minute helps conserve water without sacrificing performance",
+        "BUILT TO LAST: Durable brass spout, metal body and lever handle ensure years of reliable use",
+        "LEAD-FREE: Faucet contains ? 0.25% total lead content by weighted average",
+        "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean",
+        "WARRANTY: Limited lifetime warranty on function and finish"
+      ],
+      "description": "The Delancey Pull-Down Single-Handle Kitchen Faucet from American Standard is a traditional swivel kitchen faucet with today’s favorite features. The pull-down spray head features regular stream, spray for rinsing, and pause to tackle every kitchen task with ease. Durable brass spout, metal body and lever handle withstand everyday use in the busiest kitchen.",
+      "specs": {
+        "Style Specifications": {
+          "Color/Finish": "Brushed Cool Sunrise",
+          "Faucet Type": "Yes",
+          "Features": "Pull Down, Water Efficient",
+          "Fitting Material": "Metal",
+          "Side Spray Included": "No"
+        },
+        "Technical Specifications": {
+          "Dimensions": "Height: 16-11/16 in, Weight: 5.908 lb",
+          "Fitting Connection Size": "9.52 mm",
+          "Fitting Handle Height": "3-3/4 in",
+          "Fitting Max Deck Thickness": "2 in",
+          "Fitting Max Deck Thickness with Escutcheon": "2-5/16 in",
+          "Fitting Holes Required": "1",
+          "Fitting Spout Reach": "8-11/16 in",
+          "Fitting Swivel Degrees": "360 °",
+          "Fitting Valve Material": "Ceramic",
+          "Flow Rate": "1.5 GPM"
+        },
+        "Other Specs": {
+          "Warranty": "Limited Lifetime Warranty"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/167329_spec_4279300_Delancey_sc_kitchen_faucets_original.pdf",
+          "localPath": "assets/4279300/docs/specSheet__167329_spec_4279300_Delancey_sc_kitchen_faucets_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/171452_as_us_kitc_install__4279%20%288943%29_original.pdf",
+          "localPath": "assets/4279300/docs/installationGuide__171452_as_us_kitc_install__4279_8943_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/168274_RP_M965796_Dalancey_pd_kitch_4279.300_EFS_original.pdf",
+          "localPath": "assets/4279300/docs/repairPartsDiagram__168274_RP_M965796_Dalancey_pd_kitch_4279.300_EFS_original.pdf"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/173894_as_us_kitc_cad_RFA__4279%20%283963%29_original.rfa"
+        }
+      ],
+      "videos": [],
+      "variants": [
+        {
+          "sku": "4279300.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Polished Chrome",
+          "listPrice": 648.0,
+          "price": 421.2,
+          "currency": "USD",
+          "upc": "012611597114",
+          "availableOnline": false,
+          "shopifyVariantId": 43622425231407,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30540_4279300002_1_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.002/00_main_30540.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30543_4279300002_2_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.002/01_gallery_30543.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/72573_B-4279300002_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.002/02_gallery_72573.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4279300.013",
+          "finish": "Polished Nickel",
+          "options": {
+            "Finish": "Polished Nickel"
+          },
+          "variantTitle": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Polished Nickel",
+          "listPrice": 875.0,
+          "price": 568.75,
+          "currency": "USD",
+          "upc": "012611597091",
+          "availableOnline": false,
+          "shopifyVariantId": 43622425264175,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30549_4279300013_1_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.013/00_main_30549.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30552_4279300013_2_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.013/01_gallery_30552.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/72579_B-4279300013_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.013/02_gallery_72579.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4279300.075",
+          "finish": "Stainless Steel",
+          "options": {
+            "Finish": "Stainless Steel"
+          },
+          "variantTitle": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Stainless Steel",
+          "listPrice": 875.0,
+          "price": 568.75,
+          "currency": "USD",
+          "upc": "012611597107",
+          "availableOnline": false,
+          "shopifyVariantId": 43622425296943,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30557_4279300075_1_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.075/00_main_30557.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30558_4279300075_2_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.075/01_gallery_30558.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/100791_L-4279300075_1_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.075/02_gallery_100791.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4279300.278",
+          "finish": "Legacy Bronze",
+          "options": {
+            "Finish": "Legacy Bronze"
+          },
+          "variantTitle": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Legacy Bronze",
+          "listPrice": 682.0,
+          "price": 443.3,
+          "currency": "USD",
+          "upc": "012611597084",
+          "availableOnline": false,
+          "shopifyVariantId": 43622425329711,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30565_4279300278_1_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.278/00_main_30565.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/30566_4279300278_2_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.278/01_gallery_30566.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/72594_B-4279300278_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.278/02_gallery_72594.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4279300.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "options": {
+            "Finish": "Brushed Cool Sunrise"
+          },
+          "variantTitle": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min - Brushed Cool Sunrise",
+          "listPrice": 940.0,
+          "price": 611.0,
+          "currency": "USD",
+          "upc": "012611955334",
+          "availableOnline": false,
+          "shopifyVariantId": 43622425362479,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168561_Delancey_SiloLeft_4279300.GN0_0002_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.GN0/00_main_168561.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168597_Delancey_SiloRight_4279300.GN0_0001_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.GN0/01_gallery_168597.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168974_Delancey_SiloSide_4279300.GN0_0003_Mar2023_0_CDNwebp.webp",
+              "localPath": "assets/4279300/images/4279300.GN0/02_gallery_168974.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/169315_Delancey_Infographic_4279300_0001_JUN2023_CDNwebp_d47d868f-7033-4df1-93a9-a28e0de9fe9e.webp",
+              "localPath": "assets/4279300/images/4279300.GN0/03_gallery_169315.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min",
+        "name": "Delancey® Single-Handle Pull-Down Dual Spray Function Kitchen Faucet 1.5 gpm/5.7 L/min",
+        "description": "The Delancey Pull-Down Single-Handle Kitchen Faucet from American Standard is a traditional swivel kitchen faucet with today’s favorite features. The pull-down spray head features regular stream, spray for rinsing, and pause to tackle every kitchen task with ease. Durable brass spout, metal body and lever handle withstand everyday use in the busiest kitchen.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/30540_4279300002_1_CDNwebp.webp?v=1744858760&width=1200"
+        ],
+        "sku": "4279300.002",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 421.2,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/OutOfStock",
+          "url": "https://www.americanstandard-us.com/products/delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min"
+        }
+      }
+    },
+    {
+      "category": "kitchen-faucet",
+      "title": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min",
+      "brand": "American Standard",
+      "collection": "Studio S",
+      "modelNumber": "4803300",
+      "sourceUrl": "https://www.americanstandard-us.com/products/studio-r-s-pull-down-dual-spray-kitchen-faucet-1-5-gpm-5-7-l-min",
+      "handle": "studio-r-s-pull-down-dual-spray-kitchen-faucet-1-5-gpm-5-7-l-min",
+      "breadcrumbs": [
+        "Home",
+        "Kitchen Faucets",
+        "Single Hole Pull Down Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 346.45,
+        "max": 502.45
+      },
+      "shortBullets": [
+        "SINGLE-HANDLE KITCHEN FAUCET: Single-hole installation",
+        "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve",
+        "DUAL SPRAY: Easily switch from stream to spray"
+      ],
+      "features": [
+        "PULL-DOWN DUAL-SPRAY FAUCET: Contemporary single-hole kitchen faucet with toggle on spray head to easily switch from regular stream to spray functions",
+        "SMOOTH RETRACTION: Re-Trax® system ensures smooth extension, retraction and docking of the faucet spray head",
+        "DRIP-FREE: This single-handle kitchen faucet features a quality ceramic disc valve ensuring drip-free performance for life",
+        "HIGH-ARC SWIVEL SPOUT: Provides ample clearance to fill large pots and rotates 360° for island-friendly use and access the entire sink",
+        "FORWARD ROTATING HANDLE: Will not interfere with the backsplash",
+        "BUILT TO LAST: Durable brass spout, metal body and lever handle ensure years of reliable use",
+        "LEAD-FREE: Faucet contains ? 0.25% total lead content by weighted average",
+        "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean",
+        "WARRANTY: Limited lifetime warranty on function and finish",
+        "Limited lifetime warranty"
+      ],
+      "description": "The Studio S Dual Spray Pull-Down Kitchen Faucet from American Standard is a contemporary, single-handle faucet with a tall 18-in. high-arc spout that creates a stylish focal point and provides ample clearance to fill large pots with ease. The pull-down spray head features regular stream and powerful spray functions. Unique raised single-handle lever offers drip-free performance while adding distinction to your kitchen design.",
+      "specs": {
+        "Style Specifications": {
+          "Color/Finish": "Polished Chrome",
+          "Faucet Type": "Yes",
+          "Features": "Pull Down, Water Efficient",
+          "Fitting Material": "Zinc",
+          "Side Spray Included": "No"
+        },
+        "Technical Specifications": {
+          "Dimensions": "Height: 17-7/8 in, Weight: 5.009 lb",
+          "Fitting Connection Size": "14.29 mm",
+          "Fitting Handle Height": "10-1/4 in",
+          "Fitting Hose Length": "38 in",
+          "Fitting Max Deck Thickness": "3-1/4 in",
+          "Fitting Max Deck Thickness with Escutcheon": "3-5/8 in",
+          "Fitting Spout Reach": "7-15/16 in",
+          "Fitting Swivel Degrees": "360 °",
+          "Flow Rate": "1.5 GPM"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/166457_spec_4803300_StudioS_pd_kitch_faucet_1_original.pdf",
+          "localPath": "assets/4803300/docs/specSheet__166457_spec_4803300_StudioS_pd_kitch_faucet_1_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/137954_M985011_Studio-S_pd_kitchen_faucet_4803300_EFS_0_original.pdf",
+          "localPath": "assets/4803300/docs/installationGuide__137954_M985011_Studio-S_pd_kitchen_faucet_4803300_EFS_0_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/137955_RP_M985011_Studio-S_pd_kitchen_faucet_4803300_EFS_1_original.pdf",
+          "localPath": "assets/4803300/docs/repairPartsDiagram__137955_RP_M985011_Studio-S_pd_kitchen_faucet_4803300_EFS_1_original.pdf"
+        },
+        {
+          "type": "revit",
+          "label": "Revit Files",
+          "fileType": "rfa",
+          "url": "https://lixil.cdn.celum.cloud/245815_Faucet-Kitchen-American_Standard-Studio_S-4803300_Series_original.rfa"
+        }
+      ],
+      "videos": [
+        {
+          "provider": "youtube",
+          "id": "YU9r_cDhkzA",
+          "url": "https://www.youtube.com/watch?v=YU9r_cDhkzA"
+        }
+      ],
+      "variants": [
+        {
+          "sku": "4803300.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Polished Chrome",
+          "listPrice": 533.0,
+          "price": 346.45,
+          "currency": "USD",
+          "upc": "012611682483",
+          "availableOnline": true,
+          "shopifyVariantId": 43622430703663,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/56537_4803300002_1_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.002/00_main_56537.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/56542_4803300002_2_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.002/01_gallery_56542.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/72735_B-4803300002_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.002/02_gallery_72735.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4803300.075",
+          "finish": "Stainless Steel",
+          "options": {
+            "Finish": "Stainless Steel"
+          },
+          "variantTitle": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Stainless Steel",
+          "listPrice": 720.0,
+          "price": 468.0,
+          "currency": "USD",
+          "upc": "012611682063",
+          "availableOnline": true,
+          "shopifyVariantId": 43622430736431,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/56543_4803300075_1_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.075/00_main_56543.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/56544_4803300075_2_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.075/01_gallery_56544.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/101217_L-4803300075_4_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.075/02_gallery_101217.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/101241_L-4803300075_7_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.075/03_gallery_101241.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4803300.243",
+          "finish": "Matte Black",
+          "options": {
+            "Finish": "Matte Black"
+          },
+          "variantTitle": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Matte Black",
+          "listPrice": 720.0,
+          "price": 468.0,
+          "currency": "USD",
+          "upc": "012611682209",
+          "availableOnline": true,
+          "shopifyVariantId": 43622430769199,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/56549_4803300243_1_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.243/00_main_56549.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/56551_4803300243_2_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.243/01_gallery_56551.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/101267_L-4803300243_4_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.243/02_gallery_101267.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/101294_L-4803300243_4803410243_4803900243_1_CDNwebp_74daf509-ccaa-43d7-9b9b-7c2bd9aa7de5.webp",
+              "localPath": "assets/4803300/images/4803300.243/03_gallery_101294.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "4803300.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "options": {
+            "Finish": "Brushed Cool Sunrise"
+          },
+          "variantTitle": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min - Brushed Cool Sunrise",
+          "listPrice": 773.0,
+          "price": 502.45,
+          "currency": "USD",
+          "upc": "012611955198",
+          "availableOnline": false,
+          "shopifyVariantId": 43622430801967,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168586_StudioS_SiloRight_4803300.GN0_0001_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.GN0/00_main_168586.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168591_StudioS_SiloLeft_4803300.GN0_0002_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.GN0/01_gallery_168591.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/168971_StudioS_SiloSide_4803300.GN0_0003_Jan2023_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.GN0/02_gallery_168971.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/166628_StudioS_EnvironmentCloseUp_4803300.GN0_0001_Jun2023_0_CDNwebp.webp",
+              "localPath": "assets/4803300/images/4803300.GN0/03_gallery_166628.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/studio-r-s-pull-down-dual-spray-kitchen-faucet-1-5-gpm-5-7-l-min",
+        "name": "Studio® S Pull-Down Dual Spray Kitchen Faucet 1.5 gpm/5.7 L/min",
+        "description": "The Studio S Dual Spray Pull-Down Kitchen Faucet from American Standard is a contemporary, single-handle faucet with a tall 18-in. high-arc spout that creates a stylish focal point and provides ample clearance to fill large pots with ease. The pull-down spray head features regular stream and powerful spray functions. Unique raised single-handle lever offers drip-free performance while adding distinction to your kitchen design.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/56537_4803300002_1_CDNwebp.webp?v=1744858804&width=1200"
+        ],
+        "sku": "4803300.002",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 346.45,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/studio-r-s-pull-down-dual-spray-kitchen-faucet-1-5-gpm-5-7-l-min"
+        }
+      }
+    },
+    {
+      "category": "kitchen-faucet",
+      "title": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min",
+      "brand": "American Standard",
+      "collection": null,
+      "modelNumber": "7441381",
+      "sourceUrl": "https://www.americanstandard-us.com/products/southport-touchless-single-handle-pull-down-dual-spray-kitchen-faucet-1-8-gpm-6-8-l-min",
+      "handle": "southport-touchless-single-handle-pull-down-dual-spray-kitchen-faucet-1-8-gpm-6-8-l-min",
+      "breadcrumbs": [
+        "Home",
+        "Kitchen Faucets",
+        "Single Hole Pull Down Faucets"
+      ],
+      "optionNames": [
+        "Finish"
+      ],
+      "priceRange": {
+        "min": 350.35,
+        "max": 429.65
+      },
+      "shortBullets": [
+        "HANDS-FREE KITCHEN FAUCET: Turn on/off by waving your hand",
+        "DRIP-FREE PERFORMANCE: Equipped with quality ceramic disc valve",
+        "DUAL SPRAY PULL-DOWN: Features stream, spray and pause"
+      ],
+      "features": [
+        "TOUCHLESS HANDS-FREE KITCHEN FAUCET: Wave hand within 2-in. proximity of the infrared sensor to turn the water on and off",
+        "sensor can be disabled to make cleaning the faucet easy",
+        "PULL-DOWN DUAL-SPRAY FAUCET: Single-hole kitchen faucet with toggle on spray head to switch from regular stream to spray and pause functions",
+        "AUTOMATIC SHUT-OFF: Faucet will turn off automatically after 4 minutes to avoid accidental overflow and water waste",
+        "DRIP-FREE: This single-handle kitchen faucet features a quality ceramic disc valve ensuring drip-free performance for life",
+        "HIGH-ARC SWIVEL SPOUT: Provides ample clearance to fill large pots and access the entire sink",
+        "FORWARD ROTATING HANDLE: Will not interfere with the backsplash",
+        "INSTALL OPTIONS: For use on single-hole, 2-hole or 3-hole sinks and countertops with included deck plate. Also includes soap dispenser.",
+        "BATTERY OPERATED: Powered by the included 4 AA batteries with built-in “low battery” reminder or optional AC adapter (sold separately)",
+        "DURABLE FINISHES: Faucet finish resists scratches, corrosion and easily wipes clean",
+        "WARRANTY: 5-year warranty"
+      ],
+      "description": "The Southport Touchless Kitchen Faucet from American Standard is equipped with our dependable Selectronic® sensor that turns the faucet on and off with just a wave of your hand, helping to reduce the spread of germs. Ideal in a transitional-style setting, the Southport hands-free kitchen faucet features a high-arc, swivel spout, providing ample clearance when filling large pots. The pull-down spray head is ergonomically designed for a comfortable grip, making it easy to toggle between stream, spray and pause functions.",
+      "specs": {
+        "Style Specifications": {
+          "Color/Finish": "Brushed Cool Sunrise",
+          "Faucet Type": "Yes",
+          "Features": "Touchless, Touchless, Pull Down",
+          "Fitting Features": "Touchless",
+          "Side Spray Included": "No"
+        },
+        "Technical Specifications": {
+          "Dimensions": "Weight: 5.714 lb",
+          "Fitting Valve Material": "Ceramic",
+          "Flow Rate": "1.8 GPM",
+          "Batteries Required": "Yes"
+        },
+        "Other Specs": {
+          "Batteries Required": "Yes"
+        }
+      },
+      "documents": [
+        {
+          "type": "specSheet",
+          "label": "Spec Sheet",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/168270_spec_7441381_Southport_Touchless%20PD_kitch_faucet_v2_original.pdf",
+          "localPath": "assets/7441381/docs/specSheet__168270_spec_7441381_Southport_Touchless_PD_kitch_faucet_v2_original.pdf"
+        },
+        {
+          "type": "installationGuide",
+          "label": "Installation Guide",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/237842_M985148_AS_Electronic_pd_kitch_faucet_7441381-7442381-7438381_7077380_741838_EFS_V3_original.pdf",
+          "localPath": "assets/7441381/docs/installationGuide__237842_M985148_AS_Electronic_pd_kitch_faucet_7441381-7442381-7438381_7077380_741838_EFS_V3_original.pdf"
+        },
+        {
+          "type": "repairPartsDiagram",
+          "label": "Repair Parts Diagram",
+          "fileType": "pdf",
+          "url": "https://lixil.cdn.celum.cloud/169452_RP_7441381_Southport_Touchless_PD_kitchen_faucet_EFS_original.pdf",
+          "localPath": "assets/7441381/docs/repairPartsDiagram__169452_RP_7441381_Southport_Touchless_PD_kitchen_faucet_EFS_original.pdf"
+        }
+      ],
+      "videos": [],
+      "variants": [
+        {
+          "sku": "7441381.002",
+          "finish": "Polished Chrome",
+          "options": {
+            "Finish": "Polished Chrome"
+          },
+          "variantTitle": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Polished Chrome",
+          "listPrice": 539.0,
+          "price": 350.35,
+          "currency": "USD",
+          "upc": "012611925900",
+          "availableOnline": true,
+          "shopifyVariantId": 43622429327407,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61688_7441381.002_0_CDNwebp_9633a84a-52ed-42d9-b424-903c9f47df0e.webp",
+              "localPath": "assets/7441381/images/7441381.002/00_main_61688.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61690_7441381.002_1_0_CDNwebp_e3564b7d-924d-4716-ab31-540ae4f92d1d.webp",
+              "localPath": "assets/7441381/images/7441381.002/01_gallery_61690.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61693_7441381.002_3_0_CDNwebp_5e171b1c-4d30-432b-992f-125c3c82b912.webp",
+              "localPath": "assets/7441381/images/7441381.002/02_gallery_61693.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7441381.075",
+          "finish": "Stainless Steel",
+          "options": {
+            "Finish": "Stainless Steel"
+          },
+          "variantTitle": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Stainless Steel",
+          "listPrice": 573.0,
+          "price": 372.45,
+          "currency": "USD",
+          "upc": "012611926105",
+          "availableOnline": true,
+          "shopifyVariantId": 43622429360175,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61699_7441381.075_0_CDNwebp_8271aca8-e1a8-401d-a7a3-0e1b1ff4865c.webp",
+              "localPath": "assets/7441381/images/7441381.075/00_main_61699.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61701_7441381.075_1_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.075/01_gallery_61701.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61705_7441381.075_3_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.075/02_gallery_61705.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7441381.243",
+          "finish": "Matte Black",
+          "options": {
+            "Finish": "Matte Black"
+          },
+          "variantTitle": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Matte Black",
+          "listPrice": 609.0,
+          "price": 395.85,
+          "currency": "USD",
+          "upc": "012611926402",
+          "availableOnline": true,
+          "shopifyVariantId": 43622429392943,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61711_7441381.243_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.243/00_main_61711.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61713_7441381.243_1_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.243/01_gallery_61713.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61716_7441381.243_3_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.243/02_gallery_61716.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61720_7441381.243_4_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.243/03_gallery_61720.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        },
+        {
+          "sku": "7441381.GN0",
+          "finish": "Brushed Cool Sunrise",
+          "options": {
+            "Finish": "Brushed Cool Sunrise"
+          },
+          "variantTitle": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min - Brushed Cool Sunrise",
+          "listPrice": 661.0,
+          "price": 429.65,
+          "currency": "USD",
+          "upc": "012611926204",
+          "availableOnline": true,
+          "shopifyVariantId": 43622429425711,
+          "images": [
+            {
+              "role": "main",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61723_7441381.GN0_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.GN0/00_main_61723.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61725_7441381.GN0_1_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.GN0/01_gallery_61725.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61729_7441381.GN0_3_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.GN0/02_gallery_61729.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            },
+            {
+              "role": "gallery",
+              "url": "https://cdn.shopify.com/s/files/1/0609/8567/1727/files/61732_7441381.GN0_4_0_CDNwebp.webp",
+              "localPath": "assets/7441381/images/7441381.GN0/03_gallery_61732.jpg",
+              "width": 2000,
+              "height": 2000,
+              "format": "jpeg",
+              "note": "Source URL ends .webp but CDN returned JPEG bytes to a plain (no Accept: image/webp) request"
+            }
+          ]
+        }
+      ],
+      "jsonLdProduct": {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://www.americanstandard-us.com/products/southport-touchless-single-handle-pull-down-dual-spray-kitchen-faucet-1-8-gpm-6-8-l-min",
+        "name": "Southport Touchless Single-Handle Pull-Down Dual Spray Kitchen Faucet 1.8 GPM/6.8 L/min",
+        "description": "The Southport Touchless Kitchen Faucet from American Standard is equipped with our dependable Selectronic® sensor that turns the faucet on and off with just a wave of your hand, helping to reduce the spread of germs. Ideal in a transitional-style setting, the Southport hands-free kitchen faucet features a high-arc, swivel spout, providing ample clearance when filling large pots. The pull-down spray head is ergonomically designed for a comfortable grip, making it easy to toggle between stream, spray and pause functions.",
+        "image": [
+          "//www.americanstandard-us.com/cdn/shop/files/61688_7441381.002_CDNwebp.webp?v=1744858868&width=1200"
+        ],
+        "sku": "7441381.002",
+        "brand": {
+          "@type": "Brand",
+          "name": "American Standard"
+        },
+        "offers": {
+          "@type": "Offer",
+          "priceCurrency": "USD",
+          "price": 350.35,
+          "itemCondition": "https://schema.org/NewCondition",
+          "availability": "https://schema.org/InStock",
+          "url": "https://www.americanstandard-us.com/products/southport-touchless-single-handle-pull-down-dual-spray-kitchen-faucet-1-8-gpm-6-8-l-min"
+        }
+      }
+    }
+  ]
+}

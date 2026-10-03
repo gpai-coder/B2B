@@ -44,6 +44,27 @@ export const ProductVariants: CollectionConfig = {
     {
       name: 'finish',
       type: 'text',
+      required: true,
+      admin: { description: 'Finish name shown in the PDP finish selector (e.g. Chrome).' },
+    },
+    {
+      name: 'msrp',
+      type: 'number',
+      admin: { description: 'List / compare-at price (struck through on PDP).' },
+    },
+    {
+      name: 'upc',
+      type: 'text',
+    },
+    {
+      name: 'inStock',
+      type: 'checkbox',
+      defaultValue: true,
+    },
+    {
+      name: 'discontinued',
+      type: 'checkbox',
+      defaultValue: false,
     },
     {
       name: 'specs',
@@ -53,6 +74,7 @@ export const ProductVariants: CollectionConfig = {
     {
       name: 'images',
       type: 'array',
+      admin: { description: 'Finish-specific images for gallery / selector.' },
       fields: [
         {
           name: 'image',
@@ -66,13 +88,19 @@ export const ProductVariants: CollectionConfig = {
       name: 'specPdf',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Specification sheet PDF.' },
+      admin: {
+        description: 'Legacy — prefer product documents[].',
+        condition: () => false,
+      },
     },
     {
       name: 'installPdf',
       type: 'upload',
       relationTo: 'media',
-      admin: { description: 'Installation guide PDF.' },
+      admin: {
+        description: 'Legacy — prefer product documents[].',
+        condition: () => false,
+      },
     },
   ],
 }

@@ -1,12 +1,12 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminPanelAccess, catalogReadAccess, staffOnly } from '../access'
+import { adminPanelAccess, catalogMediaReadAccess, staffOnly } from '../access'
 
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
     admin: adminPanelAccess,
-    read: catalogReadAccess,
+    read: catalogMediaReadAccess,
     create: staffOnly,
     update: staffOnly,
     delete: staffOnly,

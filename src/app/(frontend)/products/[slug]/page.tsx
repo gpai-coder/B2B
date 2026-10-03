@@ -1,13 +1,23 @@
+import { Suspense } from 'react'
+
 import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getCommerce } from '@/commerce'
-
+import {
+  mapDocumentLabel,
+  ProductDetailView,
+  type ProductDetailDTO,
+} from '@/components/catalog/ProductDetailView'
 import { createPayloadReq } from '@/lib/payload-req'
+import { resolveMediaId } from '@/lib/product-media'
+import { SEED_PACIFIC_PRICE_LIST } from '@/scripts/seed'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 
 type Props = { params: Promise<{ slug: string }> }
+
+export const dynamic = 'force-dynamic'
 
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params
@@ -26,6 +36,7 @@ export default async function ProductPage({ params }: Props) {
     collection: 'products',
     where: { slug: { equals: slug } },
     limit: 1,
+    depth: 2,
     overrideAccess: false,
     req: createPayloadReq(payload, user),
   })
@@ -37,7 +48,7 @@ export default async function ProductPage({ params }: Props) {
   const variants = await payload.find({
     collection: 'product-variants',
     where: { product: { equals: product.id } },
-    limit: 20,
+    limit: 50,
     depth: 2,
     overrideAccess: false,
     req: createPayloadReq(payload, user),
@@ -45,33 +56,49 @@ export default async function ProductPage({ params }: Props) {
 
   const commerce = await getCommerce({ user })
   const skus = variants.docs.map((v) => v.sku)
-  const prices = await commerce.getPrices(companyId, skus)
-  const priceBySku = new Map(prices.map((p) => [p.sku, p]))
+  const pricesList = await commerce.getPrices(companyId, skus)
+  const prices: Record<string, (typeof pricesList)[number]> = {}
+  for (const row of pricesList) prices[row.sku] = row
+
+  const dto: ProductDetailDTO = {
+    slug: product.slug,
+    name: product.name,
+    modelNumber: product.modelNumber,
+    productCollection: product.productCollection,
+    description: product.description,
+    shortBullets: (product.shortBullets ?? []).map((b) => b.text),
+    featureBullets: (product.featureBullets ?? []).map((b) => b.text),
+    specGroups: (product.specGroups ?? []).map((g) => ({
+      groupName: g.groupName,
+      rows: (g.rows ?? []).map((r) => ({ label: r.label, value: r.value })),
+    })),
+    youtubeVideoId: product.youtubeVideoId,
+    documents: (product.documents ?? []).map((d) => ({
+      docType: d.docType,
+      label: mapDocumentLabel(d.docType, d.displayName),
+      mediaId: resolveMediaId(d.file) ?? undefined,
+      externalUrl: d.externalUrl ?? undefined,
+    })),
+    variants: variants.docs.map((v) => ({
+      sku: v.sku,
+      finish: v.finish ?? '',
+      upc: v.upc,
+      msrp: v.msrp,
+      inStock: v.inStock !== false,
+      discontinued: v.discontinued === true,
+      imageMediaIds: (v.images ?? [])
+        .map((row) => resolveMediaId(row.image))
+        .filter((id): id is number => id != null),
+    })),
+  }
 
   return (
-    <div className="product-page" data-testid="product-page">
-      <h1>{product.name}</h1>
-      <p>{product.description}</p>
-      <ul>
-        {variants.docs.map((variant) => {
-          const price = priceBySku.get(variant.sku)
-          return (
-            <li key={variant.id} data-sku={variant.sku}>
-              <strong>{variant.sku}</strong> — {variant.name}
-              {variant.specPdf != null ? (
-                <span data-testid={`has-spec-pdf-${variant.sku}`}> (spec PDF attached)</span>
-              ) : null}
-              {price ? (
-                <div data-testid={`product-price-${variant.sku}`}>
-                  Your price: ${price.unitPrice.amount.toFixed(2)} ({price.source})
-                </div>
-              ) : (
-                <div>No price available</div>
-              )}
-            </li>
-          )
-        })}
-      </ul>
-    </div>
+    <Suspense fallback={<p>Loading product…</p>}>
+      <ProductDetailView
+        product={dto}
+        prices={prices}
+        contractListName={SEED_PACIFIC_PRICE_LIST}
+      />
+    </Suspense>
   )
 }
