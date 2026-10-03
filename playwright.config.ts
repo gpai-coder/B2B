@@ -33,13 +33,17 @@ export default defineConfig({
   ],
   webServer: useLocalServer
     ? {
-        command: 'pnpm db:migrate && pnpm db:seed && pnpm dev',
+        command: process.env.CI
+          ? 'pnpm start'
+          : 'pnpm db:migrate && pnpm db:seed && pnpm dev',
         reuseExistingServer: !process.env.CI,
         url: baseURL,
-        timeout: 180_000,
+        timeout: process.env.CI ? 120_000 : 180_000,
         env: {
           ...process.env,
           PAYLOAD_DISABLE_PUSH: 'true',
+          PORT: '3000',
+          HOSTNAME: '127.0.0.1',
         },
       }
     : undefined,
