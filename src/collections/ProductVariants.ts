@@ -67,6 +67,20 @@ export const ProductVariants: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: 'moq',
+      type: 'number',
+      min: 1,
+      defaultValue: 1,
+      admin: { description: 'Minimum order quantity (MOQ) for this SKU.' },
+    },
+    {
+      name: 'orderMultiple',
+      type: 'number',
+      min: 1,
+      defaultValue: 1,
+      admin: { description: 'Order increment / case pack size.' },
+    },
+    {
       name: 'specs',
       type: 'group',
       fields: specFields,

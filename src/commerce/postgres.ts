@@ -5,12 +5,22 @@ import { createPayloadReq } from '@/lib/payload-req'
 import { getUserCompanyId } from '@/access'
 
 import type {
+  CartLine,
+  CartSummary,
   CommerceOrder,
   CommerceQuote,
   CommerceService,
   CreateDraftOrderInput,
   PriceQuote,
+  PricedCartLine,
 } from './types'
+import {
+  assertValidCartQuantity,
+  CartValidationError,
+  loadVariantForOrdering,
+} from './cart-helpers'
+
+export { CartValidationError } from './cart-helpers'
 
 function money(amount: number, currency = 'USD') {
   return { amount, currency }
@@ -151,6 +161,55 @@ export function createPostgresCommerceService(
     return mapped
   }
 
+  async function getOrCreateCartDoc(companyId: string) {
+    if (!actingUser) throw new Error('Authentication required')
+    assertCompanyMatchesUser(actingUser, companyId)
+    const existing = await payload.find({
+      collection: 'carts',
+      where: {
+        and: [{ user: { equals: actingUser.id } }, { company: { equals: Number(companyId) } }],
+      },
+      limit: 1,
+      overrideAccess: true,
+    })
+    if (existing.docs[0]) return existing.docs[0]
+    return payload.create({
+      collection: 'carts',
+      data: {
+        user: actingUser.id,
+        company: Number(companyId),
+        lines: [],
+      },
+      overrideAccess: true,
+    })
+  }
+
+  function mapCartLines(doc: { lines?: Array<{ sku: string; quantity: number }> | null }): CartLine[] {
+    return (doc.lines ?? []).map((line) => ({
+      sku: line.sku,
+      quantity: Number(line.quantity),
+    }))
+  }
+
+  async function persistCartLines(cartId: number, lines: CartLine[]) {
+    const enriched = []
+    for (const line of lines) {
+      const meta = await loadVariantForOrdering(payload, line.sku, readOpts())
+      enriched.push({
+        sku: line.sku,
+        variant: meta.variantId,
+        quantity: line.quantity,
+      })
+    }
+    const updated = await payload.update({
+      collection: 'carts',
+      id: cartId,
+      data: { lines: enriched },
+      overrideAccess: true,
+    })
+    return mapCartLines(updated)
+  }
+
   return {
     async getPrices(customerId, skus) {
       if (actingUser) assertCompanyMatchesUser(actingUser, customerId)
@@ -164,6 +223,69 @@ export function createPostgresCommerceService(
         if (price) prices.push(price)
       }
       return prices
+    },
+
+    async getCart(companyId) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      const cart = await getOrCreateCartDoc(companyId)
+      return mapCartLines(cart)
+    },
+
+    async getCartSummary(companyId) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      const cart = await getOrCreateCartDoc(companyId)
+      const lines = mapCartLines(cart)
+      const priced: PricedCartLine[] = []
+      let subtotal = 0
+      let currency = 'USD'
+      for (const line of lines) {
+        const meta = await loadVariantForOrdering(payload, line.sku, readOpts())
+        const variantIds = await findVariantIdsBySkus([line.sku])
+        const variantId = variantIds.get(line.sku)
+        const price = variantId
+          ? await resolveUnitPrice(companyId, variantId, line.sku, line.quantity)
+          : null
+        if (!price) {
+          throw new CartValidationError(`No price available for ${line.sku}.`)
+        }
+        const unitAmount = price.unitPrice.amount
+        currency = price.unitPrice.currency
+        const lineTotal = unitAmount * line.quantity
+        subtotal += lineTotal
+        priced.push({
+          sku: line.sku,
+          quantity: line.quantity,
+          productName: meta.productName,
+          unitPrice: price.unitPrice,
+          lineTotal,
+          source: price.source,
+          quantityBreaks: price.quantityBreaks,
+          moq: meta.moq,
+          orderMultiple: meta.orderMultiple,
+        })
+      }
+      return { lines: priced, subtotal, currency }
+    },
+
+    async setCartLine(companyId, sku, quantity) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      const cart = await getOrCreateCartDoc(companyId)
+      const current = mapCartLines(cart)
+      const meta = await loadVariantForOrdering(payload, sku, readOpts())
+      if (quantity <= 0) {
+        return persistCartLines(
+          cart.id,
+          current.filter((l) => l.sku !== sku),
+        )
+      }
+      assertValidCartQuantity(quantity, meta)
+      const next = current.filter((l) => l.sku !== sku)
+      next.push({ sku, quantity: Math.floor(quantity) })
+      return persistCartLines(cart.id, next)
+    },
+
+    async removeCartLine(companyId, sku) {
+      return this.setCartLine(companyId, sku, 0)
     },
 
     async listQuotes(companyId) {

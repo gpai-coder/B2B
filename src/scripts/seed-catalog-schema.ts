@@ -35,6 +35,8 @@ const variantSchema = z.object({
   upc: z.string().optional(),
   inStock: z.boolean().default(true),
   discontinued: z.boolean().default(false),
+  moq: z.number().int().min(1).optional(),
+  orderMultiple: z.number().int().min(1).optional(),
   images: z.array(z.string().min(1)).default([]),
   specs: specsSchema,
 })

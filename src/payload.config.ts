@@ -6,6 +6,7 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
+import { Carts } from './collections/Carts'
 import { Companies } from './collections/Companies'
 import { Media } from './collections/Media'
 import { Orders } from './collections/Orders'
@@ -40,6 +41,7 @@ export default buildConfig({
     PriceLists,
     Quotes,
     Orders,
+    Carts,
   ],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,

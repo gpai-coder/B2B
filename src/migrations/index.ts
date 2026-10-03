@@ -6,6 +6,7 @@ import * as migration_20261003_031641_american_standard_catalog_fields from './2
 import * as migration_20261003_120000_catalog_search from './20261003_120000_catalog_search';
 import * as migration_20261003_120001_fix_search_trigger from './20261003_120001_fix_search_trigger';
 import * as migration_20261003_120002_variant_product_id_search_trigger from './20261003_120002_variant_product_id_search_trigger';
+import * as migration_20261004_120000_cart_moq from './20261004_120000_cart_moq';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20261003_120002_variant_product_id_search_trigger.up,
     down: migration_20261003_120002_variant_product_id_search_trigger.down,
     name: '20261003_120002_variant_product_id_search_trigger',
+  },
+  {
+    up: migration_20261004_120000_cart_moq.up,
+    down: migration_20261004_120000_cart_moq.down,
+    name: '20261004_120000_cart_moq',
   },
 ];

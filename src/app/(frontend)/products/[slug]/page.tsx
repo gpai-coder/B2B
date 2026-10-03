@@ -84,6 +84,8 @@ export default async function ProductPage({ params }: Props) {
       msrp: v.msrp,
       inStock: v.inStock !== false,
       discontinued: v.discontinued === true,
+      moq: v.moq ?? 1,
+      orderMultiple: v.orderMultiple ?? 1,
       imageMediaIds: (v.images ?? [])
         .map((row) => resolveMediaId(row.image))
         .filter((id): id is number => id != null),

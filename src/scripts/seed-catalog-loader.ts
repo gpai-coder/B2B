@@ -213,6 +213,8 @@ async function seedVariant(
     upc: variant.upc,
     inStock: variant.inStock,
     discontinued: variant.discontinued,
+    moq: variant.moq ?? 1,
+    orderMultiple: variant.orderMultiple ?? 1,
     specs: variant.specs,
     images: imageIds.map((image) => ({ image })),
   })

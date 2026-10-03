@@ -169,6 +169,8 @@
           "upc": "012611581076",
           "inStock": true,
           "discontinued": false,
+          "moq": 1,
+          "orderMultiple": 1,
           "images": [
             "assets/7353101/images/7353101.002/00_main_59837.jpg",
             "assets/7353101/images/7353101.002/01_gallery_59840.jpg",
@@ -1163,6 +1165,8 @@
           "upc": "033056697863",
           "inStock": true,
           "discontinued": false,
+          "moq": 6,
+          "orderMultiple": 6,
           "images": [
             "assets/2034314/images/2034314.020/00_main_153436.jpg",
             "assets/2034314/images/2034314.020/01_gallery_153460.jpg",

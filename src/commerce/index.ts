@@ -19,4 +19,5 @@ export async function getCommerce(options: GetCommerceOptions = {}): Promise<Com
   return createPostgresCommerceService(payload, options.user ?? null)
 }
 
-export type { CommerceService, CommerceOrder, CommerceQuote, PriceQuote } from './types'
+export type { CommerceService, CommerceOrder, CommerceQuote, PriceQuote, CartSummary } from './types'
+export { CartValidationError } from './postgres'

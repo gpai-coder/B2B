@@ -8,6 +8,7 @@ import { vendorMediaPath } from '@/lib/product-media'
 
 import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { CatalogProductDTO, PriceDTO } from '@/lib/catalog/types'
+import { AddToCartControls } from '@/components/cart/AddToCartControls'
 
 type Props = {
   product: CatalogProductDTO
@@ -23,6 +24,7 @@ export function ProductCard({ product, prices }: Props) {
 
   const activeVariant = product.variants.find((v) => v.sku === activeSku) ?? defaultVariant
   const price = prices[activeSku]
+  const canAdd = Boolean(price && !activeVariant.discontinued)
   const imageId =
     activeVariant.imageMediaIds[0] ?? product.primaryImageId ?? activeVariant.imageMediaIds[0]
 
@@ -76,6 +78,14 @@ export function ProductCard({ product, prices }: Props) {
           )}
         </div>
       </Link>
+      {canAdd ? (
+        <AddToCartControls
+          sku={activeSku}
+          moq={activeVariant.moq}
+          orderMultiple={activeVariant.orderMultiple}
+          compact
+        />
+      ) : null}
     </article>
   )
 }

@@ -17,6 +17,8 @@ export function mapVariantToDTO(variant: ProductVariant): CatalogVariantDTO {
     msrp: variant.msrp,
     inStock: variant.inStock !== false,
     discontinued: variant.discontinued === true,
+    moq: variant.moq ?? 1,
+    orderMultiple: variant.orderMultiple ?? 1,
     imageMediaIds,
   }
 }
