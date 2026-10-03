@@ -55,6 +55,8 @@ export default buildConfig({
   plugins: [
     vercelBlobStorage({
       enabled: blobEnabled,
+      /** Keep media schema stable in migrations whether or not BLOB_READ_WRITE_TOKEN is set. */
+      alwaysInsertFields: true,
       collections: {
         media: true,
       },

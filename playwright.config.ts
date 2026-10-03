@@ -33,6 +33,10 @@ export default defineConfig({
         reuseExistingServer: !process.env.CI,
         url: baseURL,
         timeout: 180_000,
+        env: {
+          ...process.env,
+          PAYLOAD_DISABLE_PUSH: 'true',
+        },
       }
     : undefined,
 })

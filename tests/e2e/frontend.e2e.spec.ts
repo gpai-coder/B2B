@@ -1,6 +1,9 @@
 import { test, expect, Page } from '@playwright/test'
+import { isRemoteE2ETarget } from '../helpers/e2e-env'
 
-test.describe('Frontend', () => {
+const describeFrontend = isRemoteE2ETarget ? test.describe.skip : test.describe
+
+describeFrontend('Frontend', () => {
   let page: Page
 
   test.beforeAll(async ({ browser }, testInfo) => {
