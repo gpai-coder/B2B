@@ -87,7 +87,7 @@ test.describe('B2B foundations smoke', () => {
 
       const variantLookup = await request.get(
         `/api/product-variants?where[sku][equals]=${encodeURIComponent(sku)}&limit=1`,
-        { headers: { Cookie: adminCookieHeader },
+        { headers: { Cookie: adminCookieHeader } },
       )
       const variantBody = (await variantLookup.json()) as { docs: Array<{ id: number }> }
       variantId = variantBody.docs[0]?.id ?? variantId
