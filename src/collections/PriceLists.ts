@@ -1,10 +1,19 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminPanelAccess, priceListReadAccess, staffOnly } from '../access'
+
 export const PriceLists: CollectionConfig = {
   slug: 'price-lists',
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'kind', 'company', 'validFrom', 'validTo'],
+  },
+  access: {
+    admin: adminPanelAccess,
+    read: priceListReadAccess,
+    create: staffOnly,
+    update: staffOnly,
+    delete: staffOnly,
   },
   fields: [
     {

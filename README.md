@@ -59,7 +59,7 @@ B2B ordering portal for LIXIL-style plumbing products (faucets, fixtures, toilet
    - Storefront: [http://localhost:3000](http://localhost:3000)
    - Payload admin: [http://localhost:3000/admin](http://localhost:3000/admin)
 
-   On first admin visit, create an admin user. Seed data arrives in a later PR.
+   On first admin visit, create an admin user — or run **`pnpm db:seed`** after Postgres is up to load demo companies, catalog, price lists, and a quote (see `.env.example` seed credentials; override in production).
 
 5. **Quality checks**
 

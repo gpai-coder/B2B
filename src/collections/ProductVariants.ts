@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminPanelAccess, catalogReadAccess, staffOnly } from '../access'
+
 const specFields = [
   { name: 'flowRateGpm', type: 'number' as const, label: 'Flow rate (GPM)' },
   { name: 'spoutHeightIn', type: 'number' as const, label: 'Spout height (in)' },
@@ -12,6 +14,13 @@ export const ProductVariants: CollectionConfig = {
   admin: {
     useAsTitle: 'sku',
     defaultColumns: ['sku', 'name', 'product', 'finish', 'updatedAt'],
+  },
+  access: {
+    admin: adminPanelAccess,
+    read: catalogReadAccess,
+    create: staffOnly,
+    update: staffOnly,
+    delete: staffOnly,
   },
   fields: [
     {

@@ -1,10 +1,19 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminPanelAccess, companyReadAccess, staffOnly } from '../access'
+
 export const Companies: CollectionConfig = {
   slug: 'companies',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'sapCustomerNumber', 'updatedAt'],
+    defaultColumns: ['name', 'sapCustomerNumber', 'accountApproved', 'updatedAt'],
+  },
+  access: {
+    admin: adminPanelAccess,
+    read: companyReadAccess('id'),
+    create: staffOnly,
+    update: staffOnly,
+    delete: staffOnly,
   },
   fields: [
     {

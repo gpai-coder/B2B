@@ -1,10 +1,44 @@
 import type { CollectionConfig } from 'payload'
 
+import {
+  adminPanelAccess,
+  companyReadAccess,
+  getUserCompanyId,
+  isStaff,
+  staffOnly,
+} from '../access'
+
 export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'company', 'status', 'poNumber', 'updatedAt'],
+  },
+  access: {
+    admin: adminPanelAccess,
+    read: companyReadAccess(),
+    create: ({ req: { user } }) => {
+      if (!user) return false
+      if (isStaff(user)) return true
+      return user.role === 'vendor-buyer' && Boolean(getUserCompanyId(user))
+    },
+    update: companyReadAccess(),
+    delete: staffOnly,
+  },
+  hooks: {
+    beforeChange: [
+      ({ req, data }) => {
+        const user = req.user
+        if (!user || isStaff(user)) return data
+        if (user.role === 'vendor-buyer') {
+          const companyId = getUserCompanyId(user)
+          if (companyId) {
+            return { ...data, company: companyId }
+          }
+        }
+        return data
+      },
+    ],
   },
   fields: [
     {
