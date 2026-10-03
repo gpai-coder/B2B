@@ -35,7 +35,7 @@ export async function createSmokeMedia(request: APIRequestContext, alt: string):
   const mediaRes = await request.post('/api/media', {
     headers: { Authorization },
     multipart: {
-      alt,
+      _payload: JSON.stringify({ alt }),
       file: {
         name: 'sample-spec.pdf',
         mimeType: 'application/pdf',
