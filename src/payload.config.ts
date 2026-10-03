@@ -1,4 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { sql } from 'drizzle-orm'
+import { uniqueIndex } from 'drizzle-orm/pg-core'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import path from 'path'
@@ -19,6 +21,8 @@ import { ShipToAddresses } from './collections/ShipToAddresses'
 import { Users } from './collections/Users'
 import { getEnv } from './env'
 import { blobPluginStorageOptionsFromEnv } from './lib/blob-store-env'
+
+const SHIP_TO_DEFAULT_INDEX = 'ship_to_addresses_one_default_per_company'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -58,6 +62,21 @@ export default buildConfig({
       connectionTimeoutMillis: 10_000,
     },
     push: process.env.PAYLOAD_DISABLE_PUSH === 'true' ? false : undefined,
+    afterSchemaInit: [
+      ({ schema, extendTable }) => {
+        const table = schema.tables.ship_to_addresses
+        if (!table) return schema
+        extendTable({
+          table,
+          extraConfig: (cols) => ({
+            [SHIP_TO_DEFAULT_INDEX]: uniqueIndex(SHIP_TO_DEFAULT_INDEX)
+              .on(cols.company)
+              .where(sql`${cols.isDefault} = true`),
+          }),
+        })
+        return schema
+      },
+    ],
   }),
   plugins: [
     vercelBlobStorage({

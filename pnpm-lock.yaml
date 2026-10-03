@@ -35,6 +35,9 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@types/pg@8.23.1)(pg@8.20.0)
       graphql:
         specifier: ^16.8.1
         version: 16.14.2
@@ -6753,6 +6756,11 @@ snapshots:
   drizzle-orm@0.45.2(@types/pg@8.20.0)(pg@8.20.0):
     optionalDependencies:
       '@types/pg': 8.20.0
+      pg: 8.20.0
+
+  drizzle-orm@0.45.2(@types/pg@8.23.1)(pg@8.20.0):
+    optionalDependencies:
+      '@types/pg': 8.23.1
       pg: 8.20.0
 
   dunder-proto@1.0.1:
