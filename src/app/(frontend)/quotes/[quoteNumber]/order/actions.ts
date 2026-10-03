@@ -2,11 +2,15 @@
 
 import { randomUUID } from 'crypto'
 
-import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
-import { getCommerce } from '@/commerce'
+import { CartValidationError, getCommerce } from '@/commerce'
 import { shipToFromCompanyDefault } from '@/lib/checkout/ship-to'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
+import {
+  QUOTE_NOT_AVAILABLE_MESSAGE,
+  quoteOrderAvailability,
+} from '@/lib/quotes/quote-order-eligibility'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
@@ -14,37 +18,55 @@ import { createPayloadReq } from '@/lib/payload-req'
 
 const PENDING_APPROVAL = 'Your account is pending administrator approval.'
 
-export async function createAndSubmitQuoteOrder(quoteNumber: string, formData: FormData) {
+export type QuoteOrderActionResult = { ok: true; orderId: string } | { ok: false; error: string }
+
+function quoteOrderActionError(err: unknown): string {
+  if (err instanceof CartValidationError) return err.message
+  if (err instanceof Error && err.message === 'Quote not found') {
+    return QUOTE_NOT_AVAILABLE_MESSAGE
+  }
+  console.error('[quote-order] submit failed', err)
+  return 'Could not submit order from this quote. Please try again.'
+}
+
+export async function submitQuoteOrderAction(
+  quoteNumber: string,
+  formData: FormData,
+): Promise<QuoteOrderActionResult> {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
-    throw new Error('Unauthorized')
+    return { ok: false, error: 'Authentication required.' }
   }
   if (!user.approved) {
-    throw new Error(PENDING_APPROVAL)
+    return { ok: false, error: PENDING_APPROVAL }
   }
   const companyId = getCompanyIdFromUser(user)
-  if (!companyId) throw new Error('Missing company')
+  if (!companyId) return { ok: false, error: 'Vendor account is missing a company.' }
 
   const po = validatePoNumber(formData.get('poNumber')?.toString() ?? `PO-${quoteNumber}`)
-  if (!po.ok) throw new Error(po.error)
+  if (!po.ok) return { ok: false, error: po.error }
 
   const payloadConfig = await config
   const payload = await getPayload({ config: payloadConfig })
+  const req = createPayloadReq(payload, user)
   const quotes = await payload.find({
     collection: 'quotes',
     where: { quoteNumber: { equals: quoteNumber } },
     limit: 1,
     overrideAccess: false,
-    req: createPayloadReq(payload, user),
+    req,
   })
   const quoteDoc = quotes.docs[0]
-  if (!quoteDoc) throw new Error('Quote not found')
+  const availability = quoteOrderAvailability(quoteDoc, companyId)
+  if (!availability.ok) {
+    return { ok: false, error: availability.message }
+  }
 
   const company = await payload.findByID({
     collection: 'companies',
     id: Number(companyId),
     overrideAccess: false,
-    req: createPayloadReq(payload, user),
+    req,
   })
   const defaultShip = shipToFromCompanyDefault(company.defaultShipTo)
   const shipTo = {
@@ -57,18 +79,24 @@ export async function createAndSubmitQuoteOrder(quoteNumber: string, formData: F
     country: String(formData.get('shipToCountry') ?? defaultShip?.country ?? 'US').trim() || 'US',
   }
   if (!shipTo.name || !shipTo.line1 || !shipTo.city || !shipTo.state || !shipTo.postalCode) {
-    throw new Error('Complete ship-to address is required.')
+    return { ok: false, error: 'Complete ship-to address is required.' }
   }
 
   const idempotencyKey = String(formData.get('idempotencyKey') ?? randomUUID()).trim()
   const orderNotes = String(formData.get('orderNotes') ?? '').trim() || undefined
 
-  const commerce = await getCommerce({ user })
-  const submitted = await commerce.convertQuoteToOrder(companyId, String(quoteDoc.id), {
-    poNumber: po.poNumber,
-    shipTo,
-    orderNotes,
-    idempotencyKey,
-  })
-  redirect(`/orders/${submitted.id}?submitted=1`)
+  try {
+    const commerce = await getCommerce({ user })
+    const submitted = await commerce.convertQuoteToOrder(companyId, String(quoteDoc!.id), {
+      poNumber: po.poNumber,
+      shipTo,
+      orderNotes,
+      idempotencyKey,
+    })
+    revalidatePath('/orders')
+    revalidatePath(`/quotes/${quoteNumber}/order`)
+    return { ok: true, orderId: submitted.id }
+  } catch (err) {
+    return { ok: false, error: quoteOrderActionError(err) }
+  }
 }
