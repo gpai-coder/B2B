@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test'
-import { isRemoteE2ETarget } from '../helpers/e2e-env'
+import { skipTemplateE2ESpecs } from '../helpers/e2e-env'
 
-const describeFrontend = isRemoteE2ETarget ? test.describe.skip : test.describe
+const describeFrontend = skipTemplateE2ESpecs ? test.describe.skip : test.describe
 
 describeFrontend('Frontend', () => {
   let page: Page
