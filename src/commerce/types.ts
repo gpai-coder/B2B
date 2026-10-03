@@ -107,6 +107,7 @@ export interface CommerceService {
   getCart(companyId: string): Promise<CartLine[]>
   getCartSummary(companyId: string): Promise<CartSummary>
   setCartLine(companyId: string, sku: string, quantity: number): Promise<CartLine[]>
+  addCartQuantity(companyId: string, sku: string, quantityToAdd: number): Promise<CartLine[]>
   removeCartLine(companyId: string, sku: string): Promise<CartLine[]>
   previewQuickOrder(
     companyId: string,

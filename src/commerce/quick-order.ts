@@ -4,6 +4,7 @@ import type { User } from '@/payload-types'
 import { parseCartQuantity } from '@/lib/cart/quantity-rules'
 import { mergeQuickOrderLines } from '@/lib/quick-order/parse-input'
 
+import type { CartMutationContext } from './cart-serialized'
 import { isUniqueViolation } from './db-errors'
 import {
   assertValidCartQuantity,
@@ -31,10 +32,8 @@ export type QuickOrderDeps = {
     sku: string,
     quantity?: number,
   ) => Promise<PriceQuote | null>
-  getCartLines: (companyId: string) => Promise<CartLine[]>
-  getOrCreateCartDoc: (companyId: string, req: PayloadRequest) => Promise<{ id: number }>
   persistCartLines: (cartId: number, lines: CartLine[], req: PayloadRequest) => Promise<CartLine[]>
-  createReq: () => PayloadRequest
+  runCartMutation: (mutate: (ctx: CartMutationContext) => Promise<CartLine[]>) => Promise<CartLine[]>
 }
 
 async function validateQuickOrderLine(
@@ -129,55 +128,41 @@ export async function applyQuickOrderLines(
 
   const preview = await previewQuickOrderLines(deps, rawLines)
   const valid = preview.lines.filter((l) => l.ok)
-  const cart = await deps.getCartLines(deps.companyId)
-  const merged = new Map(cart.map((line) => [line.sku, line.quantity]))
-  const addedSkus: string[] = []
-
-  for (const line of valid) {
-    const current = merged.get(line.sku) ?? 0
-    const nextQty = current + line.quantity
-    const parsed = parseCartQuantity(nextQty)
-    if (!parsed.ok) {
-      throw new CartValidationError(parsed.error)
-    }
-    const meta = await loadVariantCartMeta(deps.payload, line.sku, deps.readOpts())
-    assertValidCartQuantity(parsed.quantity, meta)
-    merged.set(line.sku, parsed.quantity)
-    addedSkus.push(line.sku)
-  }
-
-  const finalLines: CartLine[] = [...merged.entries()].map(([sku, quantity]) => ({ sku, quantity }))
-
-  const req = deps.createReq()
-  const transactionID = await deps.payload.db.beginTransaction()
-  if (transactionID != null) {
-    req.transactionID = transactionID
-  }
 
   try {
-    await deps.payload.create({
-      collection: 'cart-bulk-adds',
-      data: {
-        user: deps.actingUser.id,
-        company: Number(deps.companyId),
-        idempotencyKey: key,
-        addedSkus,
-      },
-      req,
-      overrideAccess: true,
+    const addedSkus: string[] = []
+    await deps.runCartMutation(async ({ lines, cartId, req }) => {
+      const merged = new Map(lines.map((line) => [line.sku, line.quantity]))
+      for (const line of valid) {
+        const current = merged.get(line.sku) ?? 0
+        const nextQty = current + line.quantity
+        const parsed = parseCartQuantity(nextQty)
+        if (!parsed.ok) {
+          throw new CartValidationError(parsed.error)
+        }
+        const meta = await loadVariantCartMeta(deps.payload, line.sku, deps.readOpts())
+        assertValidCartQuantity(parsed.quantity, meta)
+        merged.set(line.sku, parsed.quantity)
+        addedSkus.push(line.sku)
+      }
+
+      await deps.payload.create({
+        collection: 'cart-bulk-adds',
+        data: {
+          user: deps.actingUser.id,
+          company: Number(deps.companyId),
+          idempotencyKey: key,
+          addedSkus,
+        },
+        req,
+        overrideAccess: true,
+      })
+
+      const finalLines: CartLine[] = [...merged.entries()].map(([sku, quantity]) => ({ sku, quantity }))
+      return deps.persistCartLines(cartId, finalLines, req)
     })
-
-    const cartDoc = await deps.getOrCreateCartDoc(deps.companyId, req)
-    await deps.persistCartLines(cartDoc.id, finalLines, req)
-
-    if (transactionID != null) {
-      await deps.payload.db.commitTransaction(transactionID)
-    }
     return { replay: false, addedSkus }
   } catch (err) {
-    if (transactionID != null) {
-      await deps.payload.db.rollbackTransaction(transactionID)
-    }
     if (isUniqueViolation(err)) {
       const row = await loadExistingBulkAdd(deps, key)
       if (row) {

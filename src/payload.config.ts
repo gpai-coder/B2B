@@ -52,6 +52,7 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: env.DATABASE_URL,
+      max: 20,
     },
     push: process.env.PAYLOAD_DISABLE_PUSH === 'true' ? false : undefined,
   }),

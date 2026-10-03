@@ -25,13 +25,7 @@ export async function addToCartAction(sku: string, quantity: number): Promise<Ca
   try {
     const { companyId, user } = await requireVendor()
     const commerce = await getCommerce({ user })
-    const existing = await commerce.getCart(companyId)
-    const current = existing.find((l) => l.sku === sku)?.quantity ?? 0
-    const nextTotal = current + parsedAdd.quantity
-    const parsedTotal = parseCartQuantity(nextTotal)
-    if (!parsedTotal.ok) return { ok: false, error: parsedTotal.error }
-
-    await commerce.setCartLine(companyId, sku, parsedTotal.quantity)
+    await commerce.addCartQuantity(companyId, sku, parsedAdd.quantity)
     revalidatePath('/cart')
     revalidatePath('/catalog')
     return { ok: true }
