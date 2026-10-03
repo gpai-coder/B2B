@@ -12,10 +12,15 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { createPayloadReq } from '@/lib/payload-req'
 
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
 export async function createAndSubmitQuoteOrder(quoteNumber: string, formData: FormData) {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     throw new Error('Unauthorized')
+  }
+  if (!user.approved) {
+    throw new Error(PENDING_APPROVAL)
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) throw new Error('Missing company')

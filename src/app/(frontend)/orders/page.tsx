@@ -6,10 +6,19 @@ import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
 
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
+function orderTotal(order: { lines: Array<{ quantity: number; unitPrice: { amount: number } }> }) {
+  return order.lines.reduce((sum, line) => sum + line.quantity * line.unitPrice.amount, 0)
+}
+
 export default async function OrdersPage() {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     redirect('/login?next=/orders')
+  }
+  if (!user.approved) {
+    return <p className="error">{PENDING_APPROVAL}</p>
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) {
@@ -32,6 +41,7 @@ export default async function OrdersPage() {
               <th>PO</th>
               <th>Status</th>
               <th>Lines</th>
+              <th>Total</th>
             </tr>
           </thead>
           <tbody>
@@ -45,6 +55,7 @@ export default async function OrdersPage() {
                 <td>{order.poNumber ?? '—'}</td>
                 <td>{order.status}</td>
                 <td>{order.lines.length}</td>
+                <td data-testid={`order-total-${order.id}`}>${orderTotal(order).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

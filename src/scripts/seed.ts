@@ -222,7 +222,7 @@ export async function runSeed(payload?: Payload) {
   const p = payload ?? (await getPayload({ config }))
 
   const pacificShipTo = {
-    name: 'Pacific Plumbing Supply',
+    name: 'Pacific Plumbing Receiving',
     line1: '100 Market Street',
     city: 'San Francisco',
     state: 'CA',
@@ -238,6 +238,14 @@ export async function runSeed(payload?: Payload) {
 
   const bay = await findOrCreateCompany(p, 'Bay Area Fixtures', {
     accountApproved: true,
+    defaultShipTo: {
+      name: 'Bay Area Fixtures Receiving',
+      line1: '200 Mission Street',
+      city: 'Oakland',
+      state: 'CA',
+      postalCode: '94607',
+      country: 'US',
+    },
   })
 
   await upsertUser(p, {

@@ -35,3 +35,16 @@ export async function deleteOrderById(request: APIRequestContext, orderId: strin
   const headers = await adminJwtHeaders(request)
   await request.delete(`/api/orders/${orderId}`, { headers })
 }
+
+export async function deleteOrdersByPo(request: APIRequestContext, poNumber: string) {
+  const headers = await adminJwtHeaders(request)
+  const rows = await request.get(
+    `/api/orders?where[poNumber][equals]=${encodeURIComponent(poNumber)}&limit=20`,
+    { headers },
+  )
+  if (!rows.ok()) return
+  const body = (await rows.json()) as { docs: Array<{ id: number }> }
+  for (const doc of body.docs) {
+    await request.delete(`/api/orders/${doc.id}`, { headers })
+  }
+}

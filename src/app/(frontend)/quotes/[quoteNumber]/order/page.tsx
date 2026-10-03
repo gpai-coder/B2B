@@ -11,11 +11,16 @@ import { createAndSubmitQuoteOrder } from './actions'
 
 type Props = { params: Promise<{ quoteNumber: string }> }
 
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
 export default async function QuoteOrderPage({ params }: Props) {
   const { quoteNumber } = await params
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     redirect(`/login?next=/quotes/${encodeURIComponent(quoteNumber)}/order`)
+  }
+  if (!user.approved) {
+    return <p className="error">{PENDING_APPROVAL}</p>
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) {

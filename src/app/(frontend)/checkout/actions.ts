@@ -15,10 +15,12 @@ import { createPayloadReq } from '@/lib/payload-req'
 
 export type CheckoutActionResult = { ok: true; orderId: string } | { ok: false; error: string }
 
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
 function checkoutError(err: unknown): string {
   if (err instanceof CartValidationError || err instanceof CartBusyError) return err.message
-  if (err instanceof Error && err.message) return err.message
-  return 'Checkout failed.'
+  console.error('[checkout] submit failed', err)
+  return 'Checkout failed. Please try again.'
 }
 
 export async function submitCartCheckoutAction(
@@ -28,6 +30,9 @@ export async function submitCartCheckoutAction(
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     return { ok: false, error: 'Authentication required.' }
+  }
+  if (!user.approved) {
+    return { ok: false, error: PENDING_APPROVAL }
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) return { ok: false, error: 'Vendor account is missing a company.' }
@@ -81,6 +86,9 @@ export async function loadCheckoutDefaultsAction(): Promise<{
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     throw new Error('Authentication required')
+  }
+  if (!user.approved) {
+    throw new Error(PENDING_APPROVAL)
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) return { shipTo: null }

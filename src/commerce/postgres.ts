@@ -120,6 +120,7 @@ export function createPostgresCommerceService(
     variantId: number,
     sku: string,
     quantity = 1,
+    req?: PayloadRequest,
   ): Promise<PriceQuote | null> {
     const result = await payload.find({
       collection: 'price-lists',
@@ -130,7 +131,7 @@ export function createPostgresCommerceService(
         ],
       },
       limit: 10,
-      ...readOpts(),
+      ...txReadOpts(req),
     })
 
     const companyList = result.docs.find((l) => l.kind === 'company')

@@ -5,9 +5,16 @@ import { expectVendorOnPath, loginVendor } from '../helpers/vendor-login'
 
 const HERO_SKU = '7353101.002'
 
+async function fillIfEmpty(page: import('@playwright/test').Page, testId: string, value: string) {
+  const field = page.getByTestId(testId)
+  if ((await field.inputValue()).trim() === '') {
+    await field.fill(value)
+  }
+}
+
 test.describe('Quick order', () => {
   test('validate and add lines with idempotent replay', async ({ page, request }) => {
-    let idempotencyKey = ''
+    const keysUsed: string[] = []
 
     try {
       await loginVendor(page, '/quick-order')
@@ -20,11 +27,12 @@ test.describe('Quick order', () => {
 
       await page.getByTestId('quick-order-apply').click()
       await expect(page.getByTestId('quick-order-apply-message')).toContainText(/Added/i)
-      idempotencyKey = await page.getByTestId('quick-order-idempotency-key').inputValue()
+      keysUsed.push(await page.getByTestId('quick-order-idempotency-key').inputValue())
 
       await page.getByTestId('quick-order-input').fill(`${HERO_SKU} 1`)
       await page.getByRole('button', { name: 'Validate' }).click()
       await expect(page.getByTestId('quick-order-preview')).toBeVisible({ timeout: 15_000 })
+      keysUsed.push(await page.getByTestId('quick-order-idempotency-key').inputValue())
       await page.getByTestId('quick-order-apply').click()
       await expect(page.getByTestId('quick-order-apply-message')).toContainText(/^Added/i)
       await expect(page.getByTestId('quick-order-apply-message')).not.toContainText(/idempotent/i)
@@ -34,8 +42,8 @@ test.describe('Quick order', () => {
       await page.getByTestId(`cart-remove-${HERO_SKU}`).click()
       await expect(page.getByTestId('cart-empty')).toBeVisible({ timeout: 15_000 })
     } finally {
-      if (idempotencyKey) {
-        await deleteCartBulkAddsByKey(request, idempotencyKey).catch(() => undefined)
+      for (const key of [...new Set(keysUsed.filter(Boolean))]) {
+        await deleteCartBulkAddsByKey(request, key).catch(() => undefined)
       }
     }
   })

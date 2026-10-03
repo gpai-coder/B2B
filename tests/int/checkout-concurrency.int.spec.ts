@@ -3,8 +3,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
-import { CartBusyError, CartValidationError, createPostgresCommerceService } from '@/commerce/postgres'
-import { SEED_HERO_SKU } from '@/scripts/seed'
+import { CartValidationError, createPostgresCommerceService } from '@/commerce/postgres'
+import { SEED_HERO_SKU, SEED_QUOTE_NUMBER } from '@/scripts/seed'
 
 const POOL_MAX = Number(process.env.DB_POOL_MAX ?? 5)
 
@@ -37,7 +37,7 @@ describe('checkout concurrency', () => {
   })
 
   const shipTo = {
-    name: 'Pacific Plumbing Supply',
+    name: 'Pacific Plumbing Receiving',
     line1: '100 Market Street',
     city: 'San Francisco',
     state: 'CA',
@@ -83,10 +83,8 @@ describe('checkout concurrency', () => {
           }),
         ),
       )
-      const fulfilled = results.filter((r) => r.status === 'fulfilled') as PromiseFulfilledResult<
-        Awaited<ReturnType<typeof svc.submitCartCheckout>>
-      >[]
-      expect(fulfilled.length).toBeGreaterThanOrEqual(1)
+      expect(results.every((r) => r.status === 'fulfilled')).toBe(true)
+      const fulfilled = results as PromiseFulfilledResult<Awaited<ReturnType<typeof svc.submitCartCheckout>>>[]
       const orderIds = new Set(fulfilled.map((r) => r.value.id))
       expect(orderIds.size).toBe(1)
       const orders = await payload.find({
@@ -128,8 +126,7 @@ describe('checkout concurrency', () => {
       expect(fulfilled).toHaveLength(1)
       expect(rejected.length).toBeGreaterThanOrEqual(4)
       for (const r of rejected) {
-        const err = (r as PromiseRejectedResult).reason
-        expect(err instanceof CartValidationError || err instanceof CartBusyError).toBe(true)
+        expect((r as PromiseRejectedResult).reason).toBeInstanceOf(CartValidationError)
       }
       const orders = await payload.find({
         collection: 'orders',
@@ -141,6 +138,52 @@ describe('checkout concurrency', () => {
       expect(created).toHaveLength(1)
       const cartLines = await svc.getCart(pacificCompanyId)
       expect(cartLines).toHaveLength(0)
+    },
+    120_000,
+  )
+
+  it(
+    'parallel quote conversion with different keys yields one order linked to quote',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      const svc = await commerce()
+      const quotes = await svc.listQuotes(pacificCompanyId)
+      const quote = quotes.find((q) => q.quoteNumber === SEED_QUOTE_NUMBER)
+      expect(quote).toBeDefined()
+      await payload.update({
+        collection: 'quotes',
+        id: Number(quote!.id),
+        data: {
+          convertedOrder: null,
+          status: 'accepted',
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+        },
+        overrideAccess: true,
+      })
+      const stamp = Date.now()
+      const results = await Promise.allSettled(
+        Array.from({ length: 5 }, (_, i) =>
+          svc.convertQuoteToOrder(pacificCompanyId, quote!.id, {
+            poNumber: `PO-QPAR-${stamp}-${i}`,
+            shipTo,
+            idempotencyKey: `quote-par-${stamp}-${i}`,
+          }),
+        ),
+      )
+      expect(results.every((r) => r.status === 'fulfilled')).toBe(true)
+      const fulfilled = results as PromiseFulfilledResult<Awaited<ReturnType<typeof svc.convertQuoteToOrder>>>[]
+      const orderIds = new Set(fulfilled.map((r) => r.value.id))
+      expect(orderIds.size).toBe(1)
+      const linked = await payload.find({
+        collection: 'orders',
+        where: { quote: { equals: Number(quote!.id) } },
+        limit: 50,
+        overrideAccess: true,
+      })
+      const fromRun = linked.docs.filter((o) =>
+        String(o.idempotencyKey ?? '').startsWith(`quote-par-${stamp}`),
+      )
+      expect(fromRun).toHaveLength(1)
     },
     120_000,
   )

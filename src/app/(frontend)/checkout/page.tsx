@@ -10,10 +10,15 @@ import { createPayloadReq } from '@/lib/payload-req'
 
 export const dynamic = 'force-dynamic'
 
+const PENDING_APPROVAL = 'Your account is pending administrator approval.'
+
 export default async function CheckoutPage() {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     redirect('/login?next=/checkout')
+  }
+  if (!user.approved) {
+    return <p className="error">{PENDING_APPROVAL}</p>
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) {
