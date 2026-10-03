@@ -4,7 +4,9 @@ import path from 'path'
 import {
   fetchSeedQuote,
   patchQuote,
+  restoreQuote,
   sweepSmokeTestArtifacts,
+  type QuoteRestoreState,
 } from '../helpers/admin-api'
 import { loginVendor } from '../helpers/vendor-login'
 
@@ -103,24 +105,17 @@ async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup)
   }
 }
 
-let smokeTeardownPromise: Promise<void> | null = null
-
-async function ensureSmokeTeardown(request: APIRequestContext, state: SmokeCleanup) {
-  if (!smokeTeardownPromise) {
-    smokeTeardownPromise = runSmokeTeardown(request, state)
-  }
-  await smokeTeardownPromise
-}
-
 test.describe('B2B foundations smoke', () => {
   const cleanup: SmokeCleanup = { adminCookieHeader: '' }
+  const quoteRestoreHolder: { restore: QuoteRestoreState | null } = { restore: null }
 
   test.beforeAll(async ({ request }) => {
     await sweepSmokeTestArtifacts(request)
   })
 
   test.afterAll(async ({ request }) => {
-    await ensureSmokeTeardown(request, cleanup)
+    await restoreQuote(request, quoteRestoreHolder)
+    await runSmokeTeardown(request, cleanup)
   })
 
   test('admin creates catalog item with PDF; vendor sees company price; quote order flow', async ({
@@ -133,14 +128,6 @@ test.describe('B2B foundations smoke', () => {
     const slug = `${runId}-faucet`
     const sku = `${runId}-sku`
     const productName = `${runId} Pro Faucet`
-
-    let quoteSnapshot:
-      | {
-          status?: string
-          expiresAt?: string
-          convertedOrder: number | null
-        }
-      | undefined
 
     try {
       await page.goto('/admin/login')
@@ -290,10 +277,13 @@ test.describe('B2B foundations smoke', () => {
           : typeof seedQuote.convertedOrder === 'object'
             ? seedQuote.convertedOrder.id
             : seedQuote.convertedOrder
-      quoteSnapshot = {
-        status: seedQuote.status,
-        expiresAt: seedQuote.expiresAt,
-        convertedOrder: converted ?? null,
+      quoteRestoreHolder.restore = {
+        quoteId: seedQuote.id,
+        snapshot: {
+          status: seedQuote.status,
+          expiresAt: seedQuote.expiresAt,
+          convertedOrder: converted ?? null,
+        },
       }
 
       const acceptRes = await patchQuote(
@@ -317,15 +307,22 @@ test.describe('B2B foundations smoke', () => {
       cleanup.orderId = Number(page.url().split('/orders/')[1]?.split('?')[0])
       await expect(page.getByTestId('order-submitted-banner')).toBeVisible()
     } finally {
-      if (quoteSnapshot) {
-        try {
-          const { headers, doc } = await fetchSeedQuote(request, SEED_QUOTE_NUMBER)
-          await patchQuote(request, doc.id, quoteSnapshot, headers)
-        } catch {
-          // best-effort restore after timeout or partial run
+      try {
+        await restoreQuote(request, quoteRestoreHolder)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (!/Target page, context or browser has been closed|Request context disposed/i.test(msg)) {
+          throw err
         }
       }
-      await ensureSmokeTeardown(request, cleanup)
+      try {
+        await runSmokeTeardown(request, cleanup)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (!/Target page, context or browser has been closed|Request context disposed/i.test(msg)) {
+          throw err
+        }
+      }
     }
   })
 })
