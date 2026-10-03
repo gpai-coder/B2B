@@ -189,7 +189,7 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
                   </tbody>
                 </table>
               ) : null}
-              {contractListName ? (
+              {price && price.source === 'company' && contractListName ? (
                 <p className="as-pdp__contract">Contract: {contractListName}</p>
               ) : null}
             </div>

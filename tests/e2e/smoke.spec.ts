@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 import path from 'path'
 
+import { loginVendor } from '../helpers/vendor-login'
+
 const SEED_HERO_SLUG =
   'townsend-r-single-hole-single-handle-bathroom-faucet-1-2-gpm-4-5-l-min-with-lever-handle'
 const SEED_HERO_SKU = '7353101.002'
@@ -115,11 +117,8 @@ test.describe('B2B foundations smoke', () => {
       })
       expect(patchRes.ok()).toBeTruthy()
 
-      await page.goto(`/login?next=${encodeURIComponent(`/products/${slug}`)}`)
-      await page.fill('input[name="email"]', vendorEmail)
-      await page.fill('input[name="password"]', vendorPassword)
-      await page.getByRole('button', { name: 'Sign in' }).click()
-      await page.waitForURL(`**/products/${slug}**`, { timeout: 30_000 })
+      await loginVendor(page, `/products/${slug}`)
+      await expect(page).toHaveURL(new RegExp(`/products/${slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`))
 
       await expect(page.getByTestId('product-page')).toBeVisible()
       await expect(page.getByTestId(`product-price-${sku}`)).toContainText('777')

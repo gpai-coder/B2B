@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 import { getCommerce } from '@/commerce'
 import { ProductDetailView, type ProductDetailDTO } from '@/components/catalog/ProductDetailView'
+import { sanitizeProductDescription } from '@/lib/catalog/sanitize-product-description'
 import { mapDocumentLabel } from '@/lib/catalog/document-labels'
 import { createPayloadReq } from '@/lib/payload-req'
 import { resolveMediaId } from '@/lib/product-media'
@@ -63,7 +64,7 @@ export default async function ProductPage({ params }: Props) {
     name: product.name,
     modelNumber: product.modelNumber,
     productCollection: product.productCollection,
-    description: product.description,
+    description: sanitizeProductDescription(product.description),
     shortBullets: (product.shortBullets ?? []).map((b) => b.text),
     featureBullets: (product.featureBullets ?? []).map((b) => b.text),
     specGroups: (product.specGroups ?? []).map((g) => ({
