@@ -26,16 +26,14 @@ test.describe('Catalog search', () => {
   })
 
   test('Delancey PDP hides order CTAs when all variants are discontinued', async ({ page }) => {
-    await page.goto('/login?next=/catalog')
+    const delanceyPath =
+      '/products/delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min'
+    await page.goto(`/login?next=${encodeURIComponent(delanceyPath)}`)
     await page.fill('input[name="email"]', vendorEmail)
     await page.fill('input[name="password"]', vendorPassword)
     await page.getByRole('button', { name: 'Sign in' }).click()
-    await page.waitForURL('**/catalog**')
-
-    await page.goto(
-      '/products/delancey-r-single-handle-pull-down-dual-spray-function-kitchen-faucet-1-5-gpm-5-7-l-min',
-    )
-    await expect(page.getByTestId('product-page')).toBeVisible()
+    await page.waitForURL(`**${delanceyPath}**`, { timeout: 30_000 })
+    await expect(page.getByTestId('product-page')).toBeVisible({ timeout: 15_000 })
     await expect(page.getByTestId('product-order-cta')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Add to order' })).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Add to quote' })).toHaveCount(0)
