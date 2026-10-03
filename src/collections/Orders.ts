@@ -16,6 +16,10 @@ export const Orders: CollectionConfig = {
     update: staffOnly,
     delete: staffOnly,
   },
+  indexes: [
+    { unique: true, fields: ['company', 'poNumber'] },
+    { unique: true, fields: ['company', 'idempotencyKey'] },
+  ],
   fields: [
     {
       name: 'orderNumber',
@@ -62,11 +66,16 @@ export const Orders: CollectionConfig = {
     {
       name: 'idempotencyKey',
       type: 'text',
-      unique: true,
       access: { update: staffFieldAccess },
       admin: {
         description: 'Client-supplied key to dedupe submit requests.',
       },
+      index: true,
+    },
+    {
+      name: 'orderNotes',
+      type: 'textarea',
+      access: { update: staffFieldAccess },
     },
     {
       name: 'shipTo',

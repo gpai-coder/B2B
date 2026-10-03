@@ -3,10 +3,16 @@
 import { revalidatePath } from 'next/cache'
 
 import { CartValidationError, getCommerce } from '@/commerce'
+import { CartBusyError } from '@/commerce/cart-serialized'
 import { parseCartQuantity } from '@/lib/cart/quantity-rules'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 
 export type CartActionResult = { ok: true } | { ok: false; error: string }
+
+function cartActionError(err: unknown): string {
+  if (err instanceof CartValidationError || err instanceof CartBusyError) return err.message
+  return 'Could not update cart.'
+}
 
 async function requireVendor(): Promise<{ companyId: string; user: NonNullable<Awaited<ReturnType<typeof getRequestUser>>> }> {
   const user = await getRequestUser()
@@ -30,8 +36,7 @@ export async function addToCartAction(sku: string, quantity: number): Promise<Ca
     revalidatePath('/catalog')
     return { ok: true }
   } catch (err) {
-    const message = err instanceof CartValidationError ? err.message : 'Could not update cart.'
-    return { ok: false, error: message }
+    return { ok: false, error: cartActionError(err) }
   }
 }
 
@@ -46,8 +51,7 @@ export async function setCartLineAction(sku: string, quantity: number): Promise<
     revalidatePath('/cart')
     return { ok: true }
   } catch (err) {
-    const message = err instanceof CartValidationError ? err.message : 'Could not update cart.'
-    return { ok: false, error: message }
+    return { ok: false, error: cartActionError(err) }
   }
 }
 
@@ -59,7 +63,6 @@ export async function removeFromCartAction(sku: string): Promise<CartActionResul
     revalidatePath('/cart')
     return { ok: true }
   } catch (err) {
-    const message = err instanceof CartValidationError ? err.message : 'Could not update cart.'
-    return { ok: false, error: message }
+    return { ok: false, error: cartActionError(err) }
   }
 }

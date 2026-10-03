@@ -86,9 +86,19 @@ type RunCartMutationParams = {
 /** Runs a cart write inside a DB transaction with the cart row locked (FOR UPDATE). */
 export async function runCartMutation(params: RunCartMutationParams): Promise<CartLine[]> {
   const { payload, actingUser, companyId, getOrCreateCartDoc, mutate } = params
-  const cart = await getOrCreateCartDoc(companyId)
+  let cart: { id: number }
+  try {
+    cart = await getOrCreateCartDoc(companyId)
+  } catch (err) {
+    rethrowCartMutationError(err)
+  }
   const req = createPayloadReq(payload, actingUser)
-  const transactionID = await payload.db.beginTransaction()
+  let transactionID: string | number | null | undefined
+  try {
+    transactionID = await payload.db.beginTransaction()
+  } catch (err) {
+    rethrowCartMutationError(err)
+  }
   if (transactionID != null) {
     req.transactionID = transactionID
   }

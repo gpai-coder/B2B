@@ -36,5 +36,19 @@ export const Companies: CollectionConfig = {
         description: 'When false, vendor users for this company cannot sign in.',
       },
     },
+    {
+      name: 'defaultShipTo',
+      type: 'group',
+      admin: { description: 'Default ship-to shown at checkout (vendors may override per order).' },
+      fields: [
+        { name: 'name', type: 'text' },
+        { name: 'line1', type: 'text' },
+        { name: 'line2', type: 'text' },
+        { name: 'city', type: 'text' },
+        { name: 'state', type: 'text' },
+        { name: 'postalCode', type: 'text' },
+        { name: 'country', type: 'text', defaultValue: 'US' },
+      ],
+    },
   ],
 }

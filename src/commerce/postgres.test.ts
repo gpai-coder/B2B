@@ -32,8 +32,6 @@ describe('postgres commerce service', () => {
   it('creates and submits a draft order from the seeded quote', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
-    const commerce = createPostgresCommerceService(payload, null)
-
     const pacific = await payload.find({
       collection: 'companies',
       where: { name: { equals: 'Pacific Plumbing Supply' } },
@@ -41,14 +39,27 @@ describe('postgres commerce service', () => {
       overrideAccess: true,
     })
     const companyId = String(pacific.docs[0]!.id)
+    const vendor = await payload.find({
+      collection: 'users',
+      where: { email: { equals: process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local' } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    const commerce = createPostgresCommerceService(payload, vendor.docs[0]!)
 
     const quotes = await commerce.listQuotes(companyId)
     const quote = quotes.find((q) => q.quoteNumber === 'Q-2026-0001')
     expect(quote).toBeDefined()
 
-    const draft = await commerce.createDraftOrder({
-      companyId,
-      quoteId: quote!.id,
+    await payload.update({
+      collection: 'quotes',
+      id: Number(quote!.id),
+      data: { convertedOrder: null },
+      overrideAccess: true,
+    })
+
+    const submitted = await commerce.convertQuoteToOrder(companyId, quote!.id, {
+      poNumber: `PO-test-${Date.now()}`,
       shipTo: {
         name: 'Pacific Plumbing Supply',
         line1: '100 Market Street',
@@ -57,10 +68,8 @@ describe('postgres commerce service', () => {
         postalCode: '94105',
         country: 'US',
       },
+      idempotencyKey: `quote-unit-${Date.now()}`,
     })
-    expect(draft.status).toBe('draft')
-
-    const submitted = await commerce.submitOrder(draft.id, `test-${Date.now()}`, companyId)
     expect(submitted.status).toBe('submitted')
     expect(submitted.orderNumber).toBeTruthy()
   })

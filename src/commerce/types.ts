@@ -61,9 +61,18 @@ export type CommerceOrder = {
   companyId: string
   status: string
   poNumber?: string | null
+  orderNotes?: string | null
   quoteId?: string | null
   idempotencyKey?: string | null
   lines: CommerceOrderLine[]
+  createdAt?: string
+}
+
+export type CheckoutInput = {
+  poNumber: string
+  shipTo: CreateDraftOrderInput['shipTo']
+  orderNotes?: string
+  idempotencyKey: string
 }
 
 export type CreateDraftOrderInput = {
@@ -118,6 +127,13 @@ export interface CommerceService {
     lines: Array<{ lineNumber: number; sku: string; quantity: number }>,
     idempotencyKey: string,
   ): Promise<QuickOrderApplyResult>
+  submitCartCheckout(companyId: string, input: CheckoutInput): Promise<CommerceOrder>
+  convertQuoteToOrder(
+    companyId: string,
+    quoteId: string,
+    input: CheckoutInput,
+  ): Promise<CommerceOrder>
+  listOrders(companyId: string): Promise<CommerceOrder[]>
   createDraftOrder(input: CreateDraftOrderInput): Promise<CommerceOrder>
   submitOrder(orderId: string, idempotencyKey: string, companyId: string): Promise<CommerceOrder>
   getOrder(orderId: string, companyId: string): Promise<CommerceOrder | null>

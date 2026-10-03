@@ -132,7 +132,19 @@ async function upsertUser(
 async function findOrCreateCompany(
   payload: Payload,
   name: string,
-  data: { sapCustomerNumber?: string; accountApproved: boolean },
+  data: {
+    sapCustomerNumber?: string
+    accountApproved: boolean
+    defaultShipTo?: {
+      name: string
+      line1: string
+      line2?: string
+      city: string
+      state: string
+      postalCode: string
+      country: string
+    }
+  },
 ) {
   const existing = await payload.find({
     collection: 'companies',
@@ -209,9 +221,19 @@ export async function runSeed(payload?: Payload) {
   assertProductionSeedPasswords()
   const p = payload ?? (await getPayload({ config }))
 
+  const pacificShipTo = {
+    name: 'Pacific Plumbing Supply',
+    line1: '100 Market Street',
+    city: 'San Francisco',
+    state: 'CA',
+    postalCode: '94105',
+    country: 'US',
+  }
+
   const pacific = await findOrCreateCompany(p, 'Pacific Plumbing Supply', {
     sapCustomerNumber: 'SAP-100200',
     accountApproved: true,
+    defaultShipTo: pacificShipTo,
   })
 
   const bay = await findOrCreateCompany(p, 'Bay Area Fixtures', {
@@ -300,10 +322,24 @@ export async function runSeed(payload?: Payload) {
 
   await findOrCreateQuote(p, SEED_QUOTE_NUMBER, {
     company: pacific.id,
-    status: 'sent',
+    status: 'accepted',
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
     lines: quoteLines,
   })
+  const seededQuote = await p.find({
+    collection: 'quotes',
+    where: { quoteNumber: { equals: SEED_QUOTE_NUMBER } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  if (seededQuote.docs[0]) {
+    await p.update({
+      collection: 'quotes',
+      id: seededQuote.docs[0].id,
+      data: { convertedOrder: null },
+      overrideAccess: true,
+    })
+  }
 
   await findOrCreateSeedOrder(p, SEED_ORDER_NUMBER, {
     company: pacific.id,

@@ -148,6 +148,18 @@ export interface Company {
    * When false, vendor users for this company cannot sign in.
    */
   accountApproved?: boolean | null;
+  /**
+   * Default ship-to shown at checkout (vendors may override per order).
+   */
+  defaultShipTo?: {
+    name?: string | null;
+    line1?: string | null;
+    line2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -426,6 +438,7 @@ export interface Quote {
   company: number | Company;
   status: 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled';
   expiresAt: string;
+  convertedOrder?: (number | null) | Order;
   lines: {
     sku: string;
     variant?: (number | null) | ProductVariant;
@@ -454,6 +467,7 @@ export interface Order {
    * Client-supplied key to dedupe submit requests.
    */
   idempotencyKey?: string | null;
+  orderNotes?: string | null;
   shipTo: {
     name: string;
     line1: string;
@@ -627,6 +641,17 @@ export interface CompaniesSelect<T extends boolean = true> {
   name?: T;
   sapCustomerNumber?: T;
   accountApproved?: T;
+  defaultShipTo?:
+    | T
+    | {
+        name?: T;
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -828,6 +853,7 @@ export interface QuotesSelect<T extends boolean = true> {
   company?: T;
   status?: T;
   expiresAt?: T;
+  convertedOrder?: T;
   lines?:
     | T
     | {
@@ -851,6 +877,7 @@ export interface OrdersSelect<T extends boolean = true> {
   poNumber?: T;
   quote?: T;
   idempotencyKey?: T;
+  orderNotes?: T;
   shipTo?:
     | T
     | {

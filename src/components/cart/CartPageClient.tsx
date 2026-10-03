@@ -109,7 +109,9 @@ export function CartPageClient({ summary }: Props) {
       <p className="as-cart-subtotal" data-testid="cart-subtotal">
         Subtotal: ${summary.subtotal.toFixed(2)} {summary.currency}
       </p>
-      <p className="as-cart-note">Checkout arrives in the next ordering release.</p>
+      <Link href="/checkout" className="as-btn-primary" data-testid="cart-checkout">
+        Checkout
+      </Link>
     </div>
   )
 }

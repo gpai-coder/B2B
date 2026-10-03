@@ -1,6 +1,11 @@
+import { randomUUID } from 'crypto'
 import { redirect } from 'next/navigation'
 
-import { getRequestUser } from '@/lib/session'
+import { shipToFromCompanyDefault } from '@/lib/checkout/ship-to'
+import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
+import { createPayloadReq } from '@/lib/payload-req'
 
 import { createAndSubmitQuoteOrder } from './actions'
 
@@ -12,19 +17,64 @@ export default async function QuoteOrderPage({ params }: Props) {
   if (!user || user.role !== 'vendor-buyer') {
     redirect(`/login?next=/quotes/${encodeURIComponent(quoteNumber)}/order`)
   }
+  const companyId = getCompanyIdFromUser(user)
+  if (!companyId) {
+    return <p className="error">Vendor account is missing a company.</p>
+  }
 
-  async function submit() {
+  const payload = await getPayload({ config: await config })
+  const company = await payload.findByID({
+    collection: 'companies',
+    id: Number(companyId),
+    overrideAccess: false,
+    req: createPayloadReq(payload, user),
+  })
+  const ship = shipToFromCompanyDefault(company.defaultShipTo)
+
+  async function submit(formData: FormData) {
     'use server'
-    await createAndSubmitQuoteOrder(quoteNumber)
+    await createAndSubmitQuoteOrder(quoteNumber, formData)
   }
 
   return (
-    <div className="quote-order">
+    <div className="quote-order" data-testid="quote-order-page">
       <h1>Order from {quoteNumber}</h1>
-      <p>Creates a draft order from your seeded quote lines and submits it.</p>
+      <p>Submit a purchase order from this accepted quote (one order per quote).</p>
       <form action={submit}>
+        <input type="hidden" name="idempotencyKey" value={randomUUID()} readOnly />
+        <label>
+          PO number *
+          <input name="poNumber" required defaultValue={`PO-${quoteNumber}`} data-testid="quote-order-po" />
+        </label>
+        <fieldset>
+          <legend>Ship to</legend>
+          <label>
+            Name *
+            <input name="shipToName" required defaultValue={ship?.name ?? ''} />
+          </label>
+          <label>
+            Address *
+            <input name="shipToLine1" required defaultValue={ship?.line1 ?? ''} />
+          </label>
+          <label>
+            City *
+            <input name="shipToCity" required defaultValue={ship?.city ?? ''} />
+          </label>
+          <label>
+            State *
+            <input name="shipToState" required defaultValue={ship?.state ?? ''} />
+          </label>
+          <label>
+            Postal code *
+            <input name="shipToPostalCode" required defaultValue={ship?.postalCode ?? ''} />
+          </label>
+        </fieldset>
+        <label>
+          Order notes
+          <textarea name="orderNotes" rows={2} data-testid="quote-order-notes" />
+        </label>
         <button type="submit" data-testid="submit-quote-order">
-          Create draft order and submit
+          Submit order
         </button>
       </form>
     </div>
