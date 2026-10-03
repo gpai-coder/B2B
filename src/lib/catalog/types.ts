@@ -30,6 +30,7 @@ export type PriceDTO = {
   sku: string
   unitPrice: { amount: number; currency: string }
   source: 'company' | 'standard'
+  priceListName?: string
   quantityBreaks?: Array<{ minQuantity: number; unitPrice: number }>
 }
 

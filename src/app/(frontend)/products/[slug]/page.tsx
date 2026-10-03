@@ -9,7 +9,6 @@ import { sanitizeProductDescription } from '@/lib/catalog/sanitize-product-descr
 import { mapDocumentLabel } from '@/lib/catalog/document-labels'
 import { createPayloadReq } from '@/lib/payload-req'
 import { resolveMediaId } from '@/lib/product-media'
-import { SEED_PACIFIC_PRICE_LIST } from '@/scripts/seed'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 
@@ -95,11 +94,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <Suspense fallback={<p>Loading product…</p>}>
-      <ProductDetailView
-        product={dto}
-        prices={prices}
-        contractListName={SEED_PACIFIC_PRICE_LIST}
-      />
+      <ProductDetailView product={dto} prices={prices} />
     </Suspense>
   )
 }

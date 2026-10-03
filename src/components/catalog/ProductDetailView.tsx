@@ -43,10 +43,9 @@ export type ProductDetailDTO = {
 type Props = {
   product: ProductDetailDTO
   prices: Record<string, PriceDTO | undefined>
-  contractListName?: string
 }
 
-export function ProductDetailView({ product, prices, contractListName }: Props) {
+export function ProductDetailView({ product, prices }: Props) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialSku =
@@ -189,8 +188,8 @@ export function ProductDetailView({ product, prices, contractListName }: Props) 
                   </tbody>
                 </table>
               ) : null}
-              {price && price.source === 'company' && contractListName ? (
-                <p className="as-pdp__contract">Contract: {contractListName}</p>
+              {price?.source === 'company' && price.priceListName ? (
+                <p className="as-pdp__contract">Contract: {price.priceListName}</p>
               ) : null}
             </div>
           ) : null}

@@ -7,6 +7,7 @@ export type PriceQuote = {
   sku: string
   unitPrice: Money
   source: 'company' | 'standard'
+  priceListName?: string
   quantityBreaks?: Array<{ minQuantity: number; unitPrice: number }>
 }
 
