@@ -4,6 +4,7 @@ import path from 'path'
 import { getPayload } from 'payload'
 
 import { getCatalogMediaAuthFailure } from '@/access'
+import { resolveBlobMediaUrl } from '@/lib/blob-media-url'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getRequestUser } from '@/lib/session'
 import config from '@/payload.config'
@@ -77,8 +78,10 @@ export async function GET(request: Request, { params }: RouteParams) {
     })
   }
 
-  if (doc.url && doc.url.startsWith('http')) {
-    const upstream = await fetch(doc.url)
+  const remoteUrl =
+    doc.url && doc.url.startsWith('http') ? doc.url : resolveBlobMediaUrl(doc.filename)
+  if (remoteUrl) {
+    const upstream = await fetch(remoteUrl, { cache: 'no-store' })
     if (!upstream.ok) {
       return Response.json({ error: 'Failed to load media' }, { status: 502 })
     }

@@ -23,6 +23,10 @@ describe('postgres commerce service', () => {
     expect(prices).toHaveLength(1)
     expect(prices[0]!.unitPrice.amount).toBe(199)
     expect(prices[0]!.source).toBe('company')
+    expect(prices[0]!.quantityBreaks).toEqual([
+      { minQuantity: 10, unitPrice: 189 },
+      { minQuantity: 25, unitPrice: 179 },
+    ])
   })
 
   it('creates and submits a draft order from the seeded quote', async () => {

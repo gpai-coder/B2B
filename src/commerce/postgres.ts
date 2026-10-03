@@ -124,7 +124,16 @@ export function createPostgresCommerceService(
           price = br.unitPrice
         }
       }
-      return { sku, unitPrice: money(price, line.currency ?? 'USD'), source }
+      const quantityBreaks = breaks
+        .filter((br) => br.minQuantity != null && br.unitPrice != null)
+        .map((br) => ({ minQuantity: br.minQuantity!, unitPrice: br.unitPrice! }))
+        .sort((a, b) => a.minQuantity - b.minQuantity)
+      return {
+        sku,
+        unitPrice: money(price, line.currency ?? 'USD'),
+        source,
+        quantityBreaks: quantityBreaks.length > 0 ? quantityBreaks : undefined,
+      }
     }
 
     return pickFromList(companyList, 'company') ?? pickFromList(standardList, 'standard') ?? null

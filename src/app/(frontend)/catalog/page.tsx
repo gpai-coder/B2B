@@ -35,6 +35,7 @@ export default async function CatalogPage() {
 
   const variantsResult = await payload.find({
     collection: 'product-variants',
+    sort: 'id',
     limit: 500,
     depth: 1,
     overrideAccess: false,

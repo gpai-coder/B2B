@@ -4,11 +4,8 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 import { getCommerce } from '@/commerce'
-import {
-  mapDocumentLabel,
-  ProductDetailView,
-  type ProductDetailDTO,
-} from '@/components/catalog/ProductDetailView'
+import { ProductDetailView, type ProductDetailDTO } from '@/components/catalog/ProductDetailView'
+import { mapDocumentLabel } from '@/lib/catalog/document-labels'
 import { createPayloadReq } from '@/lib/payload-req'
 import { resolveMediaId } from '@/lib/product-media'
 import { SEED_PACIFIC_PRICE_LIST } from '@/scripts/seed'
@@ -48,6 +45,7 @@ export default async function ProductPage({ params }: Props) {
   const variants = await payload.find({
     collection: 'product-variants',
     where: { product: { equals: product.id } },
+    sort: 'id',
     limit: 50,
     depth: 2,
     overrideAccess: false,
