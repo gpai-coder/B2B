@@ -58,7 +58,7 @@ function parseFacetRows(
   }
 }
 
-async function executeRows<T>(query: string): Promise<T[]> {
+async function executeRows<T extends Record<string, unknown>>(query: string): Promise<T[]> {
   return querySearchDb<T>(query)
 }
 

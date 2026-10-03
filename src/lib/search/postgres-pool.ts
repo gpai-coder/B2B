@@ -11,7 +11,9 @@ export function getSearchDbPool(): pg.Pool {
   return pool
 }
 
-export async function querySearchDb<T extends pg.QueryResultRow>(sql: string): Promise<T[]> {
+export async function querySearchDb<T extends Record<string, unknown>>(
+  sql: string,
+): Promise<T[]> {
   const result = await getSearchDbPool().query<T>(sql)
   return result.rows
 }
