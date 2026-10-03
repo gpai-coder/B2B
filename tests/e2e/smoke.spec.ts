@@ -42,11 +42,12 @@ async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup)
   const assertOk = async (
     res: { ok: () => boolean; status: () => number; text: () => Promise<string> },
     label: string,
+    allowNotFound = false,
   ) => {
-    if (!res.ok()) {
-      const body = await res.text()
-      throw new Error(`Smoke teardown failed (${label}): ${res.status()} ${body}`)
-    }
+    if (res.ok()) return
+    if (allowNotFound && res.status() === 404) return
+    const body = await res.text()
+    throw new Error(`Smoke teardown failed (${label}): ${res.status()} ${body}`)
   }
 
   if (state.pacificListId && state.variantId) {
@@ -69,20 +70,46 @@ async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup)
   }
 
   if (state.orderId && !Number.isNaN(state.orderId)) {
-    await assertOk(await request.delete(`/api/orders/${state.orderId}`, { headers }), 'delete order')
+    await assertOk(
+      await request.delete(`/api/orders/${state.orderId}`, { headers }),
+      'delete order',
+      true,
+    )
+    state.orderId = undefined
   }
   if (state.variantId) {
     await assertOk(
       await request.delete(`/api/product-variants/${state.variantId}`, { headers }),
       'delete variant',
+      true,
     )
+    state.variantId = undefined
   }
   if (state.productId) {
-    await assertOk(await request.delete(`/api/products/${state.productId}`, { headers }), 'delete product')
+    await assertOk(
+      await request.delete(`/api/products/${state.productId}`, { headers }),
+      'delete product',
+      true,
+    )
+    state.productId = undefined
   }
   if (state.mediaId) {
-    await assertOk(await request.delete(`/api/media/${state.mediaId}`, { headers }), 'delete media')
+    await assertOk(
+      await request.delete(`/api/media/${state.mediaId}`, { headers }),
+      'delete media',
+      true,
+    )
+    state.mediaId = undefined
   }
+}
+
+let smokeTeardownPromise: Promise<void> | null = null
+
+async function ensureSmokeTeardown(request: APIRequestContext, state: SmokeCleanup) {
+  if (!smokeTeardownPromise) {
+    smokeTeardownPromise = runSmokeTeardown(request, state)
+  }
+  await smokeTeardownPromise
 }
 
 test.describe('B2B foundations smoke', () => {
@@ -93,7 +120,7 @@ test.describe('B2B foundations smoke', () => {
   })
 
   test.afterAll(async ({ request }) => {
-    await runSmokeTeardown(request, cleanup)
+    await ensureSmokeTeardown(request, cleanup)
   })
 
   test('admin creates catalog item with PDF; vendor sees company price; quote order flow', async ({
@@ -298,7 +325,7 @@ test.describe('B2B foundations smoke', () => {
           // best-effort restore after timeout or partial run
         }
       }
-      await runSmokeTeardown(request, cleanup)
+      await ensureSmokeTeardown(request, cleanup)
     }
   })
 })
