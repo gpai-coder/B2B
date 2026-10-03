@@ -281,6 +281,7 @@ async function seedProductFromCatalogEntry(
     modelNumber: product.modelNumber,
     productCollection: product.productCollection,
     catalogCategory: product.catalogCategory,
+    catalogHidden: product.catalogHidden ?? false,
     breadcrumbs: product.breadcrumbs,
     description: product.description ?? '',
     shortBullets: product.shortBullets,
