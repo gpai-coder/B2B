@@ -1,10 +1,19 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminPanelAccess, companyReadAccess, staffOnly } from '../access'
+
 export const Quotes: CollectionConfig = {
   slug: 'quotes',
   admin: {
     useAsTitle: 'quoteNumber',
     defaultColumns: ['quoteNumber', 'company', 'status', 'expiresAt'],
+  },
+  access: {
+    admin: adminPanelAccess,
+    read: companyReadAccess(),
+    create: staffOnly,
+    update: staffOnly,
+    delete: staffOnly,
   },
   fields: [
     {

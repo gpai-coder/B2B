@@ -1,16 +1,27 @@
 import type { CollectionConfig } from 'payload'
 
+import { adminPanelAccess, companyReadAccess, staffFieldAccess, staffOnly } from '../access'
+
 export const Orders: CollectionConfig = {
   slug: 'orders',
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'company', 'status', 'poNumber', 'updatedAt'],
   },
+  access: {
+    admin: adminPanelAccess,
+    read: companyReadAccess(),
+    /** Vendors place orders only via commerce server actions, not Payload REST. */
+    create: staffOnly,
+    update: staffOnly,
+    delete: staffOnly,
+  },
   fields: [
     {
       name: 'orderNumber',
       type: 'text',
       unique: true,
+      access: { update: staffFieldAccess },
       admin: {
         readOnly: true,
         description: 'Generated on submit if empty.',
@@ -21,12 +32,14 @@ export const Orders: CollectionConfig = {
       type: 'relationship',
       relationTo: 'companies',
       required: true,
+      access: { update: staffFieldAccess },
     },
     {
       name: 'status',
       type: 'select',
       required: true,
       defaultValue: 'draft',
+      access: { update: staffFieldAccess },
       options: [
         { label: 'Draft', value: 'draft' },
         { label: 'Submitted', value: 'submitted' },
@@ -38,16 +51,19 @@ export const Orders: CollectionConfig = {
     {
       name: 'poNumber',
       type: 'text',
+      access: { update: staffFieldAccess },
     },
     {
       name: 'quote',
       type: 'relationship',
       relationTo: 'quotes',
+      access: { update: staffFieldAccess },
     },
     {
       name: 'idempotencyKey',
       type: 'text',
       unique: true,
+      access: { update: staffFieldAccess },
       admin: {
         description: 'Client-supplied key to dedupe submit requests.',
       },
@@ -55,6 +71,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'shipTo',
       type: 'group',
+      access: { update: staffFieldAccess },
       fields: [
         { name: 'name', type: 'text', required: true },
         { name: 'line1', type: 'text', required: true },
@@ -69,6 +86,7 @@ export const Orders: CollectionConfig = {
       name: 'lines',
       type: 'array',
       required: true,
+      access: { update: staffFieldAccess },
       fields: [
         {
           name: 'sku',
