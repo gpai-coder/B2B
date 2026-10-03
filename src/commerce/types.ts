@@ -82,12 +82,41 @@ export type CreateDraftOrderInput = {
   lines?: Array<{ sku: string; quantity: number }>
 }
 
+export type QuickOrderPreviewLine = {
+  lineNumber: number
+  sku: string
+  quantity: number
+  ok: boolean
+  productName?: string
+  unitPrice?: Money
+  source?: 'company' | 'standard'
+  error?: string
+}
+
+export type QuickOrderPreview = {
+  lines: QuickOrderPreviewLine[]
+}
+
+export type QuickOrderApplyResult = {
+  replay: boolean
+  addedSkus: string[]
+}
+
 export interface CommerceService {
   getPrices(customerId: string, skus: string[]): Promise<PriceQuote[]>
   getCart(companyId: string): Promise<CartLine[]>
   getCartSummary(companyId: string): Promise<CartSummary>
   setCartLine(companyId: string, sku: string, quantity: number): Promise<CartLine[]>
   removeCartLine(companyId: string, sku: string): Promise<CartLine[]>
+  previewQuickOrder(
+    companyId: string,
+    lines: Array<{ lineNumber: number; sku: string; quantity: number }>,
+  ): Promise<QuickOrderPreview>
+  applyQuickOrder(
+    companyId: string,
+    lines: Array<{ lineNumber: number; sku: string; quantity: number }>,
+    idempotencyKey: string,
+  ): Promise<QuickOrderApplyResult>
   createDraftOrder(input: CreateDraftOrderInput): Promise<CommerceOrder>
   submitOrder(orderId: string, idempotencyKey: string, companyId: string): Promise<CommerceOrder>
   getOrder(orderId: string, companyId: string): Promise<CommerceOrder | null>

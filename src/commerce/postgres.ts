@@ -21,6 +21,7 @@ import {
   loadVariantForOrdering,
   unavailableReason,
 } from './cart-helpers'
+import { applyQuickOrderLines, previewQuickOrderLines } from './quick-order'
 
 export { CartValidationError } from './cart-helpers'
 
@@ -164,18 +165,19 @@ export function createPostgresCommerceService(
     return mapped
   }
 
-  async function getOrCreateCartDoc(companyId: string) {
+  async function getOrCreateCartDoc(companyId: string, req?: PayloadRequest) {
     if (!actingUser) throw new Error('Authentication required')
     assertCompanyMatchesUser(actingUser, companyId)
     const where: Where = {
       and: [{ user: { equals: actingUser.id } }, { company: { equals: Number(companyId) } }],
     }
+    const findOpts = req ? { req, overrideAccess: true as const } : { overrideAccess: true as const }
     for (let attempt = 0; attempt < 3; attempt++) {
       const existing = await payload.find({
         collection: 'carts',
         where,
         limit: 1,
-        overrideAccess: true,
+        ...findOpts,
       })
       if (existing.docs[0]) return existing.docs[0]
       try {
@@ -186,7 +188,7 @@ export function createPostgresCommerceService(
             company: Number(companyId),
             lines: [],
           },
-          overrideAccess: true,
+          ...findOpts,
         })
       } catch (err) {
         if (isUniqueViolation(err) && attempt < 2) continue
@@ -206,8 +208,11 @@ export function createPostgresCommerceService(
   async function persistCartLines(
     cartId: number,
     lines: CartLine[],
-    options?: { validateQuantityForSku?: string },
+    options?: { validateQuantityForSku?: string; req?: PayloadRequest },
   ) {
+    const writeOpts = options?.req
+      ? { req: options.req, overrideAccess: true as const }
+      : { overrideAccess: true as const }
     const enriched = []
     for (const line of lines) {
       const meta = await loadVariantCartMeta(payload, line.sku, readOpts())
@@ -225,7 +230,7 @@ export function createPostgresCommerceService(
       collection: 'carts',
       id: cartId,
       data: { lines: enriched },
-      overrideAccess: true,
+      ...writeOpts,
     })
     return mapCartLines(updated)
   }
@@ -325,6 +330,42 @@ export function createPostgresCommerceService(
 
     async removeCartLine(companyId, sku) {
       return this.setCartLine(companyId, sku, 0)
+    },
+
+    async previewQuickOrder(companyId, lines) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      if (!actingUser) throw new Error('Authentication required')
+      const quickDeps = {
+        payload,
+        actingUser,
+        companyId,
+        readOpts,
+        resolveUnitPrice,
+        getCartLines: (cid: string) => this.getCart(cid),
+        getOrCreateCartDoc: (cid: string, req: PayloadRequest) => getOrCreateCartDoc(cid, req),
+        persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
+          persistCartLines(cartId, cartLines, { req }),
+        createReq: () => createPayloadReq(payload, actingUser),
+      }
+      return previewQuickOrderLines(quickDeps, lines)
+    },
+
+    async applyQuickOrder(companyId, lines, idempotencyKey) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      if (!actingUser) throw new Error('Authentication required')
+      const quickDeps = {
+        payload,
+        actingUser,
+        companyId,
+        readOpts,
+        resolveUnitPrice,
+        getCartLines: (cid: string) => this.getCart(cid),
+        getOrCreateCartDoc: (cid: string, req: PayloadRequest) => getOrCreateCartDoc(cid, req),
+        persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
+          persistCartLines(cartId, cartLines, { req }),
+        createReq: () => createPayloadReq(payload, actingUser),
+      }
+      return applyQuickOrderLines(quickDeps, lines, idempotencyKey)
     },
 
     async listQuotes(companyId) {

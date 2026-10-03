@@ -617,3 +617,29 @@
   text-decoration: underline;
   font: inherit;
 }
+
+.as-quick-order {
+  max-width: var(--as-content-max);
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.as-quick-order__input {
+  width: 100%;
+  max-width: 720px;
+  font-family: inherit;
+  padding: 8px;
+  border: 1px solid var(--as-line);
+}
+
+.as-quick-order__actions {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.as-quick-order__mode {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Carts } from './collections/Carts'
+import { CartBulkAdds } from './collections/CartBulkAdds'
 import { Companies } from './collections/Companies'
 import { Media } from './collections/Media'
 import { Orders } from './collections/Orders'
@@ -41,6 +42,7 @@ export default buildConfig({
     Quotes,
     Orders,
     Carts,
+    CartBulkAdds,
   ],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,
