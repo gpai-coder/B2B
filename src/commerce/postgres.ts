@@ -2,6 +2,7 @@ import type { Payload, PayloadRequest, Where } from 'payload'
 
 import type { User } from '@/payload-types'
 import { createPayloadReq } from '@/lib/payload-req'
+import { parseCartQuantity } from '@/lib/cart/quantity-rules'
 import { getUserCompanyId } from '@/access'
 
 import type {
@@ -22,8 +23,10 @@ import {
   unavailableReason,
 } from './cart-helpers'
 import { applyQuickOrderLines, previewQuickOrderLines } from './quick-order'
+import { runCartMutation } from './cart-serialized'
 
 export { CartValidationError } from './cart-helpers'
+export { CartBusyError } from './cart-serialized'
 
 function money(amount: number, currency = 'USD') {
   return { amount, currency }
@@ -86,6 +89,13 @@ export function createPostgresCommerceService(
     actingUser
       ? { overrideAccess: false as const, req: reqFor(payload, actingUser)! }
       : { overrideAccess: true as const }
+
+  const txReadOpts = (req?: PayloadRequest) =>
+    req
+      ? actingUser
+        ? { overrideAccess: false as const, req }
+        : { overrideAccess: true as const, req }
+      : readOpts()
 
   async function findVariantIdsBySkus(skus: string[]) {
     const result = await payload.find({
@@ -215,9 +225,9 @@ export function createPostgresCommerceService(
       : { overrideAccess: true as const }
     const enriched = []
     for (const line of lines) {
-      const meta = await loadVariantCartMeta(payload, line.sku, readOpts())
+      const meta = await loadVariantCartMeta(payload, line.sku, txReadOpts(options?.req))
       if (options?.validateQuantityForSku === line.sku) {
-        await loadVariantForOrdering(payload, line.sku, readOpts())
+        await loadVariantForOrdering(payload, line.sku, txReadOpts(options?.req))
         assertValidCartQuantity(line.quantity, meta)
       }
       enriched.push({
@@ -313,19 +323,50 @@ export function createPostgresCommerceService(
 
     async setCartLine(companyId, sku, quantity) {
       assertCompanyMatchesUser(actingUser, companyId)
-      const cart = await getOrCreateCartDoc(companyId)
-      const current = mapCartLines(cart)
-      if (quantity <= 0) {
-        return persistCartLines(
-          cart.id,
-          current.filter((l) => l.sku !== sku),
-        )
-      }
-      const meta = await loadVariantForOrdering(payload, sku, readOpts())
-      assertValidCartQuantity(quantity, meta)
-      const next = current.filter((l) => l.sku !== sku)
-      next.push({ sku, quantity })
-      return persistCartLines(cart.id, next, { validateQuantityForSku: sku })
+      if (!actingUser) throw new Error('Authentication required')
+      return runCartMutation({
+        payload,
+        actingUser,
+        companyId,
+        getOrCreateCartDoc,
+        mutate: async ({ lines, cartId, req }) => {
+          if (quantity <= 0) {
+            return persistCartLines(
+              cartId,
+              lines.filter((l) => l.sku !== sku),
+              { req },
+            )
+          }
+          const meta = await loadVariantForOrdering(payload, sku, txReadOpts(req))
+          assertValidCartQuantity(quantity, meta)
+          const next = lines.filter((l) => l.sku !== sku)
+          next.push({ sku, quantity })
+          return persistCartLines(cartId, next, { req, validateQuantityForSku: sku })
+        },
+      })
+    },
+
+    async addCartQuantity(companyId, sku, quantityToAdd) {
+      assertCompanyMatchesUser(actingUser, companyId)
+      if (!actingUser) throw new Error('Authentication required')
+      const parsedAdd = parseCartQuantity(quantityToAdd)
+      if (!parsedAdd.ok) throw new CartValidationError(parsedAdd.error)
+      return runCartMutation({
+        payload,
+        actingUser,
+        companyId,
+        getOrCreateCartDoc,
+        mutate: async ({ lines, cartId, req }) => {
+          const current = lines.find((l) => l.sku === sku)?.quantity ?? 0
+          const parsedTotal = parseCartQuantity(current + parsedAdd.quantity)
+          if (!parsedTotal.ok) throw new CartValidationError(parsedTotal.error)
+          const meta = await loadVariantForOrdering(payload, sku, txReadOpts(req))
+          assertValidCartQuantity(parsedTotal.quantity, meta)
+          const next = lines.filter((l) => l.sku !== sku)
+          next.push({ sku, quantity: parsedTotal.quantity })
+          return persistCartLines(cartId, next, { req, validateQuantityForSku: sku })
+        },
+      })
     },
 
     async removeCartLine(companyId, sku) {
@@ -341,11 +382,10 @@ export function createPostgresCommerceService(
         companyId,
         readOpts,
         resolveUnitPrice,
-        getCartLines: (cid: string) => this.getCart(cid),
-        getOrCreateCartDoc: (cid: string, req: PayloadRequest) => getOrCreateCartDoc(cid, req),
         persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
           persistCartLines(cartId, cartLines, { req }),
-        createReq: () => createPayloadReq(payload, actingUser),
+        runCartMutation: (mutate: Parameters<typeof runCartMutation>[0]['mutate']) =>
+          runCartMutation({ payload, actingUser, companyId, getOrCreateCartDoc, mutate }),
       }
       return previewQuickOrderLines(quickDeps, lines)
     },
@@ -359,11 +399,10 @@ export function createPostgresCommerceService(
         companyId,
         readOpts,
         resolveUnitPrice,
-        getCartLines: (cid: string) => this.getCart(cid),
-        getOrCreateCartDoc: (cid: string, req: PayloadRequest) => getOrCreateCartDoc(cid, req),
         persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
           persistCartLines(cartId, cartLines, { req }),
-        createReq: () => createPayloadReq(payload, actingUser),
+        runCartMutation: (mutate: Parameters<typeof runCartMutation>[0]['mutate']) =>
+          runCartMutation({ payload, actingUser, companyId, getOrCreateCartDoc, mutate }),
       }
       return applyQuickOrderLines(quickDeps, lines, idempotencyKey)
     },
