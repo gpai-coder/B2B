@@ -88,10 +88,25 @@ Optional CLI (if linked): `vercel link`, `vercel env pull .env.local`.
 src/
   app/(frontend)/   # Storefront routes
   app/(payload)/    # Payload admin + REST/GraphQL
-  collections/      # Payload collections (expanded in PR 2+)
+  collections/      # Payload collections (Companies, Products, Variants, …)
   env.ts              # Zod env validation
   payload.config.ts
 ```
+
+### Data model (Payload collections)
+
+| Collection | Purpose |
+| --- | --- |
+| `companies` | B2B vendor accounts; optional `sapCustomerNumber`; `accountApproved` gate |
+| `users` | Auth users with `role` (admin, sales, vendor-buyer), optional `company`, `approved` |
+| `products` / `product-variants` | Catalog with SKU, finish, structured specs, images, spec/install PDFs |
+| `price-lists` | Standard or company-specific prices with optional quantity breaks and validity dates |
+| `quotes` | Per-company quotes with line SKU/qty/price, status, expiry |
+| `orders` | Draft → submitted lifecycle, ship-to, PO, optional quote, idempotency key |
+
+Schema changes apply via Payload’s Postgres adapter (`push` in development). Run `pnpm dev` once against a fresh DB to create tables.
+
+Uploads use **local disk** (`/media`) when `BLOB_READ_WRITE_TOKEN` is unset; enable `@payloadcms/storage-vercel-blob` in production.
 
 ## PR plan (foundations)
 
