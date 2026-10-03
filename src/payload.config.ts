@@ -15,6 +15,7 @@ import { ProductVariants } from './collections/ProductVariants'
 import { Quotes } from './collections/Quotes'
 import { Users } from './collections/Users'
 import { getEnv } from './env'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -48,6 +49,8 @@ export default buildConfig({
     pool: {
       connectionString: env.DATABASE_URL,
     },
+    prodMigrations: migrations,
+    push: process.env.PAYLOAD_DISABLE_PUSH === 'true' ? false : undefined,
   }),
   plugins: [
     vercelBlobStorage({
