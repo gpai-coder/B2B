@@ -1,7 +1,20 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
+DO $$ BEGIN
+  IF to_regclass('public.payload_migrations') IS NOT NULL
+     AND EXISTS (SELECT 1 FROM payload_migrations WHERE name='20261004_120000_cart_moq') THEN
+    ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_carts_fk";
+    ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "carts_id";
+    DROP TABLE IF EXISTS "carts_lines" CASCADE;
+    DROP TABLE IF EXISTS "carts" CASCADE;
+    ALTER TABLE "product_variants" DROP COLUMN IF EXISTS "moq";
+    ALTER TABLE "product_variants" DROP COLUMN IF EXISTS "order_multiple";
+    DELETE FROM payload_migrations WHERE name='20261004_120000_cart_moq';
+  END IF;
+END $$;
+
    CREATE TABLE "carts_lines" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
@@ -38,7 +51,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "payload_locked_documents_rels_carts_id_idx" ON "payload_locked_documents_rels" USING btree ("carts_id");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
   ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_carts_fk";
   DROP INDEX IF EXISTS "payload_locked_documents_rels_carts_id_idx";

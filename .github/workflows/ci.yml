@@ -58,6 +58,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Legacy cart migration reconcile (prod preview scenario)
+        if: hashFiles('src/migrations/**') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+        run: bash scripts/migrate-prod-cart-reconcile.sh
+
       - name: Migration up/down (fresh Postgres)
         if: hashFiles('src/migrations/**') != ''
         env:
