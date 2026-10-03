@@ -37,6 +37,34 @@ async function assertNoApplicationError(page: Page) {
   }
 }
 
+function isClosedRequestError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return /Target page, context or browser has been closed|Request context disposed/i.test(msg)
+}
+
+async function runSmokeShutdown(
+  request: APIRequestContext,
+  cleanup: SmokeCleanup,
+  quoteRestoreHolder: { restore: QuoteRestoreState | null },
+  options: { ignoreClosedRequest?: boolean } = {},
+) {
+  const errors: unknown[] = []
+  try {
+    await restoreQuote(request, quoteRestoreHolder)
+  } catch (err) {
+    errors.push(err)
+  }
+  try {
+    await runSmokeTeardown(request, cleanup)
+  } catch (err) {
+    errors.push(err)
+  }
+  const fatal = options.ignoreClosedRequest ? errors.filter((e) => !isClosedRequestError(e)) : errors
+  if (fatal.length === 0) return
+  const message = fatal.map((e) => (e instanceof Error ? e.message : String(e))).join('; ')
+  throw new Error(`Smoke shutdown failed: ${message}`)
+}
+
 async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup) {
   if (!state.adminCookieHeader) return
   const headers = { Cookie: state.adminCookieHeader, 'Content-Type': 'application/json' }
@@ -114,8 +142,7 @@ test.describe('B2B foundations smoke', () => {
   })
 
   test.afterAll(async ({ request }) => {
-    await restoreQuote(request, quoteRestoreHolder)
-    await runSmokeTeardown(request, cleanup)
+    await runSmokeShutdown(request, cleanup, quoteRestoreHolder)
   })
 
   test('admin creates catalog item with PDF; vendor sees company price; quote order flow', async ({
@@ -307,22 +334,7 @@ test.describe('B2B foundations smoke', () => {
       cleanup.orderId = Number(page.url().split('/orders/')[1]?.split('?')[0])
       await expect(page.getByTestId('order-submitted-banner')).toBeVisible()
     } finally {
-      try {
-        await restoreQuote(request, quoteRestoreHolder)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        if (!/Target page, context or browser has been closed|Request context disposed/i.test(msg)) {
-          throw err
-        }
-      }
-      try {
-        await runSmokeTeardown(request, cleanup)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        if (!/Target page, context or browser has been closed|Request context disposed/i.test(msg)) {
-          throw err
-        }
-      }
+      await runSmokeShutdown(request, cleanup, quoteRestoreHolder, { ignoreClosedRequest: true })
     }
   })
 })

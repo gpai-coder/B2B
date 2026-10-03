@@ -1,68 +1,151 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type APIRequestContext } from '@playwright/test'
 
 import { adminJwtHeaders, createSmokeMedia, sweepSmokeTestArtifacts } from '../helpers/admin-api'
+import { isLocalBaseUrl } from '../helpers/e2e-env'
 
 const PACIFIC_CONTRACT_LIST = 'Pacific Plumbing Contract 2026'
-const DECOY_VARIANT_SKU = 'AS-SMOKE-GLASS-01'
-const DECOY_PRODUCT_SLUG = 'frosted-smoke-glass-shower-panel'
 const SMOKE_RUN_MS = '1735923456789'
 
+const isLocal = isLocalBaseUrl()
+
+type SweepTestCleanupState = {
+  decoyProductId?: number
+  decoyVariantId?: number
+  smokeProductId?: number
+  smokeVariantId?: number
+  smokeMediaId?: number
+  pacificListId?: number
+}
+
+function variantIdFromLine(variant: unknown): number | undefined {
+  if (variant == null) return undefined
+  if (typeof variant === 'object') return (variant as { id: number }).id
+  return Number(variant)
+}
+
+function isClosedRequestError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return /Target page, context or browser has been closed|Request context disposed/i.test(msg)
+}
+
+async function runSweepTestCleanup(request: APIRequestContext, state: SweepTestCleanupState) {
+  const headers = await adminJwtHeaders(request)
+
+  const trackedVariantIds = new Set(
+    [state.smokeVariantId, state.decoyVariantId].filter((id): id is number => id != null),
+  )
+
+  if (state.pacificListId && trackedVariantIds.size > 0) {
+    const listRes = await request.get(`/api/price-lists/${state.pacificListId}?depth=0`, { headers })
+    if (!listRes.ok()) {
+      throw new Error(
+        `Sweep test cleanup failed (GET price-list ${state.pacificListId}): ${listRes.status()} ${await listRes.text()}`,
+      )
+    }
+    const listDoc = (await listRes.json()) as {
+      lines?: Array<{ variant?: unknown; unitPrice?: number; currency?: string }>
+    }
+    const lines = listDoc.lines ?? []
+    const remaining = lines.filter((line) => {
+      const vid = variantIdFromLine(line.variant)
+      return vid == null || !trackedVariantIds.has(vid)
+    })
+    if (remaining.length !== lines.length) {
+      const patch = await request.patch(`/api/price-lists/${state.pacificListId}`, {
+        headers,
+        data: { lines: remaining },
+      })
+      if (!patch.ok()) {
+        throw new Error(
+          `Sweep test cleanup failed (PATCH price-list ${state.pacificListId}): ${patch.status()} ${await patch.text()}`,
+        )
+      }
+    }
+  }
+
+  const deleteOk = async (label: string, res: { ok: () => boolean; status: () => number; text: () => Promise<string> }) => {
+    if (res.ok() || res.status() === 404) return
+    throw new Error(`Sweep test cleanup failed (${label}): ${res.status()} ${await res.text()}`)
+  }
+
+  if (state.smokeVariantId) {
+    await deleteOk(
+      `DELETE smoke variant ${state.smokeVariantId}`,
+      await request.delete(`/api/product-variants/${state.smokeVariantId}`, { headers }),
+    )
+    state.smokeVariantId = undefined
+  }
+  if (state.decoyVariantId) {
+    await deleteOk(
+      `DELETE decoy variant ${state.decoyVariantId}`,
+      await request.delete(`/api/product-variants/${state.decoyVariantId}`, { headers }),
+    )
+    state.decoyVariantId = undefined
+  }
+  if (state.smokeProductId) {
+    await deleteOk(
+      `DELETE smoke product ${state.smokeProductId}`,
+      await request.delete(`/api/products/${state.smokeProductId}`, { headers }),
+    )
+    state.smokeProductId = undefined
+  }
+  if (state.decoyProductId) {
+    await deleteOk(
+      `DELETE decoy product ${state.decoyProductId}`,
+      await request.delete(`/api/products/${state.decoyProductId}`, { headers }),
+    )
+    state.decoyProductId = undefined
+  }
+  if (state.smokeMediaId) {
+    await deleteOk(
+      `DELETE smoke media ${state.smokeMediaId}`,
+      await request.delete(`/api/media/${state.smokeMediaId}`, { headers }),
+    )
+    state.smokeMediaId = undefined
+  }
+}
+
 test.describe('smoke artifact sweep', () => {
+  test.skip(!isLocal, 'local only: creates decoy catalog rows')
+
+  const cleanupState: SweepTestCleanupState = {}
+
+  test.afterAll(async ({ request }) => {
+    await runSweepTestCleanup(request, cleanupState)
+  })
+
   test('removes strict smoke markers but not decoy catalog rows', async ({ request }) => {
     const headers = await adminJwtHeaders(request)
+    const runMs = Date.now()
+    const decoyProductSlug = `frosted-smoke-glass-shower-panel-zz${runMs}`
+    const decoyVariantSku = `AS-SMOKE-GLASS-ZZ${runMs}`
     const smokeSlug = `smoke-${SMOKE_RUN_MS}-faucet`
     const smokeSku = `smoke-${SMOKE_RUN_MS}-sku`
     const smokeAlt = `Spec ${smokeSku}`
-
-    let decoyProductId: number | undefined
-    let decoyVariantId: number | undefined
-    let smokeProductId: number | undefined
-    let smokeVariantId: number | undefined
-    let smokeMediaId: number | undefined
-    let pacificListId: number | undefined
 
     try {
       const decoyProductRes = await request.post('/api/products', {
         headers,
         data: {
-          name: 'Frosted Smoke Glass Panel',
-          slug: DECOY_PRODUCT_SLUG,
+          name: `Frosted Smoke Glass Panel ${runMs}`,
+          slug: decoyProductSlug,
           productCollection: 'Showers',
         },
       })
-      if (decoyProductRes.ok()) {
-        const body = (await decoyProductRes.json()) as { doc: { id: number } }
-        decoyProductId = body.doc.id
-      } else {
-        const existing = await request.get(
-          `/api/products?where[slug][equals]=${encodeURIComponent(DECOY_PRODUCT_SLUG)}&limit=1&depth=0`,
-          { headers },
-        )
-        const existingBody = (await existing.json()) as { docs: Array<{ id: number }> }
-        decoyProductId = existingBody.docs[0]?.id
-      }
-      expect(decoyProductId).toBeTruthy()
+      expect(decoyProductRes.ok(), await decoyProductRes.text()).toBeTruthy()
+      cleanupState.decoyProductId = ((await decoyProductRes.json()) as { doc: { id: number } }).doc.id
 
-      const decoyVariantLookup = await request.get(
-        `/api/product-variants?where[sku][equals]=${encodeURIComponent(DECOY_VARIANT_SKU)}&limit=1&depth=0`,
-        { headers },
-      )
-      const decoyVariantBody = (await decoyVariantLookup.json()) as { docs: Array<{ id: number }> }
-      if (decoyVariantBody.docs[0]) {
-        decoyVariantId = decoyVariantBody.docs[0].id
-      } else {
-        const decoyVariantRes = await request.post('/api/product-variants', {
-          headers,
-          data: {
-            sku: DECOY_VARIANT_SKU,
-            name: 'AS Smoke Glass',
-            product: decoyProductId,
-            finish: 'Clear',
-          },
-        })
-        expect(decoyVariantRes.ok()).toBeTruthy()
-        decoyVariantId = ((await decoyVariantRes.json()) as { doc: { id: number } }).doc.id
-      }
+      const decoyVariantRes = await request.post('/api/product-variants', {
+        headers,
+        data: {
+          sku: decoyVariantSku,
+          name: `AS Smoke Glass ${runMs}`,
+          product: cleanupState.decoyProductId,
+          finish: 'Clear',
+        },
+      })
+      expect(decoyVariantRes.ok(), await decoyVariantRes.text()).toBeTruthy()
+      cleanupState.decoyVariantId = ((await decoyVariantRes.json()) as { doc: { id: number } }).doc.id
 
       const smokeProductRes = await request.post('/api/products', {
         headers,
@@ -72,22 +155,22 @@ test.describe('smoke artifact sweep', () => {
           productCollection: 'Faucets',
         },
       })
-      expect(smokeProductRes.ok()).toBeTruthy()
-      smokeProductId = ((await smokeProductRes.json()) as { doc: { id: number } }).doc.id
+      expect(smokeProductRes.ok(), await smokeProductRes.text()).toBeTruthy()
+      cleanupState.smokeProductId = ((await smokeProductRes.json()) as { doc: { id: number } }).doc.id
 
       const smokeVariantRes = await request.post('/api/product-variants', {
         headers,
         data: {
           sku: smokeSku,
           name: 'Sweep Test Chrome',
-          product: smokeProductId,
+          product: cleanupState.smokeProductId,
           finish: 'Chrome',
         },
       })
-      expect(smokeVariantRes.ok()).toBeTruthy()
-      smokeVariantId = ((await smokeVariantRes.json()) as { doc: { id: number } }).doc.id
+      expect(smokeVariantRes.ok(), await smokeVariantRes.text()).toBeTruthy()
+      cleanupState.smokeVariantId = ((await smokeVariantRes.json()) as { doc: { id: number } }).doc.id
 
-      const listsRes = await request.get('/api/price-lists?where[kind][equals]=company&limit=20&depth=1', {
+      const listsRes = await request.get('/api/price-lists?where[kind][equals]=company&limit=20&depth=0', {
         headers,
       })
       expect(listsRes.ok()).toBeTruthy()
@@ -96,32 +179,40 @@ test.describe('smoke artifact sweep', () => {
       }
       const pacificList = listsBody.docs.find((d) => d.name === PACIFIC_CONTRACT_LIST)
       expect(pacificList).toBeTruthy()
-      pacificListId = pacificList!.id
+      cleanupState.pacificListId = pacificList!.id
 
-      const patchList = await request.patch(`/api/price-lists/${pacificListId}`, {
+      const listDetailRes = await request.get(`/api/price-lists/${cleanupState.pacificListId}?depth=0`, {
+        headers,
+      })
+      expect(listDetailRes.ok()).toBeTruthy()
+      const listDetail = (await listDetailRes.json()) as {
+        lines?: Array<{ variant?: number | { id: number } }>
+      }
+
+      const patchList = await request.patch(`/api/price-lists/${cleanupState.pacificListId}`, {
         headers,
         data: {
           lines: [
-            ...(Array.isArray(pacificList!.lines) ? pacificList!.lines : []),
-            { variant: smokeVariantId, unitPrice: 888, currency: 'USD' },
+            ...(Array.isArray(listDetail.lines) ? listDetail.lines : []),
+            { variant: cleanupState.smokeVariantId, unitPrice: 888, currency: 'USD' },
           ],
         },
       })
-      expect(patchList.ok()).toBeTruthy()
+      expect(patchList.ok(), await patchList.text()).toBeTruthy()
 
-      smokeMediaId = await createSmokeMedia(request, smokeAlt)
+      cleanupState.smokeMediaId = await createSmokeMedia(request, smokeAlt)
 
       await sweepSmokeTestArtifacts(request)
 
       const decoyVariantAfter = await request.get(
-        `/api/product-variants?where[sku][equals]=${encodeURIComponent(DECOY_VARIANT_SKU)}&limit=1&depth=0`,
+        `/api/product-variants?where[sku][equals]=${encodeURIComponent(decoyVariantSku)}&limit=1&depth=0`,
         { headers },
       )
       expect(decoyVariantAfter.ok()).toBeTruthy()
       expect(((await decoyVariantAfter.json()) as { docs: unknown[] }).docs).toHaveLength(1)
 
       const decoyProductAfter = await request.get(
-        `/api/products?where[slug][equals]=${encodeURIComponent(DECOY_PRODUCT_SLUG)}&limit=1&depth=0`,
+        `/api/products?where[slug][equals]=${encodeURIComponent(decoyProductSlug)}&limit=1&depth=0`,
         { headers },
       )
       expect(decoyProductAfter.ok()).toBeTruthy()
@@ -148,7 +239,9 @@ test.describe('smoke artifact sweep', () => {
       expect(smokeMediaAfter.ok()).toBeTruthy()
       expect(((await smokeMediaAfter.json()) as { docs: unknown[] }).docs).toHaveLength(0)
 
-      const listAfter = await request.get(`/api/price-lists/${pacificListId}?depth=1`, { headers })
+      const listAfter = await request.get(`/api/price-lists/${cleanupState.pacificListId}?depth=0`, {
+        headers,
+      })
       expect(listAfter.ok()).toBeTruthy()
       const listDoc = (await listAfter.json()) as {
         lines?: Array<{ variant?: number | { id: number } }>
@@ -156,37 +249,16 @@ test.describe('smoke artifact sweep', () => {
       const stillLinked = (listDoc.lines ?? []).some((line) => {
         const v = line.variant
         const id = typeof v === 'object' && v !== null ? v.id : v
-        return id === smokeVariantId
+        return id === cleanupState.smokeVariantId
       })
       expect(stillLinked).toBe(false)
     } finally {
-      if (pacificListId && smokeVariantId) {
-        const listRes = await request.get(`/api/price-lists/${pacificListId}?depth=1`, { headers })
-        if (listRes.ok()) {
-          const listDoc = (await listRes.json()) as {
-            lines?: Array<{ variant?: number | { id: number } }>
-          }
-          const remaining = (listDoc.lines ?? []).filter((line) => {
-            const v = line.variant
-            const id = typeof v === 'object' && v !== null ? v.id : v
-            return id !== smokeVariantId
-          })
-          await request.patch(`/api/price-lists/${pacificListId}`, {
-            headers,
-            data: { lines: remaining },
-          })
-        }
+      try {
+        await runSweepTestCleanup(request, cleanupState)
+        await sweepSmokeTestArtifacts(request)
+      } catch (err) {
+        if (!isClosedRequestError(err)) throw err
       }
-      if (smokeVariantId) {
-        await request.delete(`/api/product-variants/${smokeVariantId}`, { headers }).catch(() => undefined)
-      }
-      if (smokeProductId) {
-        await request.delete(`/api/products/${smokeProductId}`, { headers }).catch(() => undefined)
-      }
-      if (smokeMediaId) {
-        await request.delete(`/api/media/${smokeMediaId}`, { headers }).catch(() => undefined)
-      }
-      await sweepSmokeTestArtifacts(request).catch(() => undefined)
     }
   })
 })
