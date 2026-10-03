@@ -11,7 +11,8 @@ export type BuiltSearchSql = {
   q: string
   listSql: BoundSql
   countSql: BoundSql
-  facetSql: BoundSql
+  categoryFacetSql: BoundSql
+  finishFacetSql: BoundSql
 }
 
 function rankExpression(q: string): BoundSql {
@@ -144,16 +145,25 @@ export function buildSearchSql(args: {
     WHERE ${where}
   `
 
-  const facetSql = sql`
+  const categoryFacetSql = sql`
     SELECT
       p.catalog_category AS category,
+      COUNT(DISTINCT p.id)::int AS cnt
+    FROM products p
+    WHERE ${where}
+    GROUP BY p.catalog_category
+  `
+
+  const finishFacetSql = sql`
+    SELECT
       pv.finish AS finish,
       COUNT(DISTINCT p.id)::int AS cnt
     FROM products p
-    LEFT JOIN product_variants pv ON pv.product_id = p.id
+    INNER JOIN product_variants pv ON pv.product_id = p.id
+      AND COALESCE(pv.discontinued, false) = false
     WHERE ${where}
-    GROUP BY p.catalog_category, pv.finish
+    GROUP BY pv.finish
   `
 
-  return { q, listSql, countSql, facetSql }
+  return { q, listSql, countSql, categoryFacetSql, finishFacetSql }
 }

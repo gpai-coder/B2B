@@ -63,6 +63,7 @@ export const Products: CollectionConfig = {
     {
       name: 'catalogHidden',
       type: 'checkbox',
+      required: true,
       defaultValue: false,
       admin: { description: 'Hide from vendor PLP and catalog search.' },
     },

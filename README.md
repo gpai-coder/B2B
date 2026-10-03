@@ -78,7 +78,9 @@ The repo owner configures these (not automated in CI):
 3. **Payload secret** — Add `PAYLOAD_SECRET` in Vercel → Settings → Environment Variables (all environments). Generate with `openssl rand -base64 32`.
 4. **Public URL** — Set `NEXT_PUBLIC_SERVER_URL` to the production URL (e.g. `https://your-app.vercel.app`).
 5. **Vercel Blob** — Create a Blob store in Vercel Storage; add `BLOB_READ_WRITE_TOKEN` to env. Without it, dev uses local `media/` uploads only.
-6. **Deploy** — Push to the connected branch; Vercel runs `pnpm build`.
+6. **Deploy** — Push to the connected branch. Vercel runs the **`vercel-build`** script (not plain `build`): on **production** only (`VERCEL_ENV=production`), it runs `payload migrate` with `NODE_ENV=production` and `PAYLOAD_DISABLE_PUSH=true`, then `next build`. Preview and development builds **never** migrate the production database.
+
+Schema changes in repo should ship via Payload SQL migrations (`pnpm db:migrate` locally). Do not rely on Drizzle push against production; see `src/lib/search/README.md` for migration-owned columns such as `search_vector`.
 
 Optional CLI (if linked): `vercel link`, `vercel env pull .env.local`.
 
@@ -104,7 +106,7 @@ src/
 | `quotes` | Per-company quotes with line SKU/qty/price, status, expiry |
 | `orders` | Draft → submitted lifecycle, ship-to, PO, optional quote, idempotency key |
 
-Schema changes apply via Payload’s Postgres adapter (`push` in development). Run `pnpm dev` once against a fresh DB to create tables.
+Schema changes apply via Payload migrations (`pnpm db:migrate` with `PAYLOAD_DISABLE_PUSH=true`). Production Vercel deploys run pending migrations automatically before `next build` (see **Deploy** above). Local `pnpm dev` may use adapter push when push is enabled; CI and tests set `PAYLOAD_DISABLE_PUSH=true`.
 
 Uploads use **local disk** (`/media`) when `BLOB_READ_WRITE_TOKEN` is unset; enable `@payloadcms/storage-vercel-blob` in production.
 
