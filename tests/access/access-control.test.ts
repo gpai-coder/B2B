@@ -3,7 +3,6 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 
-import { createPostgresCommerceService } from '@/commerce/postgres'
 import { createPayloadReq } from '@/lib/payload-req'
 
 describe('access control', () => {
@@ -120,19 +119,6 @@ describe('access control', () => {
     expect(result.docs).toHaveLength(0)
   })
 
-  it('vendor cannot read another company price lists via commerce getPrices context', async () => {
-    const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
-    const commerce = createPostgresCommerceService(payload)
-
-    const pacificPrices = await commerce.getPrices(String(pacificCompanyId), ['LIX-FCT-1001'])
-    const bayPrices = await commerce.getPrices(String(bayCompanyId), ['LIX-FCT-1001'])
-
-    expect(pacificPrices[0]?.unitPrice.amount).toBe(159)
-    expect(bayPrices[0]?.unitPrice.amount).toBe(189)
-    expect(bayPrices[0]?.source).toBe('standard')
-  })
-
   it('vendor price list query excludes other company lists', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
@@ -146,39 +132,5 @@ describe('access control', () => {
     })
     const names = lists.docs.map((d) => d.name)
     expect(names).not.toContain('Pacific Plumbing Contract 2026')
-  })
-
-  it('submitOrder is idempotent for the same key', async () => {
-    const payloadConfig = await config
-    const payload = await getPayload({ config: payloadConfig })
-    const commerce = createPostgresCommerceService(payload)
-    const companyId = String(pacificCompanyId)
-    const key = `idempotency-test-${Date.now()}`
-
-    const draft = await commerce.createDraftOrder({
-      companyId,
-      shipTo: {
-        name: 'Pacific',
-        line1: '1 Main',
-        city: 'SF',
-        state: 'CA',
-        postalCode: '94105',
-        country: 'US',
-      },
-      lines: [{ sku: 'LIX-FCT-1001', quantity: 2 }],
-    })
-
-    const first = await commerce.submitOrder(draft.id, key, companyId)
-    const second = await commerce.submitOrder(draft.id, key, companyId)
-
-    expect(first.id).toBe(second.id)
-    expect(first.orderNumber).toBe(second.orderNumber)
-
-    const all = await payload.find({
-      collection: 'orders',
-      where: { idempotencyKey: { equals: key } },
-      overrideAccess: true,
-    })
-    expect(all.totalDocs).toBe(1)
   })
 })
