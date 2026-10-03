@@ -71,6 +71,8 @@ describe('catalog search (postgres)', () => {
     } finally {
       await payload.destroy()
     }
+  })
+
   it('returns the same visible catalog products for any vendor company', async () => {
     if (!process.env.DATABASE_URL) return
 
