@@ -12,7 +12,7 @@ test.describe('Cart checkout', () => {
     const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test'
     const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password'
     const po = `E2E-PO-${Date.now()}`
-    let orderId: string | undefined
+    let orderIdForCleanup: string | undefined
 
     const path = `/products/${HERO_SLUG}`
     await loginVendor(page, path)
@@ -26,16 +26,16 @@ test.describe('Cart checkout', () => {
     await page.getByTestId('checkout-po').fill(po)
     await page.getByTestId('checkout-submit').click()
     await page.waitForURL(/\/orders\/\d+\?submitted=1/, { timeout: 30_000 })
-    orderId = page.url().match(/\/orders\/(\d+)/)?.[1]
+    orderIdForCleanup = page.url().match(/\/orders\/(\d+)/)?.[1]
 
     await page.goto('/orders')
     await expect(page.getByTestId('orders-page')).toBeVisible()
-    if (orderId) {
-      await expect(page.getByTestId(`order-row-${orderId}`)).toBeVisible()
+    if (orderIdForCleanup) {
+      await expect(page.getByTestId(`order-row-${orderIdForCleanup}`)).toBeVisible()
     }
 
     try {
-      if (!orderId) return
+      if (!orderIdForCleanup) return
       await page.goto('/admin/login')
       await page.getByLabel(/^email/i).fill(adminEmail)
       await page.getByLabel(/^password/i).fill(adminPassword)
@@ -43,7 +43,7 @@ test.describe('Cart checkout', () => {
       await page.waitForURL((url) => url.pathname.startsWith('/admin') && !url.pathname.includes('login'))
       const cookies = await page.context().cookies()
       const cookieHeader = cookies.map((c) => `${c.name}=${c.value}`).join('; ')
-      await request.delete(`/api/orders/${orderId}`, { headers: { Cookie: cookieHeader } })
+      await request.delete(`/api/orders/${orderIdForCleanup}`, { headers: { Cookie: cookieHeader } })
     } catch {
       // best-effort
     }
