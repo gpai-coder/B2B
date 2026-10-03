@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'cursor/**']
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: portal
+          POSTGRES_PASSWORD: portal
+          POSTGRES_DB: b2b_portal
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U portal -d b2b_portal"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://portal:portal@127.0.0.1:5432/b2b_portal
+      PAYLOAD_SECRET: ci-payload-secret-min-16-chars
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      SEED_ADMIN_EMAIL: admin@local.test
+      SEED_ADMIN_PASSWORD: local-dev-admin-password
+      SEED_SALES_EMAIL: sales@local.test
+      SEED_SALES_PASSWORD: local-dev-sales-password
+      SEED_VENDOR_A_EMAIL: buyer@pacific-plumbing.local
+      SEED_VENDOR_A_PASSWORD: local-dev-vendor-a-password
+      SEED_VENDOR_B_EMAIL: buyer@bay-fixtures.local
+      SEED_VENDOR_B_PASSWORD: local-dev-vendor-b-password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Migration up/down (fresh Postgres)
+        if: hashFiles('src/migrations/**') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+        run: pnpm db:migrate:check
+
+      - name: Migrate database
+        if: hashFiles('src/migrations/**') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+        run: pnpm db:migrate
+
+      - name: Seed database
+        if: hashFiles('src/scripts/seed.ts') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+        run: pnpm db:seed
+
+      - name: Unit tests
+        run: pnpm test:unit 2>&1 | tee unit-test-output.txt
+
+      - name: Install Playwright browsers
+        if: hashFiles('tests/e2e/smoke.spec.ts') != ''
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: E2E smoke test
+        if: hashFiles('tests/e2e/smoke.spec.ts') != ''
+        env:
+          PAYLOAD_DISABLE_PUSH: 'true'
+          B2B_BASE_URL: http://localhost:3000
+        run: pnpm test:e2e tests/e2e/smoke.spec.ts 2>&1 | tee e2e-test-output.txt
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: |
+            unit-test-output.txt
+            e2e-test-output.txt
