@@ -8,15 +8,37 @@ import config from '../payload.config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const COMMITTED_SEED_DEFAULTS = {
+  SEED_ADMIN_PASSWORD: 'local-dev-admin-password',
+  SEED_SALES_PASSWORD: 'local-dev-sales-password',
+  SEED_VENDOR_A_PASSWORD: 'local-dev-vendor-a-password',
+  SEED_VENDOR_B_PASSWORD: 'local-dev-vendor-b-password',
+} as const
+
+function assertProductionSeedPasswords() {
+  if (process.env.NODE_ENV !== 'production') return
+  for (const [envKey, committedDefault] of Object.entries(COMMITTED_SEED_DEFAULTS)) {
+    const value = process.env[envKey]
+    if (value === undefined || value === committedDefault) {
+      throw new Error(
+        `Refusing to run seed in production with default or missing ${envKey}. ` +
+          `Set ${envKey} to a strong secret that is not the committed .env.example value.`,
+      )
+    }
+  }
+}
+
 const seedConfig = {
   adminEmail: process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test',
-  adminPassword: process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password',
+  adminPassword: process.env.SEED_ADMIN_PASSWORD ?? COMMITTED_SEED_DEFAULTS.SEED_ADMIN_PASSWORD,
   salesEmail: process.env.SEED_SALES_EMAIL ?? 'sales@local.test',
-  salesPassword: process.env.SEED_SALES_PASSWORD ?? 'local-dev-sales-password',
+  salesPassword: process.env.SEED_SALES_PASSWORD ?? COMMITTED_SEED_DEFAULTS.SEED_SALES_PASSWORD,
   vendorAEmail: process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local',
-  vendorAPassword: process.env.SEED_VENDOR_A_PASSWORD ?? 'local-dev-vendor-a-password',
+  vendorAPassword:
+    process.env.SEED_VENDOR_A_PASSWORD ?? COMMITTED_SEED_DEFAULTS.SEED_VENDOR_A_PASSWORD,
   vendorBEmail: process.env.SEED_VENDOR_B_EMAIL ?? 'buyer@bay-fixtures.local',
-  vendorBPassword: process.env.SEED_VENDOR_B_PASSWORD ?? 'local-dev-vendor-b-password',
+  vendorBPassword:
+    process.env.SEED_VENDOR_B_PASSWORD ?? COMMITTED_SEED_DEFAULTS.SEED_VENDOR_B_PASSWORD,
 }
 
 const catalog = [
@@ -80,6 +102,7 @@ async function upsertUser(
 }
 
 async function main() {
+  assertProductionSeedPasswords()
   const payload = await getPayload({ config })
 
   const existing = await payload.find({

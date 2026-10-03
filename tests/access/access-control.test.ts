@@ -119,6 +119,113 @@ describe('access control', () => {
     expect(result.docs).toHaveLength(0)
   })
 
+  it('vendor cannot create orders via local API (overrideAccess: false)', async () => {
+    const payloadConfig = await config
+    const payload = await getPayload({ config: payloadConfig })
+    const pacificUser = await payload.findByID({
+      collection: 'users',
+      id: pacificUserId,
+      overrideAccess: true,
+    })
+
+    await expect(
+      payload.create({
+        collection: 'orders',
+        data: {
+          company: pacificCompanyId,
+          status: 'draft',
+          shipTo: {
+            name: 'Pacific',
+            line1: '1 Main',
+            city: 'SF',
+            state: 'CA',
+            postalCode: '94105',
+            country: 'US',
+          },
+          lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 0 }],
+        },
+        overrideAccess: false,
+        req: createPayloadReq(payload, pacificUser),
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('vendor cannot PATCH order status via local API (overrideAccess: false)', async () => {
+    const payloadConfig = await config
+    const payload = await getPayload({ config: payloadConfig })
+    const pacificUser = await payload.findByID({
+      collection: 'users',
+      id: pacificUserId,
+      overrideAccess: true,
+    })
+
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: pacificOrderId,
+        data: { status: 'confirmed' },
+        overrideAccess: false,
+        req: createPayloadReq(payload, pacificUser),
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('vendor cannot PATCH order line unitPrice via local API (overrideAccess: false)', async () => {
+    const payloadConfig = await config
+    const payload = await getPayload({ config: payloadConfig })
+    const pacificUser = await payload.findByID({
+      collection: 'users',
+      id: pacificUserId,
+      overrideAccess: true,
+    })
+
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: pacificOrderId,
+        data: {
+          lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 0 }],
+        },
+        overrideAccess: false,
+        req: createPayloadReq(payload, pacificUser),
+      }),
+    ).rejects.toThrow()
+  })
+
+  it('vendor cannot attach another company quote to an order via local API (overrideAccess: false)', async () => {
+    const payloadConfig = await config
+    const payload = await getPayload({ config: payloadConfig })
+    const pacificUser = await payload.findByID({
+      collection: 'users',
+      id: pacificUserId,
+      overrideAccess: true,
+    })
+
+    const bayQuote = await payload.create({
+      collection: 'quotes',
+      data: {
+        quoteNumber: `Q-ACCESS-BAY-${Date.now()}`,
+        company: bayCompanyId,
+        status: 'sent',
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        lines: [{ sku: 'LIX-FCT-1001', quantity: 1, unitPrice: 1 }],
+      },
+      overrideAccess: true,
+    })
+
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: pacificOrderId,
+        data: { quote: bayQuote.id },
+        overrideAccess: false,
+        req: createPayloadReq(payload, pacificUser),
+      }),
+    ).rejects.toThrow()
+
+    await payload.delete({ collection: 'quotes', id: bayQuote.id, overrideAccess: true })
+  })
+
   it('vendor price list query excludes other company lists', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
