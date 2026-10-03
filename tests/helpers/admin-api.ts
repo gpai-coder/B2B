@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
 import type { APIRequestContext } from '@playwright/test'
 
 import {
@@ -22,6 +25,28 @@ export async function adminJwtHeaders(request: APIRequestContext) {
     Authorization: `JWT ${body.token}`,
     'Content-Type': 'application/json',
   } as const
+}
+
+const smokeMediaFixturePath = path.resolve('scripts/fixtures/sample-spec.pdf')
+
+/** Create a media doc via REST (multipart upload), matching admin UI smoke flows. */
+export async function createSmokeMedia(request: APIRequestContext, alt: string): Promise<number> {
+  const { Authorization } = await adminJwtHeaders(request)
+  const mediaRes = await request.post('/api/media', {
+    headers: { Authorization },
+    multipart: {
+      alt,
+      file: {
+        name: 'sample-spec.pdf',
+        mimeType: 'application/pdf',
+        buffer: fs.readFileSync(smokeMediaFixturePath),
+      },
+    },
+  })
+  if (!mediaRes.ok()) {
+    throw new Error(`Create media failed: ${mediaRes.status()} ${await mediaRes.text()}`)
+  }
+  return ((await mediaRes.json()) as { doc: { id: number } }).doc.id
 }
 
 export async function deleteCartBulkAddsByKey(request: APIRequestContext, idempotencyKey: string) {

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-import { adminJwtHeaders, sweepSmokeTestArtifacts } from '../helpers/admin-api'
+import { adminJwtHeaders, createSmokeMedia, sweepSmokeTestArtifacts } from '../helpers/admin-api'
 
 const PACIFIC_CONTRACT_LIST = 'Pacific Plumbing Contract 2026'
 const DECOY_VARIANT_SKU = 'AS-SMOKE-GLASS-01'
@@ -109,12 +109,7 @@ test.describe('smoke artifact sweep', () => {
       })
       expect(patchList.ok()).toBeTruthy()
 
-      const mediaRes = await request.post('/api/media', {
-        headers,
-        data: { alt: smokeAlt },
-      })
-      expect(mediaRes.ok()).toBeTruthy()
-      smokeMediaId = ((await mediaRes.json()) as { doc: { id: number } }).doc.id
+      smokeMediaId = await createSmokeMedia(request, smokeAlt)
 
       await sweepSmokeTestArtifacts(request)
 
