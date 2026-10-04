@@ -1,27 +1,39 @@
 import type {
+  CollectionAfterErrorHook,
   CollectionBeforeChangeHook,
   CollectionBeforeOperationHook,
+  CollectionBeforeValidateHook,
 } from 'payload'
 import { APIError } from 'payload'
 import type { User } from '@/payload-types'
 import { isStaff } from '@/access'
+import {
+  createQuoteWithUniqueNumber,
+  QUOTE_CREATE_NESTED,
+  QUOTE_CREATE_OVERRIDE_ACCESS,
+  QUOTE_CREATE_PENDING_DATA,
+} from '@/lib/quotes/create-quote-with-retry'
+import { isQuoteNumberCollision } from '@/lib/quotes/allocate-quote-number'
+import { allocateQuoteNumber } from '@/lib/quotes/allocate-quote-number'
 import { emptyEquivalent } from '@/lib/orders/order-frozen-compare'
-import { resolveUnitPriceForCompany } from '@/lib/pricing/resolve-unit-price'
 import {
-  allocateQuoteNumber,
-  isQuoteNumberCollision,
-} from '@/lib/quotes/allocate-quote-number'
-import { runBoundedUniqueRetry } from '@/lib/db/bounded-unique-retry'
+  assertDraftLinePricesPresent,
+  enrichDraftLinePrices,
+  prepareQuoteDraftData,
+} from '@/lib/quotes/quote-prepare'
 import {
+  assertDraftQuoteLinesUnchangedSinceClientSnapshot,
   assertFrozenQuoteFieldsUnchanged,
   assertValidQuoteStatusTransition,
-  defaultQuoteExpiresAt,
   lockAndLoadQuoteForUpdate,
-  QuoteFrozenFieldError,
+  QUOTE_CLIENT_STATUS,
   QuoteTransitionConflictError,
   QuoteWorkflowError,
   QuoteWorkflowTransactionError,
+  setQuoteClientLines,
+  setQuoteClientStatus,
   setQuoteTransitionFromStatus,
+  takeQuoteClientLines,
   takeQuoteClientStatus,
   type QuoteStatus,
 } from '@/lib/quotes/quote-workflow'
@@ -51,6 +63,16 @@ function rethrowQuoteWorkflow(err: unknown): never {
     throw new APIError(err.message, err.status)
   }
   throw err
+}
+
+function isDraftOperation(
+  operation: string,
+  data: Record<string, unknown>,
+  originalDoc: Record<string, unknown> | null | undefined,
+): boolean {
+  if (operation === 'create') return true
+  const status = data.status != null ? String(data.status) : String(originalDoc?.status ?? 'draft')
+  return status === 'draft'
 }
 
 function stashFrozenOperationData(
@@ -114,67 +136,44 @@ async function loadQuotesForUpdateOperation(
   return []
 }
 
-async function enrichDraftLinePrices(
-  req: Parameters<CollectionBeforeChangeHook>[0]['req'],
-  data: Record<string, unknown>,
-): Promise<Record<string, unknown>> {
-  const companyRaw = data.company
-  const companyId =
-    typeof companyRaw === 'object' && companyRaw != null
-      ? Number((companyRaw as { id: number }).id)
-      : companyRaw != null
-        ? Number(companyRaw)
-        : null
-  if (companyId == null || Number.isNaN(companyId)) return data
-  const lines = data.lines
-  if (!Array.isArray(lines) || lines.length === 0) return data
-
-  const readOpts = { overrideAccess: true as const, req: req }
-  const enriched = await Promise.all(
-    lines.map(async (line) => {
-      const row = line as Record<string, unknown>
-      const variantRaw = row.variant
-      const variantId =
-        typeof variantRaw === 'object' && variantRaw != null
-          ? Number((variantRaw as { id: number }).id)
-          : variantRaw != null
-            ? Number(variantRaw)
-            : null
-      const sku = String(row.sku ?? '')
-      const quantity = Number(row.quantity ?? 1)
-      if (row.unitPrice != null && row.unitPrice !== '' && !Number.isNaN(Number(row.unitPrice))) {
-        return row
-      }
-      if (variantId == null || Number.isNaN(variantId) || !sku) return row
-      const price = await resolveUnitPriceForCompany(
-        req.payload,
-        companyId,
-        variantId,
-        sku,
-        quantity,
-        readOpts,
-      )
-      if (!price) return row
-      return { ...row, unitPrice: price.unitPrice }
-    }),
-  )
-  return { ...data, lines: enriched }
-}
-
 export const quoteStaffBeforeOperation: CollectionBeforeOperationHook = async ({
   operation,
   args,
   req,
   overrideAccess,
 }) => {
+  if (operation === 'create') {
+    const ctx = req.context as Record<string, unknown>
+    if (!ctx[QUOTE_CREATE_NESTED]) {
+      ctx[QUOTE_CREATE_PENDING_DATA] = { ...(args.data as Record<string, unknown>) }
+      ctx[QUOTE_CREATE_OVERRIDE_ACCESS] = overrideAccess ?? false
+    }
+    return args
+  }
+
   if (operation !== 'update') return args
   const data = args.data as Record<string, unknown> | undefined
-  if (!data || !updateTouchesFrozenFields(data)) return args
+  if (!data) return args
 
   const user = req.user as User | undefined
   if (!overrideAccess && !isStaff(user)) {
     return args
   }
+
+  const ctx = req.context as Record<string, unknown>
+  if (ctx[QUOTE_CLIENT_STATUS] == null) {
+    try {
+      const lockedDocs = await loadQuotesForUpdateOperation(req, args as Record<string, unknown>)
+      for (const locked of lockedDocs) {
+        setQuoteClientStatus(req, String(locked.status ?? 'draft'))
+        setQuoteClientLines(req, locked.lines)
+      }
+    } catch (err) {
+      rethrowQuoteWorkflow(err)
+    }
+  }
+
+  if (!updateTouchesFrozenFields(data)) return args
 
   try {
     const lockedDocs = await loadQuotesForUpdateOperation(req, args as Record<string, unknown>)
@@ -199,26 +198,42 @@ export const quoteStaffBeforeOperation: CollectionBeforeOperationHook = async ({
   return args
 }
 
+export const quoteStaffBeforeValidate: CollectionBeforeValidateHook = async ({
+  data,
+  req,
+  operation,
+  originalDoc,
+}) => {
+  const user = req.user as User | undefined
+  const ctx = req.context as Record<string, unknown>
+  const overrideAccess = Boolean(ctx[QUOTE_CREATE_OVERRIDE_ACCESS])
+  if (!overrideAccess && !isStaff(user)) {
+    return data
+  }
+
+  const record = (data ?? {}) as Record<string, unknown>
+  if (!isDraftOperation(operation, record, originalDoc as Record<string, unknown> | undefined)) {
+    return data
+  }
+
+  const enriched = await enrichDraftLinePrices(req.payload, req, record)
+  assertDraftLinePricesPresent(enriched)
+  return enriched
+}
+
 export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) => {
   let data = (args.data ?? {}) as Record<string, unknown>
+  const ctx = args.req.context as Record<string, unknown>
 
   if (args.operation === 'create') {
-    if (!fieldPresent(data, 'expiresAt') || emptyEquivalent(data.expiresAt, null)) {
-      data = { ...data, expiresAt: defaultQuoteExpiresAt() }
+    if (ctx[QUOTE_CREATE_NESTED]) {
+      return data
     }
+    data = await prepareQuoteDraftData(args.req.payload, args.req, data)
     const incomingNumber = fieldPresent(data, 'quoteNumber') ? data.quoteNumber : null
     if (emptyEquivalent(incomingNumber, null) || String(incomingNumber ?? '').trim() === '') {
-      data = {
-        ...data,
-        quoteNumber: await runBoundedUniqueRetry(
-          args.req.payload,
-          args.req,
-          () => allocateQuoteNumber(args.req.payload, args.req),
-          { isCollision: isQuoteNumberCollision },
-        ),
-      }
+      data = { ...data, quoteNumber: await allocateQuoteNumber(args.req.payload, args.req) }
     }
-    data = await enrichDraftLinePrices(args.req, data)
     return data
   }
 
@@ -243,13 +258,19 @@ export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
       throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
     }
 
+    const clientLines = takeQuoteClientLines(args.req)
+    if (lockedStatus === 'draft' && clientStatus === 'draft') {
+      assertDraftQuoteLinesUnchangedSinceClientSnapshot(locked, clientLines)
+    }
+
     const stashed = takeFrozenOperationStash(args.req, Number(args.originalDoc.id))
     if (stashed) {
       assertFrozenQuoteFieldsUnchanged(locked, stashed)
     }
 
     if (lockedStatus === 'draft') {
-      data = await enrichDraftLinePrices(args.req, data)
+      data = await enrichDraftLinePrices(args.req.payload, args.req, data)
+      assertDraftLinePricesPresent(data)
     }
 
     if (nextStatus !== lockedStatus) {
@@ -269,4 +290,30 @@ export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
   }
 
   return data
+}
+
+export const quoteStaffAfterError: CollectionAfterErrorHook = async ({
+  error,
+  req,
+  collection,
+  context,
+}) => {
+  if (collection.slug !== 'quotes') return
+  if (!isQuoteNumberCollision(error)) return
+  if (context[QUOTE_CREATE_NESTED]) return
+
+  const pending = context[QUOTE_CREATE_PENDING_DATA] as Record<string, unknown> | undefined
+  if (!pending) return
+
+  const overrideAccess = Boolean(context[QUOTE_CREATE_OVERRIDE_ACCESS])
+  const doc = await createQuoteWithUniqueNumber(req.payload, req, pending, { overrideAccess })
+  delete context[QUOTE_CREATE_PENDING_DATA]
+
+  return {
+    status: 201,
+    response: {
+      message: 'Quote created successfully.',
+      doc,
+    },
+  }
 }

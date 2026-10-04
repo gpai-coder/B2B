@@ -7,7 +7,12 @@ import {
   staffOnly,
   vendorQuoteReadAccess,
 } from '../access'
-import { quoteStaffBeforeChange, quoteStaffBeforeOperation } from '@/lib/quotes/quote-staff-hooks'
+import {
+  quoteStaffAfterError,
+  quoteStaffBeforeChange,
+  quoteStaffBeforeOperation,
+  quoteStaffBeforeValidate,
+} from '@/lib/quotes/quote-staff-hooks'
 
 export const Quotes: CollectionConfig = {
   slug: 'quotes',
@@ -24,7 +29,9 @@ export const Quotes: CollectionConfig = {
   },
   hooks: {
     beforeOperation: [quoteStaffBeforeOperation],
+    beforeValidate: [quoteStaffBeforeValidate],
     beforeChange: [quoteStaffBeforeChange],
+    afterError: [quoteStaffAfterError],
   },
   fields: [
     {
@@ -104,7 +111,6 @@ export const Quotes: CollectionConfig = {
         {
           name: 'unitPrice',
           type: 'number',
-          required: true,
           min: 0,
         },
       ],

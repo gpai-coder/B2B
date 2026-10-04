@@ -5,7 +5,7 @@ import { validatePoNumber } from '@/lib/checkout/validate-po'
 import { allocateOrderNumberWithRetry, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
 
 import type { CartMutationContext } from './cart-serialized'
-import { lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
+import { isCartBusyCause, lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
 import { isUniqueViolation } from './db-errors'
 import {
   assertValidCartQuantity,
@@ -262,7 +262,7 @@ export async function convertQuoteToOrder(
   const replay = await findOrderByCompanyIdempotency(deps, key)
   if (replay) return replay
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const req = deps.createReq()
     let transactionID: string | number | null | undefined
     try {
@@ -332,10 +332,35 @@ export async function convertQuoteToOrder(
       if (transactionID != null) {
         await deps.payload.db.rollbackTransaction(transactionID)
       }
-      if (isOrderNumberCollision(err) && attempt < 2) continue
+      if ((isOrderNumberCollision(err) || isCartBusyCause(err)) && attempt < 4) continue
+
+      const replayAfterErr = await findOrderByCompanyIdempotency(deps, key)
+      if (replayAfterErr) return replayAfterErr
+
+      const quoteAfterErr = await deps.payload.findByID({
+        collection: 'quotes',
+        id: input.quoteId,
+        overrideAccess: true,
+      })
+      if (quoteAfterErr.convertedOrder) {
+        const existingId =
+          typeof quoteAfterErr.convertedOrder === 'object'
+            ? String((quoteAfterErr.convertedOrder as { id: number }).id)
+            : String(quoteAfterErr.convertedOrder)
+        const order = await deps.payload.findByID({
+          collection: 'orders',
+          id: existingId,
+          overrideAccess: true,
+        })
+        return deps.mapOrder(order as unknown as Record<string, unknown>)
+      }
+
       return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
     }
   }
+
+  const replayFinal = await findOrderByCompanyIdempotency(deps, key)
+  if (replayFinal) return replayFinal
 
   throw new Error('Could not complete quote conversion.')
 }

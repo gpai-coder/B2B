@@ -1,6 +1,6 @@
 import type { Payload, PayloadRequest } from 'payload'
 
-import { lockAndLoadQuoteForUpdate, setQuoteClientStatus } from '@/lib/quotes/quote-workflow'
+import { lockAndLoadQuoteForUpdate, setQuoteClientLines, setQuoteClientStatus } from '@/lib/quotes/quote-workflow'
 import { withPayloadTransaction } from '@/lib/orders/payload-transaction'
 
 export async function staffQuoteUpdate(
@@ -16,14 +16,14 @@ export async function staffQuoteUpdate(
     overrideAccess: true,
   })
   setQuoteClientStatus(req, String(snapshot.status ?? 'draft'))
-  return withPayloadTransaction(payload, req, async () => {
-    await lockAndLoadQuoteForUpdate(payload, quoteId, req)
-    return payload.update({
+  setQuoteClientLines(req, snapshot.lines)
+  return withPayloadTransaction(payload, req, () =>
+    payload.update({
       collection: 'quotes',
       id: quoteId,
       data,
       req,
       overrideAccess: true,
-    })
-  })
+    }),
+  )
 }

@@ -1,6 +1,6 @@
 import type { Payload, PayloadRequest } from 'payload'
 
-import { lockQuoteRow } from '@/commerce/cart-serialized'
+import { isCartBusyCause, lockQuoteRow } from '@/commerce/cart-serialized'
 import { frozenTextEqual, linesSemanticallyEqual } from '@/lib/orders/order-frozen-compare'
 
 export const QUOTE_STATUSES = [
@@ -16,6 +16,7 @@ export type QuoteStatus = (typeof QUOTE_STATUSES)[number]
 
 export const QUOTE_LOCKED_FROM_STATUS = 'quoteLockedFromStatus'
 export const QUOTE_CLIENT_STATUS = 'quoteClientStatus'
+export const QUOTE_CLIENT_LINES = 'quoteClientLines'
 
 const ALLOWED: Record<string, readonly QuoteStatus[]> = {
   draft: ['sent'],
@@ -120,7 +121,14 @@ export async function lockAndLoadQuoteForUpdate(
   quoteId: number,
   req: PayloadRequest,
 ): Promise<Record<string, unknown>> {
-  await lockQuoteRow(payload, quoteId, req)
+  try {
+    await lockQuoteRow(payload, quoteId, req)
+  } catch (err) {
+    if (isCartBusyCause(err)) {
+      throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
+    }
+    throw err
+  }
   const doc = await payload.findByID({
     collection: 'quotes',
     id: quoteId,
@@ -161,6 +169,32 @@ export function takeQuoteClientStatus(req: PayloadRequest): string | null {
     delete ctx[QUOTE_CLIENT_STATUS]
   }
   return raw != null ? String(raw) : null
+}
+
+export function setQuoteClientLines(req: PayloadRequest, lines: unknown): void {
+  req.context = {
+    ...(req.context as Record<string, unknown>),
+    [QUOTE_CLIENT_LINES]: lines,
+  }
+}
+
+export function takeQuoteClientLines(req: PayloadRequest): unknown {
+  const ctx = req.context as Record<string, unknown> | undefined
+  const raw = ctx?.[QUOTE_CLIENT_LINES]
+  if (ctx && QUOTE_CLIENT_LINES in ctx) {
+    delete ctx[QUOTE_CLIENT_LINES]
+  }
+  return raw
+}
+
+export function assertDraftQuoteLinesUnchangedSinceClientSnapshot(
+  locked: Record<string, unknown>,
+  clientLines: unknown,
+): void {
+  if (clientLines == null) return
+  if (!linesSemanticallyEqual(locked.lines as Array<Record<string, unknown>>, clientLines)) {
+    throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
+  }
 }
 
 export const VENDOR_VISIBLE_QUOTE_STATUSES = ['sent', 'accepted', 'expired'] as const

@@ -459,7 +459,7 @@ export interface Quote {
     sku: string;
     variant?: (number | null) | ProductVariant;
     quantity: number;
-    unitPrice: number;
+    unitPrice?: number | null;
     id?: string | null;
   }[];
   updatedAt: string;

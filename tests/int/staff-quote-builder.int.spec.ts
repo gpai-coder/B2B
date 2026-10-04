@@ -28,6 +28,40 @@ function apiStatus(err: unknown): number | undefined {
   return (err as { status?: number }).status
 }
 
+function expectQuoteRaceResults(results: PromiseSettledResult<unknown>[], poolSize: number) {
+  const ok = results.filter((r) => r.status === 'fulfilled')
+  const fail409 = results.filter(
+    (r) => r.status === 'rejected' && apiStatus((r as PromiseRejectedResult).reason) === 409,
+  )
+  expect(ok.length).toBe(1)
+  expect(fail409.length).toBe(poolSize - 1)
+  expect(
+    results.every((r) =>
+      r.status === 'rejected' ? apiStatus((r as PromiseRejectedResult).reason) !== 500 : true,
+    ),
+  ).toBe(true)
+}
+
+async function deleteQuoteAndOrder(payload: Payload, quoteId: number, convertedOrder: unknown) {
+  if (convertedOrder != null && convertedOrder !== '') {
+    const orderId =
+      typeof convertedOrder === 'object'
+        ? (convertedOrder as { id: number }).id
+        : Number(convertedOrder)
+    const events = await payload.find({
+      collection: 'order-events',
+      where: { order: { equals: orderId } },
+      limit: 500,
+      overrideAccess: true,
+    })
+    for (const row of events.docs) {
+      await payload.delete({ collection: 'order-events', id: row.id, overrideAccess: true })
+    }
+    await payload.delete({ collection: 'orders', id: orderId, overrideAccess: true })
+  }
+  await payload.delete({ collection: 'quotes', id: quoteId, overrideAccess: true })
+}
+
 describe('staff quote builder (PR B)', () => {
   let payload: Payload
   let pacificCompanyId: number
@@ -310,12 +344,7 @@ describe('staff quote builder (PR B)', () => {
         ])
 
         const ok = results.filter((r) => r.status === 'fulfilled')
-        expect(ok.length).toBe(1)
-        expect(
-          results.every((r) =>
-            r.status === 'rejected' ? apiStatus((r as PromiseRejectedResult).reason) !== 500 : true,
-          ),
-        ).toBe(true)
+        expectQuoteRaceResults(results, POOL_MAX)
 
         const fresh = await payload.findByID({ collection: 'quotes', id: draft.id, overrideAccess: true })
         const converted = fresh.convertedOrder != null
@@ -326,11 +355,146 @@ describe('staff quote builder (PR B)', () => {
         }
 
         if (converted) {
-          const orderId =
-            typeof fresh.convertedOrder === 'object'
-              ? (fresh.convertedOrder as { id: number }).id
-              : Number(fresh.convertedOrder)
-          await payload.delete({ collection: 'orders', id: orderId, overrideAccess: true })
+          await deleteQuoteAndOrder(payload, draft.id, fresh.convertedOrder)
+        } else {
+          await deleteTestQuote(draft.id)
+        }
+      }
+    },
+    360_000,
+  )
+
+  it(
+    'vendor convert racing staff expire yields one winner without 500 or deadlock',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      const vendorUser = await payload.findByID({
+        collection: 'users',
+        id: pacificUserId,
+        overrideAccess: true,
+      })
+      const commerce = createPostgresCommerceService(payload, vendorUser)
+      const shipTo = {
+        name: 'Test',
+        line1: '1 Main',
+        city: 'SF',
+        state: 'CA',
+        postalCode: '94105',
+        country: 'US',
+      }
+
+      for (let round = 0; round < RACE_ROUNDS; round++) {
+        const draft = await createDraftQuote(`race-exp-${round}`)
+        const staff = await staffReq()
+        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
+        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+
+        const staffUser = await payload.findByID({
+          collection: 'users',
+          id: staffUserId,
+          overrideAccess: true,
+        })
+        const staffReqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+
+        const results = await Promise.allSettled([
+          commerce.convertQuoteToOrder(String(pacificCompanyId), String(draft.id), {
+            poNumber: `PO-EXP-${round}-${Date.now()}`,
+            shipTo,
+            idempotencyKey: `race-exp-convert-${round}-${Date.now()}`,
+          }),
+          staffQuoteUpdate(payload, staffReqs[0]!, draft.id, { status: 'expired' }),
+          ...staffReqs.slice(1).map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'expired' })),
+        ])
+
+        expectQuoteRaceResults(results, POOL_MAX)
+        const fresh = await payload.findByID({ collection: 'quotes', id: draft.id, overrideAccess: true })
+        const converted = fresh.convertedOrder != null
+        const expired = fresh.status === 'expired'
+        expect(converted || expired).toBe(true)
+        await deleteQuoteAndOrder(payload, draft.id, fresh.convertedOrder)
+      }
+    },
+    360_000,
+  )
+
+  it(
+    'parallel convert with the same idempotency key yields one order',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      const vendorUser = await payload.findByID({
+        collection: 'users',
+        id: pacificUserId,
+        overrideAccess: true,
+      })
+      const commerce = createPostgresCommerceService(payload, vendorUser)
+      const shipTo = {
+        name: 'Test',
+        line1: '1 Main',
+        city: 'SF',
+        state: 'CA',
+        postalCode: '94105',
+        country: 'US',
+      }
+
+      for (let round = 0; round < RACE_ROUNDS; round++) {
+        const draft = await createDraftQuote(`race-dbl-${round}`)
+        const staff = await staffReq()
+        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
+        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        const key = `race-dbl-key-${round}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+
+        const results = await Promise.allSettled(
+          Array.from({ length: POOL_MAX }, (_, i) =>
+            commerce.convertQuoteToOrder(String(pacificCompanyId), String(draft.id), {
+              poNumber: `PO-DBL-${round}-${i}-${Date.now()}`,
+              shipTo,
+              idempotencyKey: key,
+            }),
+          ),
+        )
+
+        const ok = results.filter((r) => r.status === 'fulfilled')
+        expect(ok.length).toBe(POOL_MAX)
+        const orderIds = new Set(
+          ok.map((r) => (r as PromiseFulfilledResult<{ id: string }>).value.id),
+        )
+        expect(orderIds.size).toBe(1)
+
+        const fresh = await payload.findByID({ collection: 'quotes', id: draft.id, overrideAccess: true })
+        await deleteQuoteAndOrder(payload, draft.id, fresh.convertedOrder)
+      }
+    },
+    360_000,
+  )
+
+  it(
+    'staff send racing staff line edit yields one winner without 500 or deadlock',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      for (let round = 0; round < RACE_ROUNDS; round++) {
+        const draft = await createDraftQuote(`race-send-${round}`)
+        const staffUser = await payload.findByID({
+          collection: 'users',
+          id: staffUserId,
+          overrideAccess: true,
+        })
+        const reqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+
+        const results = await Promise.allSettled([
+          staffQuoteUpdate(payload, reqs[0]!, draft.id, { status: 'sent' }),
+          staffQuoteUpdate(payload, reqs[1]!, draft.id, {
+            lines: [{ sku: '7353101.002', variant: variantId, quantity: 2, unitPrice: 10 }],
+          }),
+          ...reqs.slice(2).map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'sent' })),
+        ])
+
+        expectQuoteRaceResults(results, POOL_MAX)
+        const fresh = await payload.findByID({ collection: 'quotes', id: draft.id, overrideAccess: true })
+        if (fresh.status === 'sent') {
+          expect(fresh.lines?.[0]?.quantity).toBe(1)
+        } else {
+          expect(fresh.status).toBe('draft')
+          expect(fresh.lines?.[0]?.quantity).toBe(2)
         }
         await deleteTestQuote(draft.id)
       }

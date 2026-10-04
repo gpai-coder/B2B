@@ -48,6 +48,22 @@ export async function purgeTestQuoteById(quoteId: number): Promise<void> {
   })
 }
 
+/** Test-only: remove order (with events) and quote after a temp quote conversion smoke run. */
+export async function purgeQuoteConversionTestData(
+  quoteId: number,
+  orderId: number | null | undefined,
+): Promise<void> {
+  const payload = await testPayload()
+  await payload.db.drizzle.transaction(async (tx) => {
+    if (orderId != null && !Number.isNaN(orderId)) {
+      await tx.execute(sql`DELETE FROM "order_events" WHERE "order_id" = ${orderId}`)
+      await tx.execute(sql`DELETE FROM "orders" WHERE "id" = ${orderId}`)
+    }
+    await tx.execute(sql`DELETE FROM "quotes_lines" WHERE "_parent_id" = ${quoteId}`)
+    await tx.execute(sql`DELETE FROM "quotes" WHERE "id" = ${quoteId}`)
+  })
+}
+
 export async function destroyTestQuotePayload(): Promise<void> {
   if (payloadPromise) {
     const payload = await payloadPromise
