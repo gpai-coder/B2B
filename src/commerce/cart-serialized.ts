@@ -75,9 +75,6 @@ export async function lockCartRow(payload: Payload, cartId: number, req: Payload
   })
 }
 
-/** Serializes quote checkout and staff workflow mutations on the same quote row. */
-export const QUOTE_ADVISORY_LOCK_CLASS = 2_026_100_404
-
 export async function lockQuoteRow(payload: Payload, quoteId: number, req: PayloadRequest): Promise<void> {
   const txId = await resolveTransactionId(req)
   if (txId == null) {
@@ -85,10 +82,6 @@ export async function lockQuoteRow(payload: Payload, quoteId: number, req: Paylo
   }
   await setTransactionLockTimeout(payload, txId)
   const drizzle = drizzleForTransaction(payload, txId)
-  await payload.db.execute({
-    drizzle,
-    sql: sql`SELECT pg_advisory_xact_lock(${QUOTE_ADVISORY_LOCK_CLASS}, ${quoteId})`,
-  })
   await payload.db.execute({
     drizzle,
     sql: sql`SELECT id FROM quotes WHERE id = ${quoteId} FOR UPDATE`,

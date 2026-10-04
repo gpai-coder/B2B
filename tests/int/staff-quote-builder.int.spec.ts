@@ -320,9 +320,8 @@ describe('staff quote builder (PR B)', () => {
 
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const draft = await createDraftQuote(`race-${round}`)
-        const staff = await staffReq()
-        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
-        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'sent' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'accepted' })
 
         const staffUser = await payload.findByID({
           collection: 'users',
@@ -381,9 +380,8 @@ describe('staff quote builder (PR B)', () => {
 
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const draft = await createDraftQuote(`race-exp-${round}`)
-        const staff = await staffReq()
-        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
-        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'sent' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'accepted' })
 
         const staffUser = await payload.findByID({
           collection: 'users',
@@ -433,9 +431,8 @@ describe('staff quote builder (PR B)', () => {
 
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const draft = await createDraftQuote(`race-dbl-${round}`)
-        const staff = await staffReq()
-        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
-        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'sent' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'accepted' })
         const key = `race-dbl-key-${round}-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
         const results = await Promise.allSettled(

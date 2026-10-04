@@ -161,8 +161,7 @@ export const quoteStaffBeforeOperation: CollectionBeforeOperationHook = async ({
   }
 
   const ctx = req.context as Record<string, unknown>
-  const statusUpdate = fieldPresent(data, 'status')
-  if (ctx[QUOTE_CLIENT_STATUS] == null || statusUpdate) {
+  if (ctx[QUOTE_CLIENT_STATUS] == null) {
     try {
       const lockedDocs = await loadQuotesForUpdateOperation(req, args as Record<string, unknown>)
       for (const locked of lockedDocs) {
