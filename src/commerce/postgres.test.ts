@@ -93,14 +93,22 @@ describe('postgres commerce service', () => {
   it('submitOrder is idempotent for the same key', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
-    const commerce = createPostgresCommerceService(payload, null)
     const pacific = await payload.find({
       collection: 'companies',
       where: { name: { equals: 'Pacific Plumbing Supply' } },
       limit: 1,
       overrideAccess: true,
     })
-    const companyId = String(pacific.docs[0]!.id)
+    if (!pacific.docs[0]) return
+    const pacificUser = await payload.find({
+      collection: 'users',
+      where: { email: { equals: process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local' } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    if (!pacificUser.docs[0]) return
+    const commerce = createPostgresCommerceService(payload, pacificUser.docs[0])
+    const companyId = String(pacific.docs[0].id)
     const key = `idempotency-test-${Date.now()}`
 
     const draft = await commerce.createDraftOrder({

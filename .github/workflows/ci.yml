@@ -53,6 +53,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Playwright discovers tests without DATABASE_URL
+        if: hashFiles('tests/e2e/smoke.spec.ts') != ''
+        run: |
+          set -euo pipefail
+          out=$(env -u DATABASE_URL -u PAYLOAD_SECRET pnpm exec playwright test --list 2>&1)
+          echo "$out"
+          echo "$out" | grep -E 'Total: [1-9][0-9]* tests' >/dev/null
+
       - name: Typecheck
         run: pnpm typecheck
 

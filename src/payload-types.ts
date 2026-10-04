@@ -75,6 +75,7 @@ export interface Config {
     'price-lists': PriceList;
     quotes: Quote;
     orders: Order;
+    'order-events': OrderEvent;
     'ship-to-addresses': ShipToAddress;
     carts: Cart;
     'cart-bulk-adds': CartBulkAdd;
@@ -93,6 +94,7 @@ export interface Config {
     'price-lists': PriceListsSelect<false> | PriceListsSelect<true>;
     quotes: QuotesSelect<false> | QuotesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    'order-events': OrderEventsSelect<false> | OrderEventsSelect<true>;
     'ship-to-addresses': ShipToAddressesSelect<false> | ShipToAddressesSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
     'cart-bulk-adds': CartBulkAddsSelect<false> | CartBulkAddsSelect<true>;
@@ -166,6 +168,8 @@ export interface Company {
   createdAt: string;
 }
 /**
+ * Filter approvalStatus = pending for the vendor approval queue. Use Approve/Reject endpoints or edit approval status.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -174,10 +178,13 @@ export interface User {
   name?: string | null;
   role: 'admin' | 'sales' | 'vendor-buyer';
   company?: (number | null) | Company;
+  approvalStatus?: ('pending' | 'approved' | 'rejected') | null;
   /**
-   * Vendor buyers must be approved before they can sign in.
+   * Synced from approval status. Vendor buyers must be approved to use the portal.
    */
   approved?: boolean | null;
+  approvalReviewedAt?: string | null;
+  approvalReviewedBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -462,7 +469,15 @@ export interface Order {
    */
   orderNumber?: string | null;
   company: number | Company;
-  status: 'draft' | 'submitted' | 'confirmed' | 'shipped' | 'cancelled';
+  status: 'draft' | 'submitted' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  /**
+   * Optional when marking shipped.
+   */
+  carrier?: string | null;
+  /**
+   * Optional when marking shipped.
+   */
+  trackingNumber?: string | null;
   poNumber?: string | null;
   quote?: (number | null) | Quote;
   /**
@@ -486,6 +501,25 @@ export interface Order {
     unitPrice: number;
     id?: string | null;
   }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "order-events".
+ */
+export interface OrderEvent {
+  id: number;
+  /**
+   * Order deletes are blocked while events exist.
+   */
+  order: number | Order;
+  company: number | Company;
+  kind: 'status_change';
+  fromStatus: string;
+  toStatus: string;
+  actor?: (number | null) | User;
+  note?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -611,6 +645,10 @@ export interface PayloadLockedDocument {
         value: number | Order;
       } | null)
     | ({
+        relationTo: 'order-events';
+        value: number | OrderEvent;
+      } | null)
+    | ({
         relationTo: 'ship-to-addresses';
         value: number | ShipToAddress;
       } | null)
@@ -694,7 +732,10 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   company?: T;
+  approvalStatus?: T;
   approved?: T;
+  approvalReviewedAt?: T;
+  approvalReviewedBy?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -905,6 +946,8 @@ export interface OrdersSelect<T extends boolean = true> {
   orderNumber?: T;
   company?: T;
   status?: T;
+  carrier?: T;
+  trackingNumber?: T;
   poNumber?: T;
   quote?: T;
   idempotencyKey?: T;
@@ -929,6 +972,21 @@ export interface OrdersSelect<T extends boolean = true> {
         unitPrice?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "order-events_select".
+ */
+export interface OrderEventsSelect<T extends boolean = true> {
+  order?: T;
+  company?: T;
+  kind?: T;
+  fromStatus?: T;
+  toStatus?: T;
+  actor?: T;
+  note?: T;
   updatedAt?: T;
   createdAt?: T;
 }

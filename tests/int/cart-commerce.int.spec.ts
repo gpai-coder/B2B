@@ -227,13 +227,14 @@ describe('cart commerce', () => {
     })
     const cartId = pacificCart.docs[0]!.id
     const bayUser = await bayUserDoc()
-    const leaked = await payload.find({
-      collection: 'carts',
-      where: { id: { equals: cartId } },
-      overrideAccess: false,
-      req: createPayloadReq(payload, bayUser),
-    })
-    expect(leaked.docs).toHaveLength(0)
+    await expect(
+      payload.find({
+        collection: 'carts',
+        where: { id: { equals: cartId } },
+        overrideAccess: false,
+        req: createPayloadReq(payload, bayUser),
+      }),
+    ).rejects.toThrow(/not allowed|Forbidden/i)
 
     await clearPacificCart()
   })

@@ -1,6 +1,7 @@
 import type { Access, AccessArgs, FieldAccess, PayloadRequest, Where } from 'payload'
 
 import type { User } from '../payload-types'
+import { vendorBuyerAccessDeniedMessage, vendorBuyerIsApproved } from '@/lib/access/vendor-gate'
 
 type AppUser = User
 
@@ -37,6 +38,7 @@ export const companyReadAccess =
     if (isStaff(u)) return true
     const companyId = getUserCompanyId(u)
     if (u.role === 'vendor-buyer' && companyId) {
+      if (!vendorBuyerIsApproved(u)) return false
       return { [companyField]: { equals: companyId } }
     }
     return false
@@ -49,7 +51,7 @@ export const approvedVendorCompanyReadAccess =
     const u = user as AppUser
     if (!u) return false
     if (isStaff(u)) return true
-    if (u.role !== 'vendor-buyer' || !u.approved) return false
+    if (u.role !== 'vendor-buyer' || !vendorBuyerIsApproved(u)) return false
     const companyId = getUserCompanyId(u)
     if (!companyId) return false
     return { [companyField]: { equals: companyId } }
@@ -75,7 +77,7 @@ export const approvedVendorCompanyWriteAccess =
     const u = user as AppUser
     if (!u) return false
     if (isStaff(u)) return true
-    if (u.role !== 'vendor-buyer' || !u.approved) return false
+    if (u.role !== 'vendor-buyer' || !vendorBuyerIsApproved(u)) return false
     const companyId = getUserCompanyId(u)
     if (!companyId) return false
     return { [companyField]: { equals: companyId } }
@@ -84,7 +86,8 @@ export const approvedVendorCompanyWriteAccess =
 export const catalogReadAccess: Access = ({ req: { user } }) => {
   const u = user as AppUser
   if (!u) return false
-  return isStaff(u) || u.role === 'vendor-buyer'
+  if (isStaff(u)) return true
+  return u.role === 'vendor-buyer' && vendorBuyerIsApproved(u)
 }
 
 /** Catalog media/PDFs: approved vendors and staff only (blocks anonymous + pending vendors). */
@@ -92,7 +95,7 @@ export const catalogMediaReadAccess: Access = ({ req: { user } }) => {
   const u = user as AppUser
   if (!u) return false
   if (isStaff(u)) return true
-  return u.role === 'vendor-buyer' && u.approved === true
+  return u.role === 'vendor-buyer' && vendorBuyerIsApproved(u)
 }
 
 export type CatalogMediaAuthFailure = 'unauthenticated' | 'forbidden'
@@ -102,7 +105,7 @@ export function getCatalogMediaAuthFailure(
 ): CatalogMediaAuthFailure | null {
   if (!user) return 'unauthenticated'
   if (isStaff(user)) return null
-  if (user.role === 'vendor-buyer' && user.approved === true) return null
+  if (user.role === 'vendor-buyer' && vendorBuyerIsApproved(user)) return null
   return 'forbidden'
 }
 
@@ -112,6 +115,7 @@ export const priceListReadAccess: Access = ({ req: { user } }) => {
   if (isStaff(u)) return true
   const companyId = getUserCompanyId(u)
   if (u.role === 'vendor-buyer' && companyId) {
+    if (!vendorBuyerIsApproved(u)) return false
     const where: Where = {
       or: [
         { kind: { equals: 'standard' } },
@@ -127,10 +131,19 @@ export const priceListReadAccess: Access = ({ req: { user } }) => {
 
 export const staffFieldAccess: FieldAccess = ({ req: { user } }) => isStaff(user as AppUser)
 
+/** Staff may edit the field only while the stored order is still a draft. */
+export const staffFieldAccessUnlessFrozen: FieldAccess = (args) => {
+  if (!staffFieldAccess(args)) return false
+  if (args.id == null && args.doc == null) return true
+  const storedStatus = args.doc?.status
+  if (storedStatus != null && storedStatus !== 'draft') return false
+  return true
+}
+
 export async function assertVendorCanLogin(req: PayloadRequest, user: AppUser): Promise<void> {
   if (user.role !== 'vendor-buyer') return
-  if (!user.approved) {
-    throw new Error('Your account is pending administrator approval.')
+  if (!vendorBuyerIsApproved(user)) {
+    throw new Error(vendorBuyerAccessDeniedMessage(user))
   }
   const companyId = getUserCompanyId(user)
   if (!companyId) {

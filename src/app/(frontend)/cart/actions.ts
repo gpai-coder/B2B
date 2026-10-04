@@ -6,6 +6,7 @@ import { CartValidationError, getCommerce } from '@/commerce'
 import { CartBusyError } from '@/commerce/cart-serialized'
 import { parseCartQuantity } from '@/lib/cart/quantity-rules'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
+import { vendorPortalApprovalGate } from '@/lib/vendor-portal'
 
 export type CartActionResult = { ok: true } | { ok: false; error: string }
 
@@ -19,6 +20,8 @@ async function requireVendor(): Promise<{ companyId: string; user: NonNullable<A
   if (!user || user.role !== 'vendor-buyer') {
     throw new Error('Authentication required')
   }
+  const gate = vendorPortalApprovalGate(user)
+  if (!gate.ok) throw new Error(gate.message)
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) throw new Error('Vendor account is missing a company.')
   return { companyId, user }

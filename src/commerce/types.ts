@@ -64,6 +64,8 @@ export type CommerceOrder = {
   orderNotes?: string | null
   quoteId?: string | null
   idempotencyKey?: string | null
+  carrier?: string | null
+  trackingNumber?: string | null
   lines: CommerceOrderLine[]
   createdAt?: string
 }

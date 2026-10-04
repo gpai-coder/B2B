@@ -2,12 +2,14 @@ import type { Access, CollectionConfig, Where } from 'payload'
 
 import { adminPanelAccess, getUserCompanyId, isStaff, staffOnly } from '../access'
 import type { User } from '../payload-types'
+import { vendorBuyerIsApproved } from '@/lib/access/vendor-gate'
 
 const vendorCartAccess: Access = ({ req: { user } }) => {
   const u = user as User | null
   if (!u) return false
   if (isStaff(u)) return true
   if (u.role !== 'vendor-buyer') return false
+  if (!vendorBuyerIsApproved(u)) return false
   const companyId = getUserCompanyId(u)
   if (!companyId) return false
   const where: Where = {

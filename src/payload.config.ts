@@ -12,6 +12,7 @@ import { Carts } from './collections/Carts'
 import { CartBulkAdds } from './collections/CartBulkAdds'
 import { Companies } from './collections/Companies'
 import { Media } from './collections/Media'
+import { OrderEvents } from './collections/OrderEvents'
 import { Orders } from './collections/Orders'
 import { PriceLists } from './collections/PriceLists'
 import { Products } from './collections/Products'
@@ -21,6 +22,7 @@ import { ShipToAddresses } from './collections/ShipToAddresses'
 import { Users } from './collections/Users'
 import { getEnv } from './env'
 import { blobPluginStorageOptionsFromEnv } from './lib/blob-store-env'
+import { allowedPayloadOrigins } from './lib/http/origin-allowlist'
 
 const SHIP_TO_DEFAULT_INDEX = 'ship_to_addresses_one_default_per_company'
 
@@ -37,6 +39,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+  csrf: allowedPayloadOrigins(),
+  cors: allowedPayloadOrigins(),
   collections: [
     Companies,
     Users,
@@ -46,6 +50,7 @@ export default buildConfig({
     PriceLists,
     Quotes,
     Orders,
+    OrderEvents,
     ShipToAddresses,
     Carts,
     CartBulkAdds,
@@ -63,6 +68,20 @@ export default buildConfig({
     },
     push: process.env.PAYLOAD_DISABLE_PUSH === 'true' ? false : undefined,
     afterSchemaInit: [
+      ({ schema }) => {
+        const tables = (schema as {
+          tables?: Record<string, { foreignKeys?: Record<string, { onDelete?: string; name?: string }> }>
+        }).tables
+        const orderEvents = tables?.order_events
+        if (orderEvents?.foreignKeys) {
+          for (const [name, fk] of Object.entries(orderEvents.foreignKeys)) {
+            if (name.includes('order_id') || name.includes('company_id')) {
+              fk.onDelete = 'restrict'
+            }
+          }
+        }
+        return schema
+      },
       ({ schema, extendTable }) => {
         const table = schema.tables.ship_to_addresses
         if (!table) return schema

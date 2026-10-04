@@ -4,6 +4,10 @@ import type { User } from '@/payload-types'
 import { createPayloadReq } from '@/lib/payload-req'
 import { parseCartQuantity } from '@/lib/cart/quantity-rules'
 import { getUserCompanyId } from '@/access'
+import { vendorBuyerAccessDeniedMessage, vendorBuyerIsApproved } from '@/lib/access/vendor-gate'
+import { withPayloadTransaction } from '@/lib/orders/payload-transaction'
+import { lockAndLoadOrderForUpdate, setOrderClientStatus } from '@/lib/orders/order-workflow'
+import { allocateOrderNumber } from '@/lib/orders/allocate-order-number'
 
 import type {
   CartLine,
@@ -52,6 +56,8 @@ function mapOrder(doc: Record<string, unknown>): CommerceOrder {
       ? String(typeof doc.quote === 'object' ? (doc.quote as { id: number }).id : doc.quote)
       : null,
     idempotencyKey: (doc.idempotencyKey as string | null) ?? null,
+    carrier: (doc.carrier as string | null) ?? null,
+    trackingNumber: (doc.trackingNumber as string | null) ?? null,
     createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
     lines: lines.map((line) => ({
       sku: String(line.sku),
@@ -85,10 +91,34 @@ function assertCompanyMatchesUser(user: User | null, companyId: string) {
   }
 }
 
+function assertApprovedVendorUser(user: User | null): void {
+  if (!user) return
+  if (user.role === 'vendor-buyer' && !vendorBuyerIsApproved(user)) {
+    throw new Error(vendorBuyerAccessDeniedMessage(user))
+  }
+}
+
 export function createPostgresCommerceService(
   payload: Payload,
   actingUser: User | null,
 ): CommerceService {
+  const requireAuthenticatedVendor = (): User => {
+    if (!actingUser) throw new Error('Authentication required')
+    return actingUser
+  }
+
+  const requireVendorForCompany = (companyId: string): User => {
+    const user = requireAuthenticatedVendor()
+    assertCompanyMatchesUser(user, companyId)
+    assertApprovedVendorUser(user)
+    return user
+  }
+
+  const requireApprovedVendor = (): User => {
+    const user = requireAuthenticatedVendor()
+    assertApprovedVendorUser(user)
+    return user
+  }
   const readOpts = () =>
     actingUser
       ? { overrideAccess: false as const, req: reqFor(payload, actingUser)! }
@@ -251,17 +281,17 @@ export function createPostgresCommerceService(
   }
 
   function checkoutDeps(companyId: string) {
-    if (!actingUser) throw new Error('Authentication required')
+    const user = requireVendorForCompany(companyId)
     return {
       payload,
-      actingUser,
+      actingUser: user,
       companyId,
       txReadOpts,
       resolveUnitPrice,
       persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
         persistCartLines(cartId, cartLines, { req }),
       runCartMutation: (mutate: Parameters<typeof runCartMutation>[0]['mutate']) =>
-        runCartMutation({ payload, actingUser, companyId, getOrCreateCartDoc, mutate }),
+        runCartMutation({ payload, actingUser: user, companyId, getOrCreateCartDoc, mutate }),
       createReq: () => createPayloadReq(payload, actingUser),
       mapOrder,
     }
@@ -269,7 +299,10 @@ export function createPostgresCommerceService(
 
   return {
     async getPrices(customerId, skus) {
-      if (actingUser) assertCompanyMatchesUser(actingUser, customerId)
+      if (actingUser) {
+        assertCompanyMatchesUser(actingUser, customerId)
+        assertApprovedVendorUser(actingUser)
+      }
       if (skus.length === 0) return []
       const variantIds = await findVariantIdsBySkus(skus)
       const prices: PriceQuote[] = []
@@ -283,13 +316,13 @@ export function createPostgresCommerceService(
     },
 
     async getCart(companyId) {
-      assertCompanyMatchesUser(actingUser, companyId)
+      requireVendorForCompany(companyId)
       const cart = await getOrCreateCartDoc(companyId)
       return mapCartLines(cart)
     },
 
     async getCartSummary(companyId) {
-      assertCompanyMatchesUser(actingUser, companyId)
+      requireVendorForCompany(companyId)
       const cart = await getOrCreateCartDoc(companyId)
       const lines = mapCartLines(cart)
       const priced: PricedCartLine[] = []
@@ -344,11 +377,10 @@ export function createPostgresCommerceService(
     },
 
     async setCartLine(companyId, sku, quantity) {
-      assertCompanyMatchesUser(actingUser, companyId)
-      if (!actingUser) throw new Error('Authentication required')
+      const user = requireVendorForCompany(companyId)
       return runCartMutation({
         payload,
-        actingUser,
+        actingUser: user,
         companyId,
         getOrCreateCartDoc,
         mutate: async ({ lines, cartId, req }) => {
@@ -369,13 +401,12 @@ export function createPostgresCommerceService(
     },
 
     async addCartQuantity(companyId, sku, quantityToAdd) {
-      assertCompanyMatchesUser(actingUser, companyId)
-      if (!actingUser) throw new Error('Authentication required')
+      const user = requireVendorForCompany(companyId)
       const parsedAdd = parseCartQuantity(quantityToAdd)
       if (!parsedAdd.ok) throw new CartValidationError(parsedAdd.error)
       return runCartMutation({
         payload,
-        actingUser,
+        actingUser: user,
         companyId,
         getOrCreateCartDoc,
         mutate: async ({ lines, cartId, req }) => {
@@ -396,35 +427,33 @@ export function createPostgresCommerceService(
     },
 
     async previewQuickOrder(companyId, lines) {
-      assertCompanyMatchesUser(actingUser, companyId)
-      if (!actingUser) throw new Error('Authentication required')
+      const user = requireVendorForCompany(companyId)
       const quickDeps = {
         payload,
-        actingUser,
+        actingUser: user,
         companyId,
         readOpts,
         resolveUnitPrice,
         persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
           persistCartLines(cartId, cartLines, { req }),
         runCartMutation: (mutate: Parameters<typeof runCartMutation>[0]['mutate']) =>
-          runCartMutation({ payload, actingUser, companyId, getOrCreateCartDoc, mutate }),
+          runCartMutation({ payload, actingUser: user, companyId, getOrCreateCartDoc, mutate }),
       }
       return previewQuickOrderLines(quickDeps, lines)
     },
 
     async applyQuickOrder(companyId, lines, idempotencyKey) {
-      assertCompanyMatchesUser(actingUser, companyId)
-      if (!actingUser) throw new Error('Authentication required')
+      const user = requireVendorForCompany(companyId)
       const quickDeps = {
         payload,
-        actingUser,
+        actingUser: user,
         companyId,
         readOpts,
         resolveUnitPrice,
         persistCartLines: (cartId: number, cartLines: CartLine[], req: PayloadRequest) =>
           persistCartLines(cartId, cartLines, { req }),
         runCartMutation: (mutate: Parameters<typeof runCartMutation>[0]['mutate']) =>
-          runCartMutation({ payload, actingUser, companyId, getOrCreateCartDoc, mutate }),
+          runCartMutation({ payload, actingUser: user, companyId, getOrCreateCartDoc, mutate }),
       }
       return applyQuickOrderLines(quickDeps, lines, idempotencyKey)
     },
@@ -440,7 +469,7 @@ export function createPostgresCommerceService(
     },
 
     async listOrders(companyId) {
-      assertCompanyMatchesUser(actingUser, companyId)
+      requireVendorForCompany(companyId)
       const result = await payload.find({
         collection: 'orders',
         where: { company: { equals: Number(companyId) } },
@@ -525,7 +554,7 @@ export function createPostgresCommerceService(
     },
 
     async submitOrder(orderId, idempotencyKey, companyId) {
-      assertCompanyMatchesUser(actingUser, companyId)
+      const user = requireVendorForCompany(companyId)
 
       const existing = await payload.find({
         collection: 'orders',
@@ -547,35 +576,49 @@ export function createPostgresCommerceService(
       const order = await payload.findByID({
         collection: 'orders',
         id: orderId,
-        ...(actingUser
-          ? { overrideAccess: false, req: reqFor(payload, actingUser)! }
-          : { overrideAccess: true }),
+        overrideAccess: false,
+        req: reqFor(payload, user)!,
       })
       const current = mapOrder(order as unknown as Record<string, unknown>)
       if (current.companyId !== companyId) throw new Error('Order not found')
-      if (current.status !== 'draft') return current
 
-      const orderNumber =
-        current.orderNumber ??
-        `ORD-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900000) + 100000)}`
-
-      // Privileged write: status transition only after company ownership verified.
-      const updated = await payload.update({
+      const req = reqFor(payload, user)!
+      const snapshot = await payload.findByID({
         collection: 'orders',
         id: orderId,
-        data: {
-          status: 'submitted',
-          orderNumber,
-          idempotencyKey,
-        },
+        depth: 0,
         overrideAccess: true,
       })
+      setOrderClientStatus(req, String(snapshot.status ?? 'draft'))
+      return withPayloadTransaction(payload, req, async () => {
+        const locked = await lockAndLoadOrderForUpdate(payload, Number(orderId), req)
+        const lockedStatus = String(locked.status ?? 'draft')
+        if (lockedStatus !== 'draft') {
+          return mapOrder(locked)
+        }
 
-      return mapOrder(updated as unknown as Record<string, unknown>)
+        const orderNumber =
+          (locked.orderNumber as string | null) ??
+          current.orderNumber ??
+          (await allocateOrderNumber(payload, req))
+
+        const updated = await payload.update({
+          collection: 'orders',
+          id: orderId,
+          data: {
+            status: 'submitted',
+            orderNumber,
+            idempotencyKey,
+          },
+          req,
+          overrideAccess: true,
+        })
+        return mapOrder(updated as unknown as Record<string, unknown>)
+      })
     },
 
     async getOrder(orderId, companyId) {
-      if (actingUser) assertCompanyMatchesUser(actingUser, companyId)
+      requireVendorForCompany(companyId)
       let doc
       try {
         doc = await payload.findByID({

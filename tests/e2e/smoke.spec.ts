@@ -21,6 +21,16 @@ const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-passwo
 
 const PACIFIC_CONTRACT_LIST = 'Pacific Plumbing Contract 2026'
 
+function adminCookieHeaders(cookieHeader: string, extra?: Record<string, string>) {
+  const base =
+    process.env.PLAYWRIGHT_BASE_URL ?? process.env.B2B_BASE_URL ?? 'http://127.0.0.1:3000'
+  return {
+    Cookie: cookieHeader,
+    Origin: new URL(base).origin,
+    ...extra,
+  }
+}
+
 type SmokeCleanup = {
   adminCookieHeader: string
   productId?: number
@@ -67,7 +77,7 @@ async function runSmokeShutdown(
 
 async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup) {
   if (!state.adminCookieHeader) return
-  const headers = { Cookie: state.adminCookieHeader, 'Content-Type': 'application/json' }
+  const headers = adminCookieHeaders(state.adminCookieHeader, { 'Content-Type': 'application/json' })
 
   const assertOk = async (
     res: { ok: () => boolean; status: () => number; text: () => Promise<string> },
@@ -175,7 +185,7 @@ test.describe('B2B foundations smoke', () => {
 
       const productRes = await request.get(
         `/api/products?where[slug][equals]=${encodeURIComponent(slug)}&limit=1`,
-        { headers: { Cookie: cleanup.adminCookieHeader } },
+        { headers: adminCookieHeaders(cleanup.adminCookieHeader) },
       )
       const productBody = (await productRes.json()) as { docs: Array<{ id: number }> }
       cleanup.productId = productBody.docs[0]?.id
@@ -191,7 +201,7 @@ test.describe('B2B foundations smoke', () => {
       expect(cleanup.mediaId).toBeGreaterThan(0)
 
       const variantRes = await request.post('/api/product-variants', {
-        headers: { Cookie: cleanup.adminCookieHeader, 'Content-Type': 'application/json' },
+        headers: adminCookieHeaders(cleanup.adminCookieHeader, { 'Content-Type': 'application/json' }),
         data: {
           sku,
           name: `${productName} Chrome`,
@@ -204,13 +214,13 @@ test.describe('B2B foundations smoke', () => {
       const createdVariant = (await variantRes.json()) as { doc: { id: number } }
       cleanup.variantId = createdVariant.doc.id
       const patchVariant = await request.patch(`/api/product-variants/${cleanup.variantId}`, {
-        headers: { Cookie: cleanup.adminCookieHeader, 'Content-Type': 'application/json' },
+        headers: adminCookieHeaders(cleanup.adminCookieHeader, { 'Content-Type': 'application/json' }),
         data: { specPdf: cleanup.mediaId },
       })
       expect(patchVariant.ok()).toBeTruthy()
 
       const pacificLists = await request.get('/api/price-lists?where[kind][equals]=company&limit=5', {
-        headers: { Cookie: cleanup.adminCookieHeader },
+        headers: adminCookieHeaders(cleanup.adminCookieHeader),
       })
       expect(pacificLists.ok()).toBeTruthy()
       const listBody = (await pacificLists.json()) as {
@@ -222,14 +232,14 @@ test.describe('B2B foundations smoke', () => {
 
       const variantLookup = await request.get(
         `/api/product-variants?where[sku][equals]=${encodeURIComponent(sku)}&limit=1`,
-        { headers: { Cookie: cleanup.adminCookieHeader } },
+        { headers: adminCookieHeaders(cleanup.adminCookieHeader) },
       )
       const variantBody = (await variantLookup.json()) as { docs: Array<{ id: number }> }
       cleanup.variantId = variantBody.docs[0]?.id ?? cleanup.variantId
       expect(cleanup.variantId).toBeTruthy()
 
       const patchRes = await request.patch(`/api/price-lists/${pacificList!.id}`, {
-        headers: { Cookie: cleanup.adminCookieHeader, 'Content-Type': 'application/json' },
+        headers: adminCookieHeaders(cleanup.adminCookieHeader, { 'Content-Type': 'application/json' }),
         data: {
           lines: [
             ...(Array.isArray(pacificList!.lines) ? pacificList!.lines : []),

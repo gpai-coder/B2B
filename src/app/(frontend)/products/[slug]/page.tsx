@@ -10,6 +10,7 @@ import { mapDocumentLabel } from '@/lib/catalog/document-labels'
 import { createPayloadReq } from '@/lib/payload-req'
 import { resolveMediaId } from '@/lib/product-media'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
+import { vendorPortalApprovalGate, VENDOR_PENDING_ACCOUNT_PATH } from '@/lib/vendor-portal'
 import { redirect } from 'next/navigation'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -21,6 +22,10 @@ export default async function ProductPage({ params }: Props) {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     redirect(`/login?next=/products/${encodeURIComponent(slug)}`)
+  }
+  const approval = vendorPortalApprovalGate(user)
+  if (!approval.ok) {
+    redirect(VENDOR_PENDING_ACCOUNT_PATH)
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) {
