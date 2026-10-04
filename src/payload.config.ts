@@ -33,7 +33,7 @@ const env = getEnv()
 const blobStorage = blobPluginStorageOptionsFromEnv(process.env)
 
 export default buildConfig({
-  debug: env.NODE_ENV !== 'production',
+  debug: env.NODE_ENV === 'development',
   admin: {
     user: Users.slug,
     importMap: {

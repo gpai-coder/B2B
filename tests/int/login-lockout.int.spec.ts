@@ -4,6 +4,7 @@ import { getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
 import { createPayloadReq } from '@/lib/payload-req'
+import { APIError, formatErrors } from 'payload'
 
 function loginMessage(err: unknown): string {
   if (err && typeof err === 'object' && 'message' in err) {
@@ -127,16 +128,11 @@ describe('login brute-force protection', () => {
     expect(session.user?.email).toBe(lockEmail)
   })
 
-  it('authentication errors do not include stack traces', async () => {
-    if (!process.env.DATABASE_URL || !payload) return
-    try {
-      await payload.login({
-        collection: 'users',
-        data: { email: enumEmail, password: 'wrong-password-xyz' },
-      })
-    } catch (err) {
-      const serialized = JSON.stringify(err, Object.getOwnPropertyNames(err))
-      expect(serialized.toLowerCase()).not.toContain('stack')
-    }
+  it('formats public API errors without stack traces', async () => {
+    const cfg = await config
+    expect(cfg.debug).not.toBe(true)
+    const body = formatErrors(new APIError('Invalid email or password.', 401, null, true))
+    expect(Object.prototype.hasOwnProperty.call(body, 'stack')).toBe(false)
+    expect(JSON.stringify(body)).not.toMatch(/\.ts:\d+:\d+/)
   })
 })
