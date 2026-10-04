@@ -15,7 +15,7 @@ function env(overrides: Record<string, string | undefined>) {
 }
 
 function combinedOutput(result: Awaited<ReturnType<typeof checkPreviewDbIsolation>>) {
-  return `${result.stdout ?? ''}${result.stderr ?? ''}${result.warn ?? ''}`
+  return `${result.stdout ?? ''}${result.stderr ?? ''}`
 }
 
 describe('checkPreviewDbIsolation', () => {
@@ -62,17 +62,15 @@ describe('checkPreviewDbIsolation', () => {
     expect(result.stderr).toMatch(/unreachable/)
   })
 
-  it('warns and continues when production returns 200 without dbFingerprint', async () => {
+  it('fails closed when production returns 200 without dbFingerprint', async () => {
     const fetch = vi.fn().mockResolvedValue({
       status: 200,
       json: async () => ({ status: 'ok', db: 'connected' }),
     })
     const result = await checkPreviewDbIsolation(env({}), { fetch })
-    expect(result.ok).toBe(true)
-    expect(result.warn).toMatch(/without dbFingerprint/)
-    expect(result.warn).toMatch(/Remove this escape hatch/)
-    expect(result.stdout ?? '').not.toContain('passed')
-    expect(result.stdout).toMatch(/skipped.*dbFingerprint pending/)
+    expect(result.ok).toBe(false)
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toMatch(/no dbFingerprint \(HTTP 200\)/)
   })
 
   it('fails closed when production returns HTTP 200 with unparseable JSON', async () => {
