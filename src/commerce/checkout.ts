@@ -3,6 +3,7 @@ import type { Payload, PayloadRequest } from 'payload'
 import type { User } from '@/payload-types'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
 import { allocateOrderNumberWithRetry, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
+import { QuoteTransitionConflictError } from '@/lib/quotes/quote-workflow'
 
 import type { CartMutationContext } from './cart-serialized'
 import { isCartBusyCause, lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
@@ -86,11 +87,11 @@ function assertQuoteEligible(
     throw new Error('Quote not found')
   }
   if (quote.status !== 'accepted') {
-    throw new Error('Quote not found')
+    throw new QuoteTransitionConflictError('Quote is no longer available for conversion.')
   }
   const expires = new Date(String(quote.expiresAt))
   if (expires.getTime() < Date.now()) {
-    throw new Error('Quote not found')
+    throw new QuoteTransitionConflictError('Quote is no longer available for conversion.')
   }
 }
 
@@ -362,6 +363,10 @@ export async function convertQuoteToOrder(
           overrideAccess: true,
         })
         return deps.mapOrder(order as unknown as Record<string, unknown>)
+      }
+
+      if (isCartBusyCause(err)) {
+        throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
       }
 
       return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
