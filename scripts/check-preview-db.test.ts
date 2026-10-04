@@ -71,6 +71,31 @@ describe('checkPreviewDbIsolation', () => {
     expect(result.ok).toBe(true)
     expect(result.warn).toMatch(/without dbFingerprint/)
     expect(result.warn).toMatch(/Remove this escape hatch/)
+    expect(result.stdout ?? '').not.toContain('passed')
+    expect(result.stdout).toMatch(/skipped.*dbFingerprint pending/)
+  })
+
+  it('fails closed when production returns HTTP 200 with unparseable JSON', async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => {
+        throw new SyntaxError('Unexpected token')
+      },
+    })
+    const result = await checkPreviewDbIsolation(env({}), { fetch })
+    expect(result.ok).toBe(false)
+    expect(result.exitCode).toBe(1)
+    expect(result.stderr).toMatch(/unparseable or non-object JSON/)
+  })
+
+  it('fails closed when production returns HTTP 200 with non-object JSON', async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => 'not-an-object',
+    })
+    const result = await checkPreviewDbIsolation(env({}), { fetch })
+    expect(result.ok).toBe(false)
+    expect(result.stderr).toMatch(/unparseable or non-object JSON/)
   })
 
   it('fails when production health lacks dbFingerprint and is not HTTP 200', async () => {

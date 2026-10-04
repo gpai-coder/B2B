@@ -88,12 +88,21 @@ export async function checkPreviewDbIsolation(env, options = {}) {
 
   if (!prodFingerprint) {
     if (response.status === 200) {
+      if (!isHealthJsonObject(body)) {
+        return {
+          ok: false,
+          exitCode: 1,
+          stderr:
+            'error: production health returned an unparseable or non-object JSON body; refusing preview migrate.',
+        }
+      }
       return {
         ok: true,
         exitCode: 0,
         warn:
           'WARNING: production /api/health returned 200 without dbFingerprint (pre-deploy). Continuing preview migrate. Remove this escape hatch after production serves dbFingerprint.',
-        stdout: formatPassLine(previewFingerprints, '(pending)'),
+        stdout:
+          'Preview DB isolation check skipped: production dbFingerprint pending (pre-deploy); continuing preview migrate.',
       }
     }
     return {
@@ -127,6 +136,10 @@ export async function checkPreviewDbIsolation(env, options = {}) {
     exitCode: 0,
     stdout: formatPassLine(previewFingerprints, prodFingerprint),
   }
+}
+
+function isHealthJsonObject(body) {
+  return body !== null && typeof body === 'object' && !Array.isArray(body)
 }
 
 function formatPassLine(previewFingerprints, prodFingerprint) {
