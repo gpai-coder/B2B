@@ -156,7 +156,6 @@ describe('checkout concurrency', () => {
         data: {
           convertedOrder: null,
           status: 'accepted',
-          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
         },
         overrideAccess: true,
       })

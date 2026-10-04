@@ -74,10 +74,13 @@ function fieldPresent(data: Record<string, unknown>, key: string): boolean {
 
 function expiresAtEqual(locked: unknown, next: unknown): boolean {
   if (next == null && locked == null) return true
-  const a = locked ? new Date(String(locked)).getTime() : NaN
-  const b = next ? new Date(String(next)).getTime() : NaN
-  if (Number.isNaN(a) || Number.isNaN(b)) return frozenTextEqual(locked, next)
-  return a === b
+  const dayKey = (v: unknown): string | null => {
+    if (v == null || v === '') return null
+    const d = new Date(String(v))
+    if (Number.isNaN(d.getTime())) return String(v)
+    return d.toISOString().slice(0, 10)
+  }
+  return dayKey(locked) === dayKey(next)
 }
 
 export function assertFrozenQuoteFieldsUnchanged(
