@@ -10,6 +10,8 @@ test.describe('login lockout (localhost only)', () => {
     await page.getByLabel(/^email/i).fill(`nobody-${Date.now()}@local.test`)
     await page.getByLabel(/^password/i).fill('not-a-real-password')
     await page.getByRole('button', { name: /^sign in$/i }).click()
-    await expect(page.getByRole('alert')).toContainText('Invalid email or password.')
+    await expect(page.locator('.login-form').getByRole('alert')).toContainText(
+      'Invalid email or password.',
+    )
   })
 })
