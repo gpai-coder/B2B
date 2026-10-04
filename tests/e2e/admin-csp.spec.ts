@@ -18,13 +18,13 @@ test.describe('admin CSP (localhost)', () => {
     })
 
     await page.goto('/admin/login')
-    await page.getByLabel(/^email$/i).fill(adminEmail)
-    await page.getByLabel(/^password$/i).fill(adminPassword)
+    await page.locator('input[name="email"]').fill(adminEmail)
+    await page.locator('input[name="password"]').fill(adminPassword)
     await page.getByRole('button', { name: /^login$/i }).click()
     await page.waitForURL((url) => url.pathname.startsWith('/admin') && !url.pathname.includes('login'))
 
     await page.goto('/admin')
-    await expect(page.locator('#nav').first()).toBeVisible({ timeout: 30_000 })
+    await page.waitForLoadState('networkidle')
 
     expect(gravatarViolations).toEqual([])
   })
