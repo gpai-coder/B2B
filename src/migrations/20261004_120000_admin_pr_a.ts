@@ -48,25 +48,25 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "order_events" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "order_events" CASCADE;
-  ALTER TABLE "users" DROP CONSTRAINT "users_approval_reviewed_by_id_users_id_fk";
+  DROP TABLE IF EXISTS "order_events" CASCADE;
+  ALTER TABLE "users" DROP CONSTRAINT IF EXISTS "users_approval_reviewed_by_id_users_id_fk";
   
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_order_events_fk";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_order_events_fk";
   
   ALTER TABLE "orders" ALTER COLUMN "status" SET DATA TYPE text;
   ALTER TABLE "orders" ALTER COLUMN "status" SET DEFAULT 'draft'::text;
-  DROP TYPE "public"."enum_orders_status";
+  DROP TYPE IF EXISTS "public"."enum_orders_status";
   CREATE TYPE "public"."enum_orders_status" AS ENUM('draft', 'submitted', 'confirmed', 'shipped', 'cancelled');
   ALTER TABLE "orders" ALTER COLUMN "status" SET DEFAULT 'draft'::"public"."enum_orders_status";
   ALTER TABLE "orders" ALTER COLUMN "status" SET DATA TYPE "public"."enum_orders_status" USING "status"::"public"."enum_orders_status";
-  DROP INDEX "users_approval_reviewed_by_idx";
-  DROP INDEX "payload_locked_documents_rels_order_events_id_idx";
-  ALTER TABLE "users" DROP COLUMN "approval_status";
-  ALTER TABLE "users" DROP COLUMN "approval_reviewed_at";
-  ALTER TABLE "users" DROP COLUMN "approval_reviewed_by_id";
-  ALTER TABLE "orders" DROP COLUMN "carrier";
-  ALTER TABLE "orders" DROP COLUMN "tracking_number";
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "order_events_id";
-  DROP TYPE "public"."enum_users_approval_status";
-  DROP TYPE "public"."enum_order_events_kind";`)
+  DROP INDEX IF EXISTS "users_approval_reviewed_by_idx";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_order_events_id_idx";
+  ALTER TABLE "users" DROP COLUMN IF EXISTS "approval_status";
+  ALTER TABLE "users" DROP COLUMN IF EXISTS "approval_reviewed_at";
+  ALTER TABLE "users" DROP COLUMN IF EXISTS "approval_reviewed_by_id";
+  ALTER TABLE "orders" DROP COLUMN IF EXISTS "carrier";
+  ALTER TABLE "orders" DROP COLUMN IF EXISTS "tracking_number";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "order_events_id";
+  DROP TYPE IF EXISTS "public"."enum_users_approval_status";
+  DROP TYPE IF EXISTS "public"."enum_order_events_kind";`)
 }
