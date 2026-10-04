@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 
 import { adminJwtHeaders } from '../helpers/admin-api'
 import { isLocalBaseUrl } from '../helpers/e2e-env'
-import { login } from '../helpers/login'
 
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test'
 const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password'
@@ -32,6 +31,12 @@ async function deleteOrderWithEvents(
     }
   }
   await request.delete(`/api/orders/${orderId}`, { headers })
+}
+
+async function selectPayloadSelect(page: import('@playwright/test').Page, fieldId: string, optionLabel: string) {
+  const field = page.locator(`#${fieldId}`)
+  await field.getByRole('combobox').click()
+  await page.getByRole('option', { name: optionLabel, exact: true }).click()
 }
 
 test.describe('admin order fulfillment (local staff UI)', () => {
@@ -65,18 +70,23 @@ test.describe('admin order fulfillment (local staff UI)', () => {
     const orderId = order.doc.id
 
     try {
-      await login({ page, user: { email: adminEmail, password: adminPassword } })
+      await page.goto('/admin/login')
+      await page.getByLabel(/^email/i).fill(adminEmail)
+      await page.getByLabel(/^password/i).fill(adminPassword)
+      await page.getByRole('button', { name: /^login$/i }).click()
+      await page.waitForURL((url) => url.pathname.startsWith('/admin') && !url.pathname.includes('login'))
+
       await page.goto(`/admin/collections/orders/${orderId}`)
 
-      await page.locator('#field-status').selectOption('confirmed')
+      await selectPayloadSelect(page, 'field-status', 'Confirmed')
       await page.getByRole('button', { name: /^save$/i }).click()
-      await expect(page.locator('#field-status')).toHaveValue('confirmed')
+      await expect(page.locator('#field-status')).toContainText('Confirmed')
 
-      await page.locator('#field-status').selectOption('shipped')
-      await page.locator('#field-carrier').fill('UPS')
-      await page.locator('#field-trackingNumber').fill(`1Z-E2E-${stamp}`)
+      await selectPayloadSelect(page, 'field-status', 'Shipped')
+      await page.getByLabel(/^carrier/i).fill('UPS')
+      await page.getByLabel(/^tracking number/i).fill(`1Z-E2E-${stamp}`)
       await page.getByRole('button', { name: /^save$/i }).click()
-      await expect(page.locator('#field-status')).toHaveValue('shipped')
+      await expect(page.locator('#field-status')).toContainText('Shipped')
 
       const fresh = await request.get(`/api/orders/${orderId}?depth=0`, { headers })
       expect(fresh.ok()).toBeTruthy()
