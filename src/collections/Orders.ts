@@ -6,7 +6,7 @@ import {
   staffFieldAccess,
   staffOnly,
 } from '../access'
-import { orderStaffAfterChange, orderStaffBeforeChange } from '@/lib/orders/order-staff-hooks'
+import { orderStaffAfterChange, orderStaffBeforeChange, orderStaffBeforeDelete } from '@/lib/orders/order-staff-hooks'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -25,6 +25,7 @@ export const Orders: CollectionConfig = {
   hooks: {
     beforeChange: [orderStaffBeforeChange],
     afterChange: [orderStaffAfterChange],
+    beforeDelete: [orderStaffBeforeDelete],
   },
   indexes: [
     { unique: true, fields: ['company', 'poNumber'] },

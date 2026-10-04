@@ -510,6 +510,9 @@ export interface Order {
  */
 export interface OrderEvent {
   id: number;
+  /**
+   * Events are removed when the order is deleted.
+   */
   order: number | Order;
   company: number | Company;
   kind: 'status_change';

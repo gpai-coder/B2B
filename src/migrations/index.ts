@@ -11,6 +11,7 @@ import * as migration_20261003_145046 from './20261003_145046';
 import * as migration_20261003_160555 from './20261003_160555';
 import * as migration_20261003_200000_ship_to_addresses from './20261003_200000_ship_to_addresses';
 import * as migration_20261003_220000_ship_to_default_index from './20261003_220000_ship_to_default_index';
+import * as migration_20261004_002007 from './20261004_002007';
 import * as migration_20261004_120000_admin_pr_a from './20261004_120000_admin_pr_a';
 
 export const migrations = [
@@ -80,8 +81,13 @@ export const migrations = [
     name: '20261003_220000_ship_to_default_index',
   },
   {
+    up: migration_20261004_002007.up,
+    down: migration_20261004_002007.down,
+    name: '20261004_002007',
+  },
+  {
     up: migration_20261004_120000_admin_pr_a.up,
     down: migration_20261004_120000_admin_pr_a.down,
-    name: '20261004_120000_admin_pr_a',
+    name: '20261004_120000_admin_pr_a'
   },
 ];

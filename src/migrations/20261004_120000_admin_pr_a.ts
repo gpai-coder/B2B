@@ -24,7 +24,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   ALTER TABLE "orders" ADD COLUMN "carrier" varchar;
   ALTER TABLE "orders" ADD COLUMN "tracking_number" varchar;
   ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "order_events_id" integer;
-  ALTER TABLE "order_events" ADD CONSTRAINT "order_events_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;
+  ALTER TABLE "order_events" ADD CONSTRAINT "order_events_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "order_events" ADD CONSTRAINT "order_events_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "order_events" ADD CONSTRAINT "order_events_actor_id_users_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
   CREATE INDEX "order_events_order_idx" ON "order_events" USING btree ("order_id");

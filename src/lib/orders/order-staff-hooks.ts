@@ -1,4 +1,4 @@
-import type { CollectionAfterChangeHook, CollectionBeforeChangeHook } from 'payload'
+import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionBeforeDeleteHook } from 'payload'
 import type { User } from '@/payload-types'
 import { isStaff } from '@/access'
 import {
@@ -44,4 +44,20 @@ export const orderStaffAfterChange: CollectionAfterChangeHook = async ({ doc, re
     toStatus: nextStatus,
     actorId: actor?.id ?? null,
   })
+}
+
+export const orderStaffBeforeDelete: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const rows = await req.payload.find({
+    collection: 'order-events',
+    where: { order: { equals: id } },
+    limit: 500,
+    overrideAccess: true,
+  })
+  for (const row of rows.docs) {
+    await req.payload.delete({
+      collection: 'order-events',
+      id: row.id,
+      overrideAccess: true,
+    })
+  }
 }

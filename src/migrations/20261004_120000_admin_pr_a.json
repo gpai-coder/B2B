@@ -3126,7 +3126,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "order_events_company_id_companies_id_fk": {
