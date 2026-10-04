@@ -33,11 +33,14 @@ async function deleteOrderWithEvents(
   await request.delete(`/api/orders/${orderId}`, { headers })
 }
 
-async function selectPayloadSelect(page: import('@playwright/test').Page, fieldId: string, optionLabel: string) {
+async function selectPayloadSelect(page: import('@playwright/test').Page, fieldId: string, stepsDown: number) {
   const field = page.locator(`#${fieldId}`)
   await field.scrollIntoViewIfNeeded()
   await field.getByRole('combobox').click()
-  await page.locator('.rs__option').filter({ hasText: optionLabel }).first().click()
+  for (let i = 0; i < stepsDown; i++) {
+    await page.keyboard.press('ArrowDown')
+  }
+  await page.keyboard.press('Enter')
 }
 
 test.describe('admin order fulfillment (local staff UI)', () => {
@@ -80,11 +83,11 @@ test.describe('admin order fulfillment (local staff UI)', () => {
 
       await page.goto(`/admin/collections/orders/${orderId}`)
 
-      await selectPayloadSelect(page, 'field-status', 'Confirmed')
+      await selectPayloadSelect(page, 'field-status', 1)
       await page.getByRole('button', { name: /^save$/i }).click()
       await expect(page.locator('#field-status')).toContainText('Confirmed')
 
-      await selectPayloadSelect(page, 'field-status', 'Shipped')
+      await selectPayloadSelect(page, 'field-status', 1)
       await page.getByLabel(/^carrier/i).fill('UPS')
       await page.getByLabel(/^tracking number/i).fill(`1Z-E2E-${stamp}`)
       await page.getByRole('button', { name: /^save$/i }).click()
