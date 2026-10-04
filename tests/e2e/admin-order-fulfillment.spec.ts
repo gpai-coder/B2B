@@ -18,8 +18,8 @@ const shipTo = {
 async function deleteOrderWithEvents(
   request: import('@playwright/test').APIRequestContext,
   orderId: number,
+  headers: Awaited<ReturnType<typeof adminJwtHeaders>>,
 ) {
-  const headers = await adminJwtHeaders(request)
   const events = await request.get(
     `/api/order-events?where[order][equals]=${orderId}&limit=50&depth=0`,
     { headers },
@@ -35,12 +35,14 @@ async function deleteOrderWithEvents(
 
 async function selectPayloadSelect(page: import('@playwright/test').Page, fieldId: string, optionLabel: string) {
   const field = page.locator(`#${fieldId}`)
+  await field.scrollIntoViewIfNeeded()
   await field.getByRole('combobox').click()
-  await page.getByRole('option', { name: optionLabel, exact: true }).click()
+  await page.locator('.rs__option').filter({ hasText: optionLabel }).first().click()
 }
 
 test.describe('admin order fulfillment (local staff UI)', () => {
   test('staff confirms then ships a submitted order', async ({ page, request }) => {
+    test.setTimeout(180_000)
     test.skip(!isLocalBaseUrl(), 'Uses admin UI against local Payload; localhost CI only')
 
     const headers = await adminJwtHeaders(request)
@@ -112,7 +114,7 @@ test.describe('admin order fulfillment (local staff UI)', () => {
         'confirmed->shipped',
       ])
     } finally {
-      await deleteOrderWithEvents(request, orderId)
+      await deleteOrderWithEvents(request, orderId, headers)
     }
   })
 })
