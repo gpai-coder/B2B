@@ -22,6 +22,7 @@ import { ShipToAddresses } from './collections/ShipToAddresses'
 import { Users } from './collections/Users'
 import { getEnv } from './env'
 import { blobPluginStorageOptionsFromEnv } from './lib/blob-store-env'
+import { allowedPayloadOrigins } from './lib/http/origin-allowlist'
 
 const SHIP_TO_DEFAULT_INDEX = 'ship_to_addresses_one_default_per_company'
 
@@ -38,6 +39,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+  csrf: allowedPayloadOrigins(),
+  cors: allowedPayloadOrigins(),
   collections: [
     Companies,
     Users,

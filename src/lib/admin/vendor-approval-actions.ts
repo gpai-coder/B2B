@@ -1,4 +1,5 @@
 import type { PayloadRequest } from 'payload'
+import { APIError } from 'payload'
 import type { User } from '@/payload-types'
 import { isStaff } from '@/access'
 import type { VendorApprovalStatus } from '@/lib/access/vendor-gate'
@@ -10,7 +11,17 @@ export async function setVendorApprovalStatus(
 ): Promise<User> {
   const actor = req.user as User | undefined
   if (!actor || !isStaff(actor)) {
-    throw new Error('Forbidden')
+    throw new APIError('Forbidden', 403)
+  }
+
+  const target = await req.payload.findByID({
+    collection: 'users',
+    id: userId,
+    depth: 0,
+    overrideAccess: true,
+  })
+  if (!target || target.role !== 'vendor-buyer') {
+    throw new APIError('User is not a vendor buyer.', 400)
   }
 
   const updated = await req.payload.update({

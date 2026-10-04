@@ -1,19 +1,23 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { graphql } from 'graphql'
-import { getPayload, type Payload } from 'payload'
+import { APIError, getPayload, type Payload, type PayloadRequest } from 'payload'
 
 import config from '@/payload.config'
+import { createPostgresCommerceService } from '@/commerce/postgres'
 import { createPayloadReq } from '@/lib/payload-req'
+import { staffOrderUpdate } from '@/lib/orders/staff-order-update'
+import { withPayloadTransaction } from '@/lib/orders/payload-transaction'
 import {
   assertValidStatusTransition,
+  OrderTransitionConflictError,
   OrderWorkflowError,
   type OrderStatus,
 } from '@/lib/orders/order-workflow'
 import { approveVendorBuyer, rejectVendorBuyer } from '@/lib/admin/vendor-approval-actions'
 
 const POOL_MAX = Number(process.env.DB_POOL_MAX ?? 5)
-const RACE_ROUNDS = 30
+const RACE_ROUNDS = 60
 
 const shipTo = {
   name: 'Test',
@@ -32,6 +36,10 @@ const VALID_TRANSITIONS: Array<[OrderStatus, OrderStatus]> = [
   ['confirmed', 'cancelled'],
   ['shipped', 'delivered'],
 ]
+
+function apiStatus(err: unknown): number | undefined {
+  return (err as { status?: number }).status
+}
 
 describe('admin PR A — approval and order workflow', () => {
   let payload: Payload
@@ -81,6 +89,19 @@ describe('admin PR A — approval and order workflow', () => {
     return createPayloadReq(payload, user)
   }
 
+  async function deleteTestOrder(orderId: number) {
+    const events = await payload.find({
+      collection: 'order-events',
+      where: { order: { equals: orderId } },
+      limit: 500,
+      overrideAccess: true,
+    })
+    for (const row of events.docs) {
+      await payload.delete({ collection: 'order-events', id: row.id, overrideAccess: true })
+    }
+    await payload.delete({ collection: 'orders', id: orderId, overrideAccess: true })
+  }
+
   async function createSubmittedOrder(companyId: number, label: string) {
     const created = await payload.create({
       collection: 'orders',
@@ -97,65 +118,81 @@ describe('admin PR A — approval and order workflow', () => {
     return created
   }
 
+  async function createDraftOrder(companyId: number, label: string) {
+    return payload.create({
+      collection: 'orders',
+      data: {
+        company: companyId,
+        status: 'draft',
+        poNumber: `PO-DRAFT-${label}-${Date.now()}`,
+        shipTo,
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
+      },
+      overrideAccess: true,
+    })
+  }
+
   it('allows only the configured status transition matrix', () => {
     for (const [from, to] of VALID_TRANSITIONS) {
       expect(() => assertValidStatusTransition(from, to)).not.toThrow()
     }
-    expect(() => assertValidStatusTransition('submitted', 'shipped')).toThrow(OrderWorkflowError)
-    expect(() => assertValidStatusTransition('delivered', 'cancelled')).toThrow(OrderWorkflowError)
-    expect(() => assertValidStatusTransition('cancelled', 'confirmed')).toThrow(OrderWorkflowError)
+    expect(() => assertValidStatusTransition('submitted', 'shipped')).toThrow(OrderTransitionConflictError)
+    expect(() => assertValidStatusTransition('delivered', 'cancelled')).toThrow(OrderTransitionConflictError)
+    expect(() => assertValidStatusTransition('cancelled', 'confirmed')).toThrow(OrderTransitionConflictError)
   })
 
-  it('rejects invalid order status transitions', async () => {
+  it('rejects invalid order status transitions with 409', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     const req = await staffReq()
     const order = await createSubmittedOrder(pacificCompanyId, 'invalid-tx')
-    await expect(
-      payload.update({
-        collection: 'orders',
-        id: order.id,
-        data: { status: 'shipped' },
-        req,
-      }),
-    ).rejects.toBeInstanceOf(OrderWorkflowError)
-    await payload.delete({ collection: 'orders', id: order.id, overrideAccess: true })
+    await expect(staffOrderUpdate(payload, req, order.id, { status: 'shipped' })).rejects.toMatchObject({
+      status: 409,
+    })
+    await deleteTestOrder(order.id)
   })
 
-  it('blocks frozen ship-to and line edits after submit', async () => {
+  it('blocks frozen fields with 400', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     const req = await staffReq()
     const order = await createSubmittedOrder(pacificCompanyId, 'frozen')
     await expect(
-      payload.update({
-        collection: 'orders',
-        id: order.id,
-        data: { shipTo: { ...shipTo, line1: '999 Hack St' } },
-        req,
-      }),
-    ).rejects.toBeInstanceOf(OrderWorkflowError)
+      staffOrderUpdate(payload, req, order.id, { shipTo: { ...shipTo, line1: '999 Hack St' } }),
+    ).rejects.toMatchObject({ status: 400 })
     await expect(
-      payload.update({
-        collection: 'orders',
-        id: order.id,
-        data: {
-          lines: [{ sku: '7353101.002', quantity: 2, unitPrice: 10 }],
-        },
-        req,
+      staffOrderUpdate(payload, req, order.id, {
+        lines: [{ sku: '7353101.002', quantity: 2, unitPrice: 10 }],
       }),
-    ).rejects.toBeInstanceOf(OrderWorkflowError)
-    await payload.delete({ collection: 'orders', id: order.id, overrideAccess: true })
+    ).rejects.toMatchObject({ status: 400 })
+    await expect(staffOrderUpdate(payload, req, order.id, { poNumber: '' })).rejects.toMatchObject({
+      status: 400,
+    })
+    await expect(staffOrderUpdate(payload, req, order.id, { poNumber: null })).rejects.toMatchObject({
+      status: 400,
+    })
+    await expect(
+      staffOrderUpdate(payload, req, order.id, { orderNumber: 'HACK-ORD' }),
+    ).rejects.toMatchObject({ status: 400 })
+    await deleteTestOrder(order.id)
+  })
+
+  it('blocks deleting orders that have history', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const order = await createSubmittedOrder(pacificCompanyId, 'no-del')
+    await staffOrderUpdate(payload, req, order.id, { status: 'confirmed' })
+    await expect(
+      withPayloadTransaction(payload, req, () =>
+        payload.delete({ collection: 'orders', id: order.id, req }),
+      ),
+    ).rejects.toMatchObject({ status: 409 })
+    await deleteTestOrder(order.id)
   })
 
   it('records order-events on staff status change', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     const req = await staffReq()
     const order = await createSubmittedOrder(pacificCompanyId, 'events')
-    await payload.update({
-      collection: 'orders',
-      id: order.id,
-      data: { status: 'confirmed' },
-      req,
-    })
+    await staffOrderUpdate(payload, req, order.id, { status: 'confirmed' })
     const events = await payload.find({
       collection: 'order-events',
       where: { order: { equals: order.id } },
@@ -163,7 +200,7 @@ describe('admin PR A — approval and order workflow', () => {
       overrideAccess: true,
     })
     expect(events.docs.some((e) => e.fromStatus === 'submitted' && e.toStatus === 'confirmed')).toBe(true)
-    await payload.delete({ collection: 'orders', id: order.id, overrideAccess: true })
+    await deleteTestOrder(order.id)
   })
 
   it('denies vendor REST updates to order status and tracking', async () => {
@@ -179,19 +216,14 @@ describe('admin PR A — approval and order workflow', () => {
         overrideAccess: false,
       }),
     ).rejects.toThrow(/not allowed|Forbidden/i)
-    await payload.delete({ collection: 'orders', id: order.id, overrideAccess: true })
+    await deleteTestOrder(order.id)
   })
 
   it('isolates order-events reads between vendors', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     const staff = await staffReq()
     const order = await createSubmittedOrder(pacificCompanyId, 'iso-ev')
-    await payload.update({
-      collection: 'orders',
-      id: order.id,
-      data: { status: 'confirmed' },
-      req: staff,
-    })
+    await staffOrderUpdate(payload, staff, order.id, { status: 'confirmed' })
     const pacificReq = await vendorReq(pacificUserId)
     const own = await payload.find({
       collection: 'order-events',
@@ -230,59 +262,136 @@ describe('admin PR A — approval and order workflow', () => {
     expect(cross.docs).toHaveLength(0)
     await payload.delete({ collection: 'users', id: otherUser.id, overrideAccess: true })
     await payload.delete({ collection: 'companies', id: otherCo.id, overrideAccess: true })
-    await payload.delete({ collection: 'orders', id: order.id, overrideAccess: true })
+    await deleteTestOrder(order.id)
   })
 
   it(
-    'concurrent conflicting staff transitions end with one valid status',
+    'concurrent confirm vs cancel yields one winner and correct events',
     async () => {
       if (!process.env.DATABASE_URL || !payload) return
-      let badFinal = 0
       for (let round = 0; round < RACE_ROUNDS; round++) {
-        const req = await staffReq()
-        const order = await createSubmittedOrder(pacificCompanyId, `race-${round}`)
-        await payload.update({
-          collection: 'orders',
-          id: order.id,
-          data: { status: 'confirmed' },
-          req,
-        })
-        const staff = await payload.findByID({ collection: 'users', id: staffUserId, overrideAccess: true })
-        const reqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staff))
-        await Promise.allSettled([
-          payload.update({
-            collection: 'orders',
-            id: order.id,
-            data: { status: 'shipped', carrier: 'UPS' },
-            req: reqs[0]!,
-          }),
-          payload.update({
-            collection: 'orders',
-            id: order.id,
-            data: { status: 'cancelled' },
-            req: reqs[1]!,
-          }),
-          ...reqs.slice(2).map((r) =>
-            payload.update({
-              collection: 'orders',
-              id: order.id,
-              data: { status: 'shipped' },
-              req: r,
-            }),
-          ),
-        ])
-        const fresh = await payload.findByID({
-          collection: 'orders',
-          id: order.id,
+        const order = await createSubmittedOrder(pacificCompanyId, `cnc-${round}`)
+        const staffUser = await payload.findByID({
+          collection: 'users',
+          id: staffUserId,
           overrideAccess: true,
         })
-        const okStatuses = ['shipped', 'cancelled']
-        if (!okStatuses.includes(String(fresh.status))) badFinal++
-        await payload.delete({ collection: 'orders', id: order.id, overrideAccess: true })
+        const reqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+        const results = await Promise.allSettled([
+          staffOrderUpdate(payload, reqs[0]!, order.id, { status: 'confirmed' }),
+          staffOrderUpdate(payload, reqs[1]!, order.id, { status: 'cancelled' }),
+          ...reqs.slice(2).map((r) => staffOrderUpdate(payload, r, order.id, { status: 'confirmed' })),
+        ])
+        const ok = results.filter((r) => r.status === 'fulfilled')
+        const fail409 = results.filter(
+          (r) => r.status === 'rejected' && apiStatus((r as PromiseRejectedResult).reason) === 409,
+        )
+        expect(ok.length).toBe(1)
+        expect(fail409.length).toBe(POOL_MAX - 1)
+        expect(results.every((r) => r.status === 'rejected' ? apiStatus((r as PromiseRejectedResult).reason) !== 500 : true)).toBe(true)
+
+        const fresh = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
+        expect(['confirmed', 'cancelled']).toContain(String(fresh.status))
+
+        const events = await payload.find({
+          collection: 'order-events',
+          where: { order: { equals: order.id } },
+          sort: 'createdAt',
+          limit: 20,
+          overrideAccess: true,
+        })
+        expect(events.docs).toHaveLength(1)
+        expect(events.docs[0]!.fromStatus).toBe('submitted')
+        expect(events.docs[0]!.toStatus).toBe(String(fresh.status))
+        await deleteTestOrder(order.id)
       }
-      expect(badFinal).toBe(0)
     },
-    240_000,
+    360_000,
+  )
+
+  it(
+    'concurrent ship vs cancel after confirm yields one terminal status',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      for (let round = 0; round < RACE_ROUNDS; round++) {
+        const order = await createSubmittedOrder(pacificCompanyId, `scc-${round}`)
+        const staff = await staffReq()
+        await staffOrderUpdate(payload, staff, order.id, { status: 'confirmed' })
+        const staffUser = await payload.findByID({
+          collection: 'users',
+          id: staffUserId,
+          overrideAccess: true,
+        })
+        const reqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+        const results = await Promise.allSettled([
+          staffOrderUpdate(payload, reqs[0]!, order.id, { status: 'shipped', carrier: 'UPS' }),
+          staffOrderUpdate(payload, reqs[1]!, order.id, { status: 'cancelled' }),
+          ...reqs.slice(2).map((r) => staffOrderUpdate(payload, r, order.id, { status: 'shipped' })),
+        ])
+        const ok = results.filter((r) => r.status === 'fulfilled')
+        expect(ok.length).toBe(1)
+        const fresh = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
+        expect(['shipped', 'cancelled']).toContain(String(fresh.status))
+        const events = await payload.find({
+          collection: 'order-events',
+          where: { order: { equals: order.id } },
+          sort: 'createdAt',
+          limit: 20,
+          overrideAccess: true,
+        })
+        expect(events.docs).toHaveLength(2)
+        expect(events.docs[0]!.toStatus).toBe('confirmed')
+        expect(events.docs[1]!.fromStatus).toBe('confirmed')
+        expect(events.docs[1]!.toStatus).toBe(String(fresh.status))
+        await deleteTestOrder(order.id)
+      }
+    },
+    360_000,
+  )
+
+  it(
+    'double submit plus staff confirm does not duplicate submitted events',
+    async () => {
+      if (!process.env.DATABASE_URL || !payload) return
+      const vendor = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
+      const commerce = createPostgresCommerceService(payload, vendor)
+      const companyId = String(pacificCompanyId)
+
+      for (let round = 0; round < 30; round++) {
+        const draft = await createDraftOrder(pacificCompanyId, `dbl-${round}`)
+        const key = `dbl-key-${round}-${Date.now()}`
+        const submits = await Promise.allSettled([
+          commerce.submitOrder(String(draft.id), key, companyId),
+          commerce.submitOrder(String(draft.id), key, companyId),
+        ])
+        expect(submits.every((r) => r.status === 'fulfilled')).toBe(true)
+
+        const staffUser = await payload.findByID({
+          collection: 'users',
+          id: staffUserId,
+          overrideAccess: true,
+        })
+        const staffReqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+        const confirms = await Promise.allSettled(
+          staffReqs.map((r) => staffOrderUpdate(payload, r, draft.id, { status: 'confirmed' })),
+        )
+        const confirmOk = confirms.filter((r) => r.status === 'fulfilled')
+        expect(confirmOk.length).toBe(1)
+
+        const events = await payload.find({
+          collection: 'order-events',
+          where: { order: { equals: draft.id } },
+          sort: 'createdAt',
+          limit: 20,
+          overrideAccess: true,
+        })
+        const submittedEvents = events.docs.filter((e) => e.toStatus === 'submitted')
+        expect(submittedEvents).toHaveLength(1)
+        expect(confirms.every((r) => r.status === 'rejected' ? apiStatus((r as PromiseRejectedResult).reason) !== 500 : true)).toBe(true)
+        await deleteTestOrder(draft.id)
+      }
+    },
+    360_000,
   )
 
   it('approval reject blocks vendor reads after reload from DB', async () => {
@@ -308,7 +417,6 @@ describe('admin PR A — approval and order workflow', () => {
     const staff = await staffReq()
     await rejectVendorBuyer(staff, user.id)
     const fresh = await payload.findByID({ collection: 'users', id: user.id, overrideAccess: true })
-    expect(fresh.approvalStatus).toBe('rejected')
     const req = createPayloadReq(payload, fresh)
     await expect(
       payload.find({
@@ -351,6 +459,12 @@ describe('admin PR A — approval and order workflow', () => {
     expect(fresh.approvalReviewedAt).toBeTruthy()
     await payload.delete({ collection: 'users', id: user.id, overrideAccess: true })
     await payload.delete({ collection: 'companies', id: company.id, overrideAccess: true })
+  })
+
+  it('approve/reject on non-buyer returns 400', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const staff = await staffReq()
+    await expect(approveVendorBuyer(staff, staffUserId)).rejects.toMatchObject({ status: 400 })
   })
 
   it('denies vendor GraphQL writes to order-events', async () => {

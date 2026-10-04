@@ -55,6 +55,7 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
   
   ALTER TABLE "orders" ALTER COLUMN "status" SET DATA TYPE text;
   ALTER TABLE "orders" ALTER COLUMN "status" SET DEFAULT 'draft'::text;
+  UPDATE "orders" SET "status" = 'shipped' WHERE "status" = 'delivered';
   DROP TYPE IF EXISTS "public"."enum_orders_status";
   CREATE TYPE "public"."enum_orders_status" AS ENUM('draft', 'submitted', 'confirmed', 'shipped', 'cancelled');
   ALTER TABLE "orders" ALTER COLUMN "status" SET DEFAULT 'draft'::"public"."enum_orders_status";

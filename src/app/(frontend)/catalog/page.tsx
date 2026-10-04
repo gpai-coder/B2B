@@ -9,6 +9,7 @@ import { mapProductToDTO } from '@/lib/catalog/map-payload'
 import type { PriceDTO } from '@/lib/catalog/types'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
+import { vendorPortalApprovalGate, VENDOR_PENDING_ACCOUNT_PATH } from '@/lib/vendor-portal'
 import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
@@ -17,6 +18,10 @@ export default async function CatalogPage() {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
     redirect('/login?next=/catalog')
+  }
+  const approval = vendorPortalApprovalGate(user)
+  if (!approval.ok) {
+    redirect(VENDOR_PENDING_ACCOUNT_PATH)
   }
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) {

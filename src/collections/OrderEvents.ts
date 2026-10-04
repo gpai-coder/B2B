@@ -33,7 +33,7 @@ export const OrderEvents: CollectionConfig = {
       required: true,
       index: true,
       admin: {
-        description: 'Events are removed when the order is deleted.',
+        description: 'Order deletes are blocked while events exist.',
       },
     },
     {

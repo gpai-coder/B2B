@@ -511,7 +511,7 @@ export interface Order {
 export interface OrderEvent {
   id: number;
   /**
-   * Events are removed when the order is deleted.
+   * Order deletes are blocked while events exist.
    */
   order: number | Order;
   company: number | Company;

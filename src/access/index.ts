@@ -86,7 +86,8 @@ export const approvedVendorCompanyWriteAccess =
 export const catalogReadAccess: Access = ({ req: { user } }) => {
   const u = user as AppUser
   if (!u) return false
-  return isStaff(u) || u.role === 'vendor-buyer'
+  if (isStaff(u)) return true
+  return u.role === 'vendor-buyer' && vendorBuyerIsApproved(u)
 }
 
 /** Catalog media/PDFs: approved vendors and staff only (blocks anonymous + pending vendors). */
