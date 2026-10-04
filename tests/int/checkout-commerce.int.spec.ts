@@ -253,15 +253,21 @@ describe('checkout commerce', () => {
 
   it('vendor cannot read another company order', async () => {
     if (!process.env.DATABASE_URL || !payload) return
-    const pacificSvc = await pacificCommerce()
-    await pacificSvc.setCartLine(pacificCompanyId, SEED_HERO_SKU, 1)
-    const order = await pacificSvc.submitCartCheckout(pacificCompanyId, {
-      poNumber: `PO-ISO-${Date.now()}`,
-      shipTo: pacificShipTo,
-      idempotencyKey: `iso-${Date.now()}`,
+    const bayOrder = await payload.create({
+      collection: 'orders',
+      data: {
+        company: Number(bayCompanyId),
+        status: 'submitted',
+        orderNumber: `ISO-BAY-${Date.now()}`,
+        poNumber: `PO-ISO-BAY-${Date.now()}`,
+        shipTo: pacificShipTo,
+        lines: [{ sku: SEED_HERO_SKU, quantity: 1, unitPrice: 10 }],
+      },
+      overrideAccess: true,
     })
-    const bayUser = await payload.findByID({ collection: 'users', id: bayUserId, overrideAccess: true })
-    const baySvc = createPostgresCommerceService(payload, bayUser)
-    await expect(baySvc.getOrder(order.id, bayCompanyId)).resolves.toBeNull()
+    const pacificUser = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
+    const pacificSvcRead = createPostgresCommerceService(payload, pacificUser)
+    await expect(pacificSvcRead.getOrder(String(bayOrder.id), pacificCompanyId)).resolves.toBeNull()
+    await payload.delete({ collection: 'orders', id: bayOrder.id, overrideAccess: true })
   })
 })

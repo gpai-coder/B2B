@@ -52,6 +52,8 @@ function mapOrder(doc: Record<string, unknown>): CommerceOrder {
       ? String(typeof doc.quote === 'object' ? (doc.quote as { id: number }).id : doc.quote)
       : null,
     idempotencyKey: (doc.idempotencyKey as string | null) ?? null,
+    carrier: (doc.carrier as string | null) ?? null,
+    trackingNumber: (doc.trackingNumber as string | null) ?? null,
     createdAt: doc.createdAt ? String(doc.createdAt) : undefined,
     lines: lines.map((line) => ({
       sku: String(line.sku),

@@ -12,6 +12,8 @@ describe('access control', () => {
   let bayCompanyId: number
   let pacificQuoteId: number
   let pacificOrderId: number
+  let bayQuoteId: number
+  let bayOrderId: number
 
   beforeAll(async () => {
     const payloadConfig = await config
@@ -73,6 +75,38 @@ describe('access control', () => {
       overrideAccess: true,
     })
     pacificOrderId = order.id
+
+    const bayOrder = await payload.create({
+      collection: 'orders',
+      data: {
+        company: bayCompanyId,
+        status: 'draft',
+        shipTo: {
+          name: 'Bay',
+          line1: '2 Main',
+          city: 'SF',
+          state: 'CA',
+          postalCode: '94105',
+          country: 'US',
+        },
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 199 }],
+      },
+      overrideAccess: true,
+    })
+    bayOrderId = bayOrder.id
+
+    const bayQuote = await payload.create({
+      collection: 'quotes',
+      data: {
+        quoteNumber: `Q-ACCESS-BAY-SEED-${Date.now()}`,
+        company: bayCompanyId,
+        status: 'sent',
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 1 }],
+      },
+      overrideAccess: true,
+    })
+    bayQuoteId = bayQuote.id
   })
 
   it('blocks unapproved vendor login', async () => {
@@ -94,13 +128,13 @@ describe('access control', () => {
   it('vendor cannot read another company quotes', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
-    const bayUser = await payload.findByID({ collection: 'users', id: bayUserId, overrideAccess: true })
+    const pacificUser = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
 
     const result = await payload.find({
       collection: 'quotes',
-      where: { id: { equals: pacificQuoteId } },
+      where: { id: { equals: bayQuoteId } },
       overrideAccess: false,
-      req: createPayloadReq(payload, bayUser),
+      req: createPayloadReq(payload, pacificUser),
     })
     expect(result.docs).toHaveLength(0)
   })
@@ -108,13 +142,13 @@ describe('access control', () => {
   it('vendor cannot read another company orders', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
-    const bayUser = await payload.findByID({ collection: 'users', id: bayUserId, overrideAccess: true })
+    const pacificUser = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
 
     const result = await payload.find({
       collection: 'orders',
-      where: { id: { equals: pacificOrderId } },
+      where: { id: { equals: bayOrderId } },
       overrideAccess: false,
-      req: createPayloadReq(payload, bayUser),
+      req: createPayloadReq(payload, pacificUser),
     })
     expect(result.docs).toHaveLength(0)
   })
@@ -229,15 +263,18 @@ describe('access control', () => {
   it('vendor price list query excludes other company lists', async () => {
     const payloadConfig = await config
     const payload = await getPayload({ config: payloadConfig })
-    const bayUser = await payload.findByID({ collection: 'users', id: bayUserId, overrideAccess: true })
+    const pacificUser = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
 
     const lists = await payload.find({
       collection: 'price-lists',
       where: { kind: { equals: 'company' } },
       overrideAccess: false,
-      req: createPayloadReq(payload, bayUser),
+      req: createPayloadReq(payload, pacificUser),
     })
-    const names = lists.docs.map((d) => d.name)
-    expect(names).not.toContain('Pacific Plumbing Contract 2026')
+    for (const doc of lists.docs) {
+      const companyRef = doc.company
+      const cid = typeof companyRef === 'object' ? companyRef?.id : companyRef
+      expect(cid).toBe(pacificCompanyId)
+    }
   })
 })

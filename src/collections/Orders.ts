@@ -1,6 +1,12 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminPanelAccess, companyReadAccess, staffFieldAccess, staffOnly } from '../access'
+import {
+  adminPanelAccess,
+  companyReadAccess,
+  staffFieldAccess,
+  staffOnly,
+} from '../access'
+import { orderStaffAfterChange, orderStaffBeforeChange } from '@/lib/orders/order-staff-hooks'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -15,6 +21,10 @@ export const Orders: CollectionConfig = {
     create: staffOnly,
     update: staffOnly,
     delete: staffOnly,
+  },
+  hooks: {
+    beforeChange: [orderStaffBeforeChange],
+    afterChange: [orderStaffAfterChange],
   },
   indexes: [
     { unique: true, fields: ['company', 'poNumber'] },
@@ -49,8 +59,21 @@ export const Orders: CollectionConfig = {
         { label: 'Submitted', value: 'submitted' },
         { label: 'Confirmed', value: 'confirmed' },
         { label: 'Shipped', value: 'shipped' },
+        { label: 'Delivered', value: 'delivered' },
         { label: 'Cancelled', value: 'cancelled' },
       ],
+    },
+    {
+      name: 'carrier',
+      type: 'text',
+      access: { update: staffFieldAccess },
+      admin: { description: 'Optional when marking shipped.' },
+    },
+    {
+      name: 'trackingNumber',
+      type: 'text',
+      access: { update: staffFieldAccess },
+      admin: { description: 'Optional when marking shipped.' },
     },
     {
       name: 'poNumber',

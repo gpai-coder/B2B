@@ -3,6 +3,7 @@ import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { getUserCompanyId } from '@/access'
+import { vendorBuyerIsApproved } from '@/lib/access/vendor-gate'
 import { SHIP_TO_TRUSTED_MUTATION } from '@/lib/vendor/ship-to-trusted'
 import { shipToFromCompanyDefault, type ShipToFields } from '@/lib/checkout/ship-to'
 import { createPayloadReq } from '@/lib/payload-req'
@@ -27,7 +28,7 @@ export class ShipToAddressValidationError extends Error {
 
 function assertApprovedVendor(user: User, companyId: string): void {
   if (user.role !== 'vendor-buyer') throw new Error('Unauthorized')
-  if (!user.approved) throw new ShipToAddressValidationError(PENDING_APPROVAL)
+  if (!vendorBuyerIsApproved(user)) throw new ShipToAddressValidationError(PENDING_APPROVAL)
   const userCompany = getUserCompanyId(user)
   if (!userCompany || String(userCompany) !== companyId) {
     throw new ShipToAddressValidationError('Address not found.')

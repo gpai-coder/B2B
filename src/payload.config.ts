@@ -12,6 +12,7 @@ import { Carts } from './collections/Carts'
 import { CartBulkAdds } from './collections/CartBulkAdds'
 import { Companies } from './collections/Companies'
 import { Media } from './collections/Media'
+import { OrderEvents } from './collections/OrderEvents'
 import { Orders } from './collections/Orders'
 import { PriceLists } from './collections/PriceLists'
 import { Products } from './collections/Products'
@@ -46,6 +47,7 @@ export default buildConfig({
     PriceLists,
     Quotes,
     Orders,
+    OrderEvents,
     ShipToAddresses,
     Carts,
     CartBulkAdds,
