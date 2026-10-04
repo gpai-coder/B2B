@@ -448,7 +448,7 @@ export interface Quote {
    */
   quoteNumber: string;
   company: number | Company;
-  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'withdrawn';
+  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'withdrawn' | 'cancelled';
   expiresAt: string;
   /**
    * Internal or customer-facing notes (editable after send).
