@@ -162,6 +162,12 @@ export function setQuoteClientStatus(req: PayloadRequest, status: string): void 
   }
 }
 
+export function peekQuoteClientStatus(req: PayloadRequest): string | null {
+  const ctx = req.context as Record<string, unknown> | undefined
+  const raw = ctx?.[QUOTE_CLIENT_STATUS]
+  return raw != null ? String(raw) : null
+}
+
 export function takeQuoteClientStatus(req: PayloadRequest): string | null {
   const ctx = req.context as Record<string, unknown> | undefined
   const raw = ctx?.[QUOTE_CLIENT_STATUS]
