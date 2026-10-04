@@ -41,7 +41,7 @@ test.describe('Quote order page', () => {
     try {
       const patch = await request.patch(`/api/quotes/${quote!.id}`, {
         headers,
-        data: { status: 'sent', convertedOrder: null },
+        data: { status: 'expired', convertedOrder: null },
       })
       expect(patch.ok()).toBeTruthy()
 

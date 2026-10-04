@@ -7,9 +7,12 @@ test.describe('Staff quote builder e2e', () => {
   test('staff creates a temp quote visible to vendor after send', async ({ request }) => {
     test.skip(!isLocalBaseUrl(), 'Prod-safe: runs only against localhost')
     const headers = await adminJwtHeaders(request)
-    const companies = await request.get('/api/companies?limit=1', { headers })
-    expect(companies.ok()).toBeTruthy()
-    const companyBody = (await companies.json()) as { docs: Array<{ id: number }> }
+    const companyRes = await request.get(
+      `/api/companies?where[name][equals]=${encodeURIComponent('Pacific Plumbing Supply')}&limit=1`,
+      { headers },
+    )
+    expect(companyRes.ok()).toBeTruthy()
+    const companyBody = (await companyRes.json()) as { docs: Array<{ id: number }> }
     const companyId = companyBody.docs[0]?.id
     expect(companyId).toBeTruthy()
 
@@ -49,7 +52,7 @@ test.describe('Staff quote builder e2e', () => {
       const vendorLogin = await request.post('/api/users/login', {
         data: {
           email: process.env.SEED_VENDOR_A_EMAIL ?? 'buyer@pacific-plumbing.local',
-          password: process.env.SEED_VENDOR_PASSWORD ?? 'local-dev-vendor-password',
+          password: process.env.SEED_VENDOR_A_PASSWORD ?? 'local-dev-vendor-a-password',
         },
       })
       expect(vendorLogin.ok()).toBeTruthy()
