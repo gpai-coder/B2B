@@ -1,4 +1,9 @@
-import type { CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionBeforeDeleteHook } from 'payload'
+import type {
+  CollectionAfterChangeHook,
+  CollectionBeforeChangeHook,
+  CollectionBeforeDeleteHook,
+  CollectionBeforeOperationHook,
+} from 'payload'
 import { APIError } from 'payload'
 import type { User } from '@/payload-types'
 import {
@@ -27,6 +32,30 @@ function rethrowOrderWorkflow(err: unknown): never {
   throw err
 }
 
+export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({ operation, args, req }) => {
+  if (operation !== 'update') return args
+  const data = args.data as Record<string, unknown> | undefined
+  if (!data || !Object.prototype.hasOwnProperty.call(data, 'shipTo') || data.shipTo !== null) return args
+
+  let status = data.status
+  const rawId = 'id' in args ? args.id : undefined
+  const orderId =
+    typeof rawId === 'string' || typeof rawId === 'number' ? rawId : undefined
+  if (status == null && orderId != null) {
+    const existing = await req.payload.findByID({
+      collection: 'orders',
+      id: orderId,
+      depth: 0,
+      overrideAccess: true,
+    })
+    status = existing.status
+  }
+  if (String(status ?? 'draft') !== 'draft') {
+    throw new APIError('Ship-to is frozen after submit.', 400)
+  }
+  return args
+}
+
 export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) => {
   if (args.operation === 'create' || !args.originalDoc?.id) return args.data
 
@@ -36,7 +65,6 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
       Number(args.originalDoc.id),
       args.req,
     )
-    assertFrozenOrderFieldsUnchanged(locked, (args.data ?? {}) as Record<string, unknown>)
 
     const lockedStatus = String(locked.status ?? 'draft') as OrderStatus
     const nextStatus = (
@@ -47,9 +75,11 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
       takeOrderClientStatus(args.req) ??
       String(args.originalDoc?.status ?? 'draft')
     ) as OrderStatus
-    if (fieldPresent((args.data ?? {}) as Record<string, unknown>, 'status') && clientStatus !== lockedStatus) {
+    if (clientStatus !== lockedStatus) {
       throw new OrderTransitionConflictError('Order was updated concurrently; refresh and retry.')
     }
+
+    assertFrozenOrderFieldsUnchanged(locked, (args.data ?? {}) as Record<string, unknown>)
 
     if (nextStatus !== lockedStatus) {
       assertValidStatusTransition(lockedStatus, nextStatus)

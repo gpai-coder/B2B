@@ -10,17 +10,30 @@ function normalizeOrigin(origin: string): string | null {
   }
 }
 
+function originFromEnvUrl(value: string | undefined): string | null {
+  if (!value?.trim()) return null
+  const raw = value.trim()
+  const withScheme = raw.startsWith('http://') || raw.startsWith('https://') ? raw : `https://${raw}`
+  return normalizeOrigin(withScheme)
+}
+
 export function allowedPayloadOrigins(): string[] {
-  const env = getEnv()
-  const list = new Set<string>([
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    `https://${PRODUCTION_HOST}`,
-  ])
-  if (env.NEXT_PUBLIC_SERVER_URL) {
-    const o = normalizeOrigin(env.NEXT_PUBLIC_SERVER_URL)
+  const list = new Set<string>([`https://${PRODUCTION_HOST}`, 'http://localhost:3000'])
+
+  try {
+    const env = getEnv()
+    const fromPublic = originFromEnvUrl(env.NEXT_PUBLIC_SERVER_URL)
+    if (fromPublic) list.add(fromPublic)
+  } catch {
+    const fromPublic = originFromEnvUrl(process.env.NEXT_PUBLIC_SERVER_URL)
+    if (fromPublic) list.add(fromPublic)
+  }
+
+  for (const key of ['VERCEL_URL', 'VERCEL_BRANCH_URL', 'VERCEL_PROJECT_PRODUCTION_URL'] as const) {
+    const o = originFromEnvUrl(process.env[key])
     if (o) list.add(o)
   }
+
   return [...list]
 }
 
@@ -28,14 +41,7 @@ export function isAllowedPayloadOrigin(origin: string | null | undefined): boole
   if (!origin) return true
   const normalized = normalizeOrigin(origin)
   if (!normalized) return false
-  if (allowedPayloadOrigins().includes(normalized)) return true
-  try {
-    const host = new URL(normalized).hostname
-    if (host.endsWith('.vercel.app')) return true
-  } catch {
-    return false
-  }
-  return false
+  return allowedPayloadOrigins().includes(normalized)
 }
 
 export function assertAllowedPayloadOrigin(origin: string | null | undefined): void {

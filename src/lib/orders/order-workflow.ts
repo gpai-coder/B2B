@@ -89,16 +89,14 @@ async function setOrderLockTimeout(payload: Payload, txId: string | number): Pro
   })
 }
 
-function linesEqual(
-  a: Array<Record<string, unknown>> | undefined,
-  b: Array<Record<string, unknown>> | undefined,
-): boolean {
-  return JSON.stringify(a ?? []) === JSON.stringify(b ?? [])
-}
+import {
+  frozenTextEqual,
+  linesSemanticallyEqual,
+  shipToSemanticallyEqual,
+} from '@/lib/orders/order-frozen-compare'
 
-function shipToEqual(a: Record<string, unknown> | undefined, b: Record<string, unknown> | undefined): boolean {
-  return JSON.stringify(a ?? {}) === JSON.stringify(b ?? {})
-}
+/** Namespace for pg_advisory_xact_lock(int, int) on order rows. */
+export const ORDER_ADVISORY_LOCK_CLASS = 2_026_100_401
 
 function fieldPresent(data: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(data, key)
@@ -120,31 +118,25 @@ export function assertFrozenOrderFieldsUnchanged(
     }
   }
 
-  if (fieldPresent(data, 'lines') && !linesEqual(locked.lines as Array<Record<string, unknown>>, data.lines as Array<Record<string, unknown>>)) {
+  if (fieldPresent(data, 'lines') && !linesSemanticallyEqual(locked.lines as Array<Record<string, unknown>>, data.lines)) {
     throw new OrderFrozenFieldError('Order lines are frozen after submit.')
   }
 
-  if (
-    fieldPresent(data, 'shipTo') &&
-    !shipToEqual(locked.shipTo as Record<string, unknown>, data.shipTo as Record<string, unknown>)
-  ) {
-    throw new OrderFrozenFieldError('Ship-to is frozen after submit.')
-  }
-
-  if (fieldPresent(data, 'poNumber')) {
-    const prevPo = String(locked.poNumber ?? '')
-    const nextPo = String(data.poNumber ?? '')
-    if (prevPo !== nextPo) {
-      throw new OrderFrozenFieldError('PO number is frozen after submit.')
+  if (fieldPresent(data, 'shipTo')) {
+    if (data.shipTo === null) {
+      throw new OrderFrozenFieldError('Ship-to is frozen after submit.')
+    }
+    if (!shipToSemanticallyEqual(locked.shipTo as Record<string, unknown>, data.shipTo)) {
+      throw new OrderFrozenFieldError('Ship-to is frozen after submit.')
     }
   }
 
-  if (fieldPresent(data, 'orderNumber')) {
-    const prevOn = String(locked.orderNumber ?? '')
-    const nextOn = String(data.orderNumber ?? '')
-    if (prevOn !== nextOn) {
-      throw new OrderFrozenFieldError('Order number is frozen after submit.')
-    }
+  if (fieldPresent(data, 'poNumber') && !frozenTextEqual(locked.poNumber, data.poNumber)) {
+    throw new OrderFrozenFieldError('PO number is frozen after submit.')
+  }
+
+  if (fieldPresent(data, 'orderNumber') && !frozenTextEqual(locked.orderNumber, data.orderNumber)) {
+    throw new OrderFrozenFieldError('Order number is frozen after submit.')
   }
 }
 
@@ -161,7 +153,7 @@ export async function lockAndLoadOrderForUpdate(
   const drizzle = drizzleForTransaction(payload, txId)
   await payload.db.execute({
     drizzle,
-    sql: sql`SELECT pg_advisory_xact_lock(${orderId})`,
+    sql: sql`SELECT pg_advisory_xact_lock(${ORDER_ADVISORY_LOCK_CLASS}, ${orderId})`,
   })
   await payload.db.execute({
     drizzle,

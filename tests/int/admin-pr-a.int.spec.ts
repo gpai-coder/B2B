@@ -12,6 +12,7 @@ import {
   assertValidStatusTransition,
   OrderTransitionConflictError,
   OrderWorkflowError,
+  setOrderClientStatus,
   type OrderStatus,
 } from '@/lib/orders/order-workflow'
 import { approveVendorBuyer, rejectVendorBuyer } from '@/lib/admin/vendor-approval-actions'
@@ -149,6 +150,91 @@ describe('admin PR A — approval and order workflow', () => {
       status: 409,
     })
     await deleteTestOrder(order.id)
+  })
+
+  it('allows status updates when ship-to and lines differ only by serialization', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const order = await payload.create({
+      collection: 'orders',
+      data: {
+        company: pacificCompanyId,
+        status: 'submitted',
+        orderNumber: `ADM-ser-${Date.now()}`,
+        poNumber: `PO-ser-${Date.now()}`,
+        shipTo: { ...shipTo, line2: null },
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
+      },
+      overrideAccess: true,
+    })
+
+    const reorderedShipTo = {
+      country: 'US',
+      postalCode: '94105',
+      state: 'CA',
+      city: 'SF',
+      line1: '1 Main',
+      line2: '',
+      name: 'Test',
+    }
+
+    await staffOrderUpdate(payload, req, order.id, {
+      status: 'confirmed',
+      shipTo: reorderedShipTo,
+      lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
+    })
+    const confirmed = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
+    expect(confirmed.status).toBe('confirmed')
+
+    await staffOrderUpdate(payload, req, order.id, {
+      status: 'shipped',
+      carrier: 'UPS',
+      trackingNumber: '1Z999',
+      shipTo: { name: 'Test', line1: '1 Main', city: 'SF', state: 'CA', postalCode: '94105', country: 'US' },
+      lines: [{ quantity: 1, unitPrice: 10, sku: '7353101.002' }],
+    })
+    const shipped = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
+    expect(shipped.status).toBe('shipped')
+    expect(shipped.carrier).toBe('UPS')
+    await deleteTestOrder(order.id)
+  })
+
+  it('returns 400 for shipTo null on frozen orders', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const order = await createSubmittedOrder(pacificCompanyId, 'shipto-null')
+    await expect(staffOrderUpdate(payload, req, order.id, { shipTo: null })).rejects.toMatchObject({
+      status: 400,
+    })
+    await deleteTestOrder(order.id)
+  })
+
+  it('returns 409 not frozen-field 400 when client status is stale after submit', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const vendor = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
+    const commerce = createPostgresCommerceService(payload, vendor)
+    const draft = await createDraftOrder(pacificCompanyId, 'stale-status')
+    const staff = await staffReq()
+    setOrderClientStatus(staff, 'draft')
+    await commerce.submitOrder(String(draft.id), `stale-${Date.now()}`, String(pacificCompanyId))
+    await expect(
+      withPayloadTransaction(payload, staff, () =>
+        payload.update({
+          collection: 'orders',
+          id: draft.id,
+          data: {
+            status: 'confirmed',
+            orderNumber: '',
+            poNumber: draft.poNumber,
+            shipTo,
+            lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
+          },
+          req: staff,
+          overrideAccess: true,
+        }),
+      ),
+    ).rejects.toMatchObject({ status: 409 })
+    await deleteTestOrder(draft.id)
   })
 
   it('blocks frozen fields with 400', async () => {

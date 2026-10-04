@@ -131,6 +131,14 @@ export const priceListReadAccess: Access = ({ req: { user } }) => {
 
 export const staffFieldAccess: FieldAccess = ({ req: { user } }) => isStaff(user as AppUser)
 
+/** Staff may edit the field only while the order is still a draft. */
+export const staffFieldAccessUnlessFrozen: FieldAccess = (args) => {
+  if (!staffFieldAccess(args)) return false
+  const status = args.siblingData?.status ?? args.doc?.status
+  if (status != null && status !== 'draft') return false
+  return true
+}
+
 export async function assertVendorCanLogin(req: PayloadRequest, user: AppUser): Promise<void> {
   if (user.role !== 'vendor-buyer') return
   if (!vendorBuyerIsApproved(user)) {

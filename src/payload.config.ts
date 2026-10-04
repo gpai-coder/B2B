@@ -68,6 +68,20 @@ export default buildConfig({
     },
     push: process.env.PAYLOAD_DISABLE_PUSH === 'true' ? false : undefined,
     afterSchemaInit: [
+      ({ schema }) => {
+        const tables = (schema as {
+          tables?: Record<string, { foreignKeys?: Record<string, { onDelete?: string; name?: string }> }>
+        }).tables
+        const orderEvents = tables?.order_events
+        if (orderEvents?.foreignKeys) {
+          for (const [name, fk] of Object.entries(orderEvents.foreignKeys)) {
+            if (name.includes('order_id') || name.includes('company_id')) {
+              fk.onDelete = 'restrict'
+            }
+          }
+        }
+        return schema
+      },
       ({ schema, extendTable }) => {
         const table = schema.tables.ship_to_addresses
         if (!table) return schema

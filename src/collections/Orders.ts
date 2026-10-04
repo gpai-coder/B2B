@@ -4,9 +4,15 @@ import {
   adminPanelAccess,
   companyReadAccess,
   staffFieldAccess,
+  staffFieldAccessUnlessFrozen,
   staffOnly,
 } from '../access'
-import { orderStaffAfterChange, orderStaffBeforeChange, orderStaffBeforeDelete } from '@/lib/orders/order-staff-hooks'
+import {
+  orderStaffAfterChange,
+  orderStaffBeforeChange,
+  orderStaffBeforeDelete,
+  orderStaffBeforeOperation,
+} from '@/lib/orders/order-staff-hooks'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
@@ -23,6 +29,7 @@ export const Orders: CollectionConfig = {
     delete: staffOnly,
   },
   hooks: {
+    beforeOperation: [orderStaffBeforeOperation],
     beforeChange: [orderStaffBeforeChange],
     afterChange: [orderStaffAfterChange],
     beforeDelete: [orderStaffBeforeDelete],
@@ -36,7 +43,7 @@ export const Orders: CollectionConfig = {
       name: 'orderNumber',
       type: 'text',
       unique: true,
-      access: { update: staffFieldAccess },
+      access: { update: staffFieldAccessUnlessFrozen },
       admin: {
         readOnly: true,
         description: 'Generated on submit if empty.',
@@ -47,7 +54,7 @@ export const Orders: CollectionConfig = {
       type: 'relationship',
       relationTo: 'companies',
       required: true,
-      access: { update: staffFieldAccess },
+      access: { update: staffFieldAccessUnlessFrozen },
     },
     {
       name: 'status',
@@ -79,7 +86,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'poNumber',
       type: 'text',
-      access: { update: staffFieldAccess },
+      access: { update: staffFieldAccessUnlessFrozen },
     },
     {
       name: 'quote',
@@ -104,7 +111,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'shipTo',
       type: 'group',
-      access: { update: staffFieldAccess },
+      access: { update: staffFieldAccessUnlessFrozen },
       fields: [
         { name: 'name', type: 'text', required: true },
         { name: 'line1', type: 'text', required: true },
@@ -119,7 +126,7 @@ export const Orders: CollectionConfig = {
       name: 'lines',
       type: 'array',
       required: true,
-      access: { update: staffFieldAccess },
+      access: { update: staffFieldAccessUnlessFrozen },
       fields: [
         {
           name: 'sku',
