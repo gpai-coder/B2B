@@ -13,6 +13,7 @@ case "${VERCEL_ENV:-}" in
     ;;
   preview)
     echo "Running Payload migrations (preview)…"
+    node scripts/check-preview-db.mjs
     cross-env NODE_ENV=production PAYLOAD_DISABLE_PUSH=true NODE_OPTIONS=--no-deprecation payload migrate
     ;;
 esac
