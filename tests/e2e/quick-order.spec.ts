@@ -5,12 +5,6 @@ import { expectVendorOnPath, loginVendor } from '../helpers/vendor-login'
 
 const HERO_SKU = '7353101.002'
 
-async function fillIfEmpty(page: import('@playwright/test').Page, testId: string, value: string) {
-  const field = page.getByTestId(testId)
-  if ((await field.inputValue()).trim() === '') {
-    await field.fill(value)
-  }
-}
 
 test.describe('Quick order', () => {
   test('validate and add lines with idempotent replay', async ({ page, request }) => {

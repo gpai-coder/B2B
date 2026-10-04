@@ -8,7 +8,6 @@ import { createPayloadReq } from '@/lib/payload-req'
 import {
   assertValidQuoteStatusTransition,
   QuoteTransitionConflictError,
-  setQuoteClientStatus,
 } from '@/lib/quotes/quote-workflow'
 import { staffQuoteUpdate } from '@/lib/quotes/staff-quote-update'
 
@@ -341,7 +340,6 @@ describe('staff quote builder (PR B)', () => {
           ...staffReqs.map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'withdrawn' })),
         ])
 
-        const ok = results.filter((r) => r.status === 'fulfilled')
         expectQuoteRaceResults(results, POOL_MAX)
 
         const fresh = await payload.findByID({ collection: 'quotes', id: draft.id, overrideAccess: true })

@@ -41,7 +41,10 @@ export async function resolveUnitPriceForCompany(
     if (!line) return null
     let price = line.unitPrice ?? 0
     const breaks = line.quantityBreaks ?? []
-    for (const br of breaks) {
+    const sortedBreaks = [...breaks].sort(
+      (a, b) => (a.minQuantity ?? 0) - (b.minQuantity ?? 0),
+    )
+    for (const br of sortedBreaks) {
       if (quantity >= (br.minQuantity ?? 0) && br.unitPrice != null) {
         price = br.unitPrice
       }

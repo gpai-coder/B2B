@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_product_variants_documents_doc_type" AS ENUM('spec-sheet', 'install-instructions', 'parts-diagram');
   CREATE TABLE "products_feature_bullets" (
@@ -41,7 +41,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "product_variants_documents_file_idx" ON "product_variants_documents" USING btree ("file_id");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "products_feature_bullets" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "products_specs_table" DISABLE ROW LEVEL SECURITY;

@@ -19,7 +19,10 @@ export const Users: CollectionConfig = {
     description:
       'Filter approvalStatus = pending for the vendor approval queue. Use Approve/Reject endpoints or edit approval status.',
   },
-  auth: true,
+  auth: {
+    maxLoginAttempts: 5,
+    lockTime: 600_000,
+  },
   endpoints: vendorApprovalEndpoints,
   access: {
     admin: adminPanelAccess,
@@ -27,6 +30,7 @@ export const Users: CollectionConfig = {
     read: staffOrSelfUser,
     update: staffOrSelfUser,
     delete: staffOnly,
+    unlock: staffOnly,
   },
   hooks: {
     beforeLogin: [

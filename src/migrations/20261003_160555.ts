@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    DROP INDEX "orders_idempotency_key_idx";
   ALTER TABLE "companies" ADD COLUMN "default_ship_to_name" varchar;
@@ -19,7 +19,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   CREATE INDEX "orders_idempotency_key_idx" ON "orders" USING btree ("idempotency_key");`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    ALTER TABLE "quotes" DROP CONSTRAINT "quotes_converted_order_id_orders_id_fk";
   
