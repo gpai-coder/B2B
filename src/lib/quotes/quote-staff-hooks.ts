@@ -30,7 +30,6 @@ import {
   QuoteTransitionConflictError,
   QuoteWorkflowError,
   QuoteWorkflowTransactionError,
-  peekQuoteClientStatus,
   setQuoteClientLines,
   setQuoteClientStatus,
   setQuoteTransitionFromStatus,
@@ -162,7 +161,8 @@ export const quoteStaffBeforeOperation: CollectionBeforeOperationHook = async ({
   }
 
   const ctx = req.context as Record<string, unknown>
-  if (ctx[QUOTE_CLIENT_STATUS] == null) {
+  const statusUpdate = fieldPresent(data, 'status')
+  if (ctx[QUOTE_CLIENT_STATUS] == null || statusUpdate) {
     try {
       const lockedDocs = await loadQuotesForUpdateOperation(req, args as Record<string, unknown>)
       for (const locked of lockedDocs) {
@@ -253,15 +253,8 @@ export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     ) as QuoteStatus
 
     const clientStatus = (
-      peekQuoteClientStatus(args.req) ?? String(args.originalDoc?.status ?? 'draft')
+      takeQuoteClientStatus(args.req) ?? String(args.originalDoc?.status ?? 'draft')
     ) as QuoteStatus
-
-    if (fieldPresent(data, 'status') && data.status != null) {
-      const requested = String(data.status) as QuoteStatus
-      if (requested === lockedStatus && requested !== clientStatus) {
-        throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
-      }
-    }
 
     if (clientStatus !== lockedStatus) {
       throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
