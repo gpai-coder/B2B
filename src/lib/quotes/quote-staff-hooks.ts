@@ -282,6 +282,11 @@ export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
       }
       assertValidQuoteStatusTransition(lockedStatus, nextStatus)
       setQuoteTransitionFromStatus(args.req, lockedStatus)
+    } else if (
+      fieldPresent(data, 'status') &&
+      (nextStatus === 'withdrawn' || nextStatus === 'expired')
+    ) {
+      throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
     }
   } catch (err) {
     if (err instanceof QuoteWorkflowTransactionError) {
