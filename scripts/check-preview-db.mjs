@@ -3,81 +3,43 @@
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
+import { dbFingerprintFromDatabaseUrl, parseDatabaseHostname } from './db-fingerprint.mjs'
+
+const DEFAULT_PROD_HEALTH_URL = 'https://b2b-gamma-seven.vercel.app/api/health'
+const FETCH_TIMEOUT_MS = 10_000
+const FETCH_RETRIES = 2
+
 /**
- * Preview-only guard: refuse migrate when DATABASE_URL (or unpooled) targets a prod host.
- * Never log full connection strings or credentials.
+ * Preview-only guard: refuse migrate when preview DB fingerprint matches production.
+ * Never log hosts, credentials, or full DATABASE_URL values.
+ *
+ * Escape hatch (remove after production serves dbFingerprint): HTTP 200 without
+ * dbFingerprint logs a warning and allows migrate for chicken-and-egg on first deploy.
  */
 
-export function parseDatabaseHost(connectionString) {
-  const raw = connectionString?.trim()
-  if (!raw) return null
-  try {
-    const normalized = raw.replace(/^postgres:\/\//, 'postgresql://')
-    return new URL(normalized).hostname || null
-  } catch {
-    return null
-  }
-}
-
-export function hostEpId(hostname) {
-  if (!hostname) return '(unknown)'
-  const segment = hostname.split('.')[0]
-  return segment || hostname
-}
-
-export function hostMatchesProdEntry(hostname, prodEntry) {
-  const host = hostname.toLowerCase()
-  const entry = prodEntry.toLowerCase()
-  if (!entry) return false
-  if (host === entry) return true
-  const epId = host.split('.')[0]
-  return epId === entry
-}
-
-export function checkPreviewDbIsolation(env) {
-  const prodHostsRaw = env.PROD_DB_HOSTS ?? ''
-  const prodHosts = prodHostsRaw
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-
-  if (prodHosts.length === 0) {
-    return {
-      ok: false,
-      exitCode: 1,
-      stderr:
-        'error: PROD_DB_HOSTS is missing or empty; refusing preview migrate without production host allowlist.',
+export async function fetchProdDbFingerprint(prodHealthUrl, fetchFn = globalThis.fetch) {
+  let lastError = 'unknown error'
+  const attempts = FETCH_RETRIES + 1
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const response = await fetchFn(prodHealthUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      })
+      const body = await response.json().catch(() => null)
+      return { response, body, error: null }
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err)
+      if (attempt < attempts - 1) continue
     }
   }
+  return { response: null, body: null, error: lastError }
+}
 
-  const sources = [
-    ['DATABASE_URL', env.DATABASE_URL],
-    ['DATABASE_URL_UNPOOLED', env.DATABASE_URL_UNPOOLED],
-  ]
-
-  const parsedHosts = []
-  for (const [label, value] of sources) {
-    if (!value?.trim()) continue
-    const host = parseDatabaseHost(value)
-    if (!host) {
-      return {
-        ok: false,
-        exitCode: 1,
-        stderr: `error: could not parse database hostname from ${label}; refusing preview migrate.`,
-      }
-    }
-    parsedHosts.push({ label, host })
-    for (const prodEntry of prodHosts) {
-      if (hostMatchesProdEntry(host, prodEntry)) {
-        return {
-          ok: false,
-          exitCode: 1,
-          stderr:
-            'error: preview database hostname matches an entry in PROD_DB_HOSTS; refusing preview migrate.',
-        }
-      }
-    }
-  }
+export async function checkPreviewDbIsolation(env, options = {}) {
+  const fetchFn = options.fetch ?? globalThis.fetch
+  const prodHealthUrl = env.PROD_HEALTH_URL?.trim() || DEFAULT_PROD_HEALTH_URL
 
   if (!env.DATABASE_URL?.trim()) {
     return {
@@ -87,21 +49,96 @@ export function checkPreviewDbIsolation(env) {
     }
   }
 
-  if (parsedHosts.length === 0) {
+  const previewFingerprints = []
+  for (const [label, value] of [
+    ['DATABASE_URL', env.DATABASE_URL],
+    ['DATABASE_URL_UNPOOLED', env.DATABASE_URL_UNPOOLED],
+  ]) {
+    if (!value?.trim()) continue
+    if (!parseDatabaseHostname(value)) {
+      return {
+        ok: false,
+        exitCode: 1,
+        stderr: `error: could not parse database hostname from ${label}; refusing preview migrate.`,
+      }
+    }
+    const fp = dbFingerprintFromDatabaseUrl(value)
+    if (!fp) {
+      return {
+        ok: false,
+        exitCode: 1,
+        stderr: `error: could not compute db fingerprint from ${label}; refusing preview migrate.`,
+      }
+    }
+    previewFingerprints.push({ label, fp })
+  }
+
+  const { response, body, error } = await fetchProdDbFingerprint(prodHealthUrl, fetchFn)
+
+  if (!response) {
     return {
       ok: false,
       exitCode: 1,
-      stderr: 'error: no database hostname available to verify; refusing preview migrate.',
+      stderr: `error: production health check unreachable; refusing preview migrate (${error}).`,
     }
   }
 
-  const epIds = [...new Set(parsedHosts.map(({ host }) => hostEpId(host)))]
-  const stdout = `Preview DB isolation check passed (ep-id: ${epIds.join(', ')})`
-  return { ok: true, exitCode: 0, stdout }
+  const prodFingerprint =
+    body && typeof body.dbFingerprint === 'string' ? body.dbFingerprint.trim() : ''
+
+  if (!prodFingerprint) {
+    if (response.status === 200) {
+      return {
+        ok: true,
+        exitCode: 0,
+        warn:
+          'WARNING: production /api/health returned 200 without dbFingerprint (pre-deploy). Continuing preview migrate. Remove this escape hatch after production serves dbFingerprint.',
+        stdout: formatPassLine(previewFingerprints, '(pending)'),
+      }
+    }
+    return {
+      ok: false,
+      exitCode: 1,
+      stderr: `error: production health has no dbFingerprint (HTTP ${response.status}); refusing preview migrate.`,
+    }
+  }
+
+  if (response.status !== 200) {
+    return {
+      ok: false,
+      exitCode: 1,
+      stderr: `error: production health returned HTTP ${response.status}; refusing preview migrate.`,
+    }
+  }
+
+  for (const { fp } of previewFingerprints) {
+    if (fp === prodFingerprint) {
+      return {
+        ok: false,
+        exitCode: 1,
+        stderr:
+          'error: preview database fingerprint matches production; refusing preview migrate.',
+      }
+    }
+  }
+
+  return {
+    ok: true,
+    exitCode: 0,
+    stdout: formatPassLine(previewFingerprints, prodFingerprint),
+  }
 }
 
-function runCli() {
-  const result = checkPreviewDbIsolation(process.env)
+function formatPassLine(previewFingerprints, prodFingerprint) {
+  const parts = previewFingerprints.map(({ label, fp }) => `${label}=${fp}`)
+  return `Preview DB isolation check passed (${parts.join('; ')}; prod=${prodFingerprint})`
+}
+
+async function runCli() {
+  const result = await checkPreviewDbIsolation(process.env)
+  if (result.warn) {
+    process.stderr.write(`${result.warn}\n`)
+  }
   if (result.stderr) {
     process.stderr.write(`${result.stderr}\n`)
   }

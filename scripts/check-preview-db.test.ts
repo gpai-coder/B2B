@@ -1,70 +1,120 @@
-import { execFileSync, spawnSync } from 'node:child_process'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
+import { dbFingerprintFromDatabaseUrl } from './db-fingerprint.mjs'
 import { checkPreviewDbIsolation } from './check-preview-db.mjs'
 
+const secret = 'super-secret-password-12345'
 const previewHost = 'ep-preview-branch-abc123.us-east-2.aws.neon.tech'
 const prodHost = 'ep-production-main-xyz789.us-east-2.aws.neon.tech'
-const secret = 'super-secret-password-12345'
 
 function env(overrides: Record<string, string | undefined>) {
   return {
-    PROD_DB_HOSTS: prodHost,
-    DATABASE_URL: `postgresql://user:${secret}@${previewHost}/neondb?sslmode=require`,
+    DATABASE_URL: `postgresql://user:${secret}@${previewHost}/neondb`,
     ...overrides,
   }
 }
 
+function combinedOutput(result: Awaited<ReturnType<typeof checkPreviewDbIsolation>>) {
+  return `${result.stdout ?? ''}${result.stderr ?? ''}${result.warn ?? ''}`
+}
+
 describe('checkPreviewDbIsolation', () => {
-  it('fails when DATABASE_URL host matches PROD_DB_HOSTS', () => {
-    const result = checkPreviewDbIsolation(
+  it('fails when preview fingerprint equals production', async () => {
+    const prodFp = dbFingerprintFromDatabaseUrl(`postgresql://x@${prodHost}/db`)!
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => ({ dbFingerprint: prodFp }),
+    })
+    const result = await checkPreviewDbIsolation(
       env({
         DATABASE_URL: `postgresql://user:${secret}@${prodHost}/neondb`,
-        PROD_DB_HOSTS: prodHost,
       }),
+      { fetch },
     )
     expect(result.ok).toBe(false)
     expect(result.exitCode).toBe(1)
-    expect(result.stderr).toMatch(/matches an entry in PROD_DB_HOSTS/)
+    expect(result.stderr).toMatch(/matches production/)
   })
 
-  it('fails when DATABASE_URL_UNPOOLED host matches PROD_DB_HOSTS', () => {
-    const result = checkPreviewDbIsolation(
+  it('normalizes pooled vs unpooled preview URLs to the same fingerprint', async () => {
+    const pooledHost = 'ep-preview-branch-abc123-pooler.us-east-2.aws.neon.tech'
+    const previewFp = dbFingerprintFromDatabaseUrl(`postgresql://x@${previewHost}/db`)!
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => ({ dbFingerprint: '000000000000' }),
+    })
+    const result = await checkPreviewDbIsolation(
       env({
-        DATABASE_URL_UNPOOLED: `postgresql://user:${secret}@${prodHost}/neondb`,
+        DATABASE_URL: `postgresql://user:${secret}@${pooledHost}/neondb`,
+        DATABASE_URL_UNPOOLED: `postgresql://user:${secret}@${previewHost}/neondb`,
       }),
+      { fetch },
     )
-    expect(result.ok).toBe(false)
-    expect(result.exitCode).toBe(1)
-  })
-
-  it('fails when PROD_DB_HOSTS is missing or empty', () => {
-    expect(checkPreviewDbIsolation(env({ PROD_DB_HOSTS: '' })).ok).toBe(false)
-    expect(checkPreviewDbIsolation(env({ PROD_DB_HOSTS: undefined })).ok).toBe(false)
-  })
-
-  it('passes when preview host differs from production allowlist', () => {
-    const result = checkPreviewDbIsolation(env({}))
     expect(result.ok).toBe(true)
-    expect(result.stdout).toBe('Preview DB isolation check passed (ep-id: ep-preview-branch-abc123)')
+    expect(result.stdout).toContain(`DATABASE_URL=${previewFp}`)
+    expect(result.stdout).toContain(`DATABASE_URL_UNPOOLED=${previewFp}`)
   })
 
-  it('CLI output does not echo credentials or full URLs', () => {
-    const run = spawnSync('node', ['scripts/check-preview-db.mjs'], {
-      env: {
-        ...process.env,
-        PROD_DB_HOSTS: prodHost,
+  it('fails closed when production health is unreachable', async () => {
+    const fetch = vi.fn().mockRejectedValue(new Error('network down'))
+    const result = await checkPreviewDbIsolation(env({}), { fetch })
+    expect(result.ok).toBe(false)
+    expect(result.stderr).toMatch(/unreachable/)
+  })
+
+  it('warns and continues when production returns 200 without dbFingerprint', async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => ({ status: 'ok', db: 'connected' }),
+    })
+    const result = await checkPreviewDbIsolation(env({}), { fetch })
+    expect(result.ok).toBe(true)
+    expect(result.warn).toMatch(/without dbFingerprint/)
+    expect(result.warn).toMatch(/Remove this escape hatch/)
+  })
+
+  it('fails when production health lacks dbFingerprint and is not HTTP 200', async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      status: 503,
+      json: async () => ({ status: 'degraded' }),
+    })
+    const result = await checkPreviewDbIsolation(env({}), { fetch })
+    expect(result.ok).toBe(false)
+    expect(result.stderr).toMatch(/no dbFingerprint/)
+  })
+
+  it('passes when preview fingerprints differ from production', async () => {
+    const prodFp = dbFingerprintFromDatabaseUrl(`postgresql://x@${prodHost}/db`)!
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => ({ dbFingerprint: prodFp }),
+    })
+    const result = await checkPreviewDbIsolation(env({}), { fetch })
+    expect(result.ok).toBe(true)
+    expect(result.stdout).toMatch(/^Preview DB isolation check passed/)
+    expect(result.stdout).toContain(`prod=${prodFp}`)
+  })
+
+  it('does not echo credentials or hostnames in output', async () => {
+    const prodFp = dbFingerprintFromDatabaseUrl(`postgresql://x@${prodHost}/db`)!
+    const fetch = vi.fn().mockResolvedValue({
+      status: 200,
+      json: async () => ({ dbFingerprint: prodFp }),
+    })
+    const result = await checkPreviewDbIsolation(
+      env({
         DATABASE_URL: `postgresql://leak-user:${secret}@${previewHost}/neondb`,
         DATABASE_URL_UNPOOLED: `postgresql://leak-user:${secret}@${previewHost}/neondb`,
-      },
-      encoding: 'utf8',
-    })
-    expect(run.status).toBe(0)
-    const combined = `${run.stdout ?? ''}${run.stderr ?? ''}`
+      }),
+      { fetch },
+    )
+    expect(result.ok).toBe(true)
+    const combined = combinedOutput(result)
     expect(combined).toContain('Preview DB isolation check passed')
     expect(combined).not.toContain(secret)
     expect(combined).not.toContain('leak-user')
     expect(combined).not.toContain(previewHost)
-    expect(combined).toContain('ep-preview-branch-abc123')
+    expect(combined).not.toContain(prodHost)
+    expect(combined).not.toContain('postgresql://')
   })
 })
