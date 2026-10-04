@@ -15,7 +15,7 @@ function env(overrides: Record<string, string | undefined>) {
 }
 
 function combinedOutput(result: Awaited<ReturnType<typeof checkPreviewDbIsolation>>) {
-  return `${result.stdout ?? ''}${result.stderr ?? ''}${result.warn ?? ''}`
+  return `${result.stdout ?? ''}${result.stderr ?? ''}`
 }
 
 describe('checkPreviewDbIsolation', () => {
