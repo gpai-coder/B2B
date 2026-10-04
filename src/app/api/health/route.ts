@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 
 import { APP_VERSION } from '@/app-version'
 import { getEnv } from '@/env'
+import { dbFingerprintFromDatabaseUrl } from '@/lib/db-fingerprint'
 import config from '@/payload.config'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +20,7 @@ export async function GET() {
   }
 
   const version = process.env.VERCEL_GIT_COMMIT_SHA ?? APP_VERSION
+  const dbFingerprint = dbFingerprintFromDatabaseUrl(process.env.DATABASE_URL) ?? undefined
 
   const status = db === 'connected' ? 'ok' : 'degraded'
   return Response.json(
@@ -26,6 +28,7 @@ export async function GET() {
       status,
       version,
       db,
+      dbFingerprint,
       env: env.NODE_ENV,
     },
     { status: db === 'connected' ? 200 : 503 },

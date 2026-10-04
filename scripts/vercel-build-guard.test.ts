@@ -37,6 +37,17 @@ describe('vercel-build.sh migrate branches', () => {
     expect(migrateCommandCount).toBe(2)
   })
 
+  it('runs preview isolation check before preview migrate', () => {
+    expect(vercelBuildScript).toMatch(
+      /preview\)[\s\S]*node scripts\/check-preview-db\.mjs[\s\S]*payload migrate/,
+    )
+  })
+
+  it('does not run preview isolation check on production', () => {
+    const productionBlock = vercelBuildScript.split('production)')[1]?.split(';;')[0] ?? ''
+    expect(productionBlock).not.toMatch(/check-preview-db/)
+  })
+
   it('still runs pnpm build after migrate branches', () => {
     expect(vercelBuildScript).toMatch(/pnpm run build/)
   })
