@@ -23,7 +23,7 @@ export const staffOnly: Access = ({ req: { user } }) => isStaff(user as AppUser)
 export const adminPanelAccess = ({ req: { user } }: AccessArgs): boolean =>
   isStaff(user as AppUser)
 
-export const staffOrSelfUser: Access = ({ req: { user }, id }) => {
+export const staffOrSelfUser: Access = ({ req: { user }, id: _id }) => {
   const u = user as AppUser
   if (!u) return false
   if (isStaff(u)) return true

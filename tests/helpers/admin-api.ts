@@ -193,17 +193,6 @@ export async function sweepSmokeTestArtifacts(request: APIRequestContext) {
   }
 }
 
-export type QuoteRestoreSnapshot = {
-  status?: string
-  expiresAt?: string
-  convertedOrder: number | null
-}
-
-export type QuoteRestoreState = {
-  quoteId: number
-  snapshot: QuoteRestoreSnapshot
-}
-
 export async function fetchSeedQuote(request: APIRequestContext, quoteNumber: string) {
   const headers = await adminJwtHeaders(request)
   const res = await request.get(
@@ -222,32 +211,4 @@ export async function fetchSeedQuote(request: APIRequestContext, quoteNumber: st
   const doc = body.docs[0]
   if (!doc) throw new Error(`Quote ${quoteNumber} not found`)
   return { headers, doc }
-}
-
-export async function patchQuote(
-  request: APIRequestContext,
-  quoteId: number,
-  data: Record<string, unknown>,
-  headers?: Awaited<ReturnType<typeof adminJwtHeaders>>,
-) {
-  const h = headers ?? (await adminJwtHeaders(request))
-  return request.patch(`/api/quotes/${quoteId}`, { headers: h, data })
-}
-
-export async function restoreQuote(
-  request: APIRequestContext,
-  holder: { restore: QuoteRestoreState | null },
-): Promise<void> {
-  const pending = holder.restore
-  if (!pending) return
-  const headers = await adminJwtHeaders(request)
-  const res = await request.patch(`/api/quotes/${pending.quoteId}`, {
-    headers,
-    data: pending.snapshot,
-  })
-  if (!res.ok()) {
-    const body = await res.text()
-    throw new Error(`Quote restore failed: ${res.status()} ${body}`)
-  }
-  holder.restore = null
 }

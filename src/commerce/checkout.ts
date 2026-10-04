@@ -302,6 +302,14 @@ export async function convertQuoteToOrder(
 
       assertQuoteEligible(freshQuote, deps.companyId)
 
+      const guardQuote = await deps.payload.findByID({
+        collection: 'quotes',
+        id: input.quoteId,
+        req,
+        overrideAccess: true,
+      })
+      assertQuoteEligible(guardQuote, deps.companyId)
+
       const lines = (freshQuote.lines ?? []).map((line) => ({
         sku: line.sku,
         variant: typeof line.variant === 'object' ? line.variant?.id : line.variant,
@@ -318,6 +326,15 @@ export async function convertQuoteToOrder(
         shipTo: input.shipTo,
         lines,
       })
+
+      const afterOrderQuote = await deps.payload.findByID({
+        collection: 'quotes',
+        id: input.quoteId,
+        req,
+        overrideAccess: true,
+      })
+      assertQuoteEligible(afterOrderQuote, deps.companyId)
+
       await deps.payload.update({
         collection: 'quotes',
         id: input.quoteId,
@@ -332,6 +349,9 @@ export async function convertQuoteToOrder(
     } catch (err) {
       if (transactionID != null) {
         await deps.payload.db.rollbackTransaction(transactionID)
+      }
+      if (err instanceof QuoteTransitionConflictError) {
+        throw err
       }
       if ((isOrderNumberCollision(err) || isCartBusyCause(err)) && attempt < 4) continue
 

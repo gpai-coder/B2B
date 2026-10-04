@@ -1,6 +1,6 @@
 import type { Payload, PayloadRequest } from 'payload'
 
-import { lockAndLoadQuoteForUpdate, setQuoteClientLines, setQuoteClientStatus } from '@/lib/quotes/quote-workflow'
+import { setQuoteClientLines, setQuoteClientStatus } from '@/lib/quotes/quote-workflow'
 import { withPayloadTransaction } from '@/lib/orders/payload-transaction'
 
 export async function staffQuoteUpdate(

@@ -15,7 +15,6 @@ import type {
   CommerceOrder,
   CommerceQuote,
   CommerceService,
-  CreateDraftOrderInput,
   PriceQuote,
   PricedCartLine,
 } from './types'
@@ -110,12 +109,6 @@ export function createPostgresCommerceService(
   const requireVendorForCompany = (companyId: string): User => {
     const user = requireAuthenticatedVendor()
     assertCompanyMatchesUser(user, companyId)
-    assertApprovedVendorUser(user)
-    return user
-  }
-
-  const requireApprovedVendor = (): User => {
-    const user = requireAuthenticatedVendor()
     assertApprovedVendorUser(user)
     return user
   }

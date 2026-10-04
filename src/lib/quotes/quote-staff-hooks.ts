@@ -254,6 +254,7 @@ export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     const clientStatus = (
       takeQuoteClientStatus(args.req) ?? String(args.originalDoc?.status ?? 'draft')
     ) as QuoteStatus
+
     if (clientStatus !== lockedStatus) {
       throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
     }
@@ -281,6 +282,11 @@ export const quoteStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
       }
       assertValidQuoteStatusTransition(lockedStatus, nextStatus)
       setQuoteTransitionFromStatus(args.req, lockedStatus)
+    } else if (
+      fieldPresent(data, 'status') &&
+      (nextStatus === 'withdrawn' || nextStatus === 'expired')
+    ) {
+      throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
     }
   } catch (err) {
     if (err instanceof QuoteWorkflowTransactionError) {

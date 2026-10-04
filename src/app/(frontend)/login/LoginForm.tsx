@@ -24,16 +24,12 @@ export function LoginForm() {
         body: JSON.stringify({ email, password }),
       })
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as {
-          message?: string
-          errors?: Array<{ message?: string }>
-        }
-        throw new Error(body.message ?? body.errors?.[0]?.message ?? 'Login failed')
+        throw new Error('Invalid email or password.')
       }
       router.push(next)
       router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+    } catch {
+      setError('Invalid email or password.')
     } finally {
       setLoading(false)
     }

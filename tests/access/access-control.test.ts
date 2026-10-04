@@ -7,10 +7,8 @@ import { createPayloadReq } from '@/lib/payload-req'
 
 describe('access control', () => {
   let pacificUserId: number
-  let bayUserId: number
   let pacificCompanyId: number
   let bayCompanyId: number
-  let pacificQuoteId: number
   let pacificOrderId: number
   let bayQuoteId: number
   let bayOrderId: number
@@ -40,22 +38,7 @@ describe('access control', () => {
       limit: 1,
       overrideAccess: true,
     })
-    const bayUser = await payload.find({
-      collection: 'users',
-      where: { email: { equals: process.env.SEED_VENDOR_B_EMAIL ?? 'buyer@bay-fixtures.local' } },
-      limit: 1,
-      overrideAccess: true,
-    })
     pacificUserId = pacificUser.docs[0]!.id
-    bayUserId = bayUser.docs[0]!.id
-
-    const quote = await payload.find({
-      collection: 'quotes',
-      where: { quoteNumber: { equals: 'Q-2026-0001' } },
-      limit: 1,
-      overrideAccess: true,
-    })
-    pacificQuoteId = quote.docs[0]!.id
 
     const order = await payload.create({
       collection: 'orders',

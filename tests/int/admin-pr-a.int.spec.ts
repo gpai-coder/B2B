@@ -11,7 +11,6 @@ import { withPayloadTransaction } from '@/lib/orders/payload-transaction'
 import {
   assertValidStatusTransition,
   OrderTransitionConflictError,
-  OrderWorkflowError,
   setOrderClientStatus,
   type OrderStatus,
 } from '@/lib/orders/order-workflow'

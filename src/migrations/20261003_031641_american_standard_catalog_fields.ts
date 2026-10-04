@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_products_documents_doc_type" AS ENUM('spec-sheet', 'install-instructions', 'parts-diagram', 'cad-2d', 'revit');
   CREATE TYPE "public"."enum_products_catalog_category" AS ENUM('bathroom-faucet', 'kitchen-faucet', 'toilet');
@@ -77,7 +77,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   DROP TYPE "public"."enum_product_variants_documents_doc_type";`)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
    CREATE TYPE "public"."enum_product_variants_documents_doc_type" AS ENUM('spec-sheet', 'install-instructions', 'parts-diagram');
   CREATE TABLE "product_variants_documents" (

@@ -8,7 +8,6 @@ import { createPayloadReq } from '@/lib/payload-req'
 import {
   assertValidQuoteStatusTransition,
   QuoteTransitionConflictError,
-  setQuoteClientStatus,
 } from '@/lib/quotes/quote-workflow'
 import { staffQuoteUpdate } from '@/lib/quotes/staff-quote-update'
 
@@ -321,9 +320,8 @@ describe('staff quote builder (PR B)', () => {
 
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const draft = await createDraftQuote(`race-${round}`)
-        const staff = await staffReq()
-        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
-        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'sent' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'accepted' })
 
         const staffUser = await payload.findByID({
           collection: 'users',
@@ -341,7 +339,6 @@ describe('staff quote builder (PR B)', () => {
           ...staffReqs.map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'withdrawn' })),
         ])
 
-        const ok = results.filter((r) => r.status === 'fulfilled')
         expectQuoteRaceResults(results, POOL_MAX)
 
         const fresh = await payload.findByID({ collection: 'quotes', id: draft.id, overrideAccess: true })
@@ -383,9 +380,8 @@ describe('staff quote builder (PR B)', () => {
 
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const draft = await createDraftQuote(`race-exp-${round}`)
-        const staff = await staffReq()
-        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
-        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'sent' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'accepted' })
 
         const staffUser = await payload.findByID({
           collection: 'users',
@@ -435,9 +431,8 @@ describe('staff quote builder (PR B)', () => {
 
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const draft = await createDraftQuote(`race-dbl-${round}`)
-        const staff = await staffReq()
-        await staffPayloadUpdate(staff, draft.id, { status: 'sent' })
-        await staffPayloadUpdate(staff, draft.id, { status: 'accepted' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'sent' })
+        await staffPayloadUpdate(await staffReq(), draft.id, { status: 'accepted' })
         const key = `race-dbl-key-${round}-${Date.now()}-${Math.random().toString(36).slice(2)}`
 
         const results = await Promise.allSettled(

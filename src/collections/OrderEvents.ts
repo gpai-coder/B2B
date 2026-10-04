@@ -1,5 +1,4 @@
-import type { CollectionConfig, Endpoint } from 'payload'
-import { APIError } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 import { adminPanelAccess, companyReadAccess } from '../access'
 import { assertOrderEventCreateIsTrusted } from '@/lib/orders/order-events'

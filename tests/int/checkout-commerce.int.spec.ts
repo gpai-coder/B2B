@@ -24,7 +24,6 @@ describe('checkout commerce', () => {
   let pacificCompanyId: string
   let pacificUserId: number
   let bayCompanyId: string
-  let bayUserId: number
 
   beforeAll(async () => {
     if (!process.env.DATABASE_URL) return
@@ -49,14 +48,7 @@ describe('checkout commerce', () => {
       limit: 1,
       overrideAccess: true,
     })
-    const bayUser = await payload.find({
-      collection: 'users',
-      where: { email: { equals: process.env.SEED_VENDOR_B_EMAIL ?? 'buyer@bay-fixtures.local' } },
-      limit: 1,
-      overrideAccess: true,
-    })
     pacificUserId = pacificUser.docs[0]!.id
-    bayUserId = bayUser.docs[0]!.id
   })
 
   afterAll(async () => {

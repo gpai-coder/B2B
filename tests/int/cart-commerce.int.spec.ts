@@ -15,7 +15,6 @@ describe('cart commerce', () => {
   let pacificUserId: number
   let bayUserId: number
   let pacificCompanyId: string
-  let bayCompanyId: string
 
   beforeAll(async () => {
     if (!process.env.DATABASE_URL) return
@@ -27,14 +26,7 @@ describe('cart commerce', () => {
       limit: 1,
       overrideAccess: true,
     })
-    const bay = await payload.find({
-      collection: 'companies',
-      where: { name: { equals: 'Bay Area Fixtures' } },
-      limit: 1,
-      overrideAccess: true,
-    })
     pacificCompanyId = String(pacific.docs[0]!.id)
-    bayCompanyId = String(bay.docs[0]!.id)
 
     const pacificUser = await payload.find({
       collection: 'users',

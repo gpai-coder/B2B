@@ -1,12 +1,10 @@
 import { getPayload } from 'payload'
 
-import { getCommerce } from '@/commerce'
-import config from '@/payload.config'
 import { resolveCatalogDefaultPricingForProducts } from '@/lib/catalog/catalog-default-pricing'
+import config from '@/payload.config'
 import { getSearchProvider } from '@/lib/search'
 import { applyPostPricingSearch } from '@/lib/search/search-pagination'
 import { parseSearchRequestParams } from '@/lib/search/validate'
-import { createPayloadReq } from '@/lib/payload-req'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 
 export const dynamic = 'force-dynamic'
