@@ -32,6 +32,9 @@ export const OrderEvents: CollectionConfig = {
       relationTo: 'orders',
       required: true,
       index: true,
+      admin: {
+        description: 'Events are removed when the order is deleted.',
+      },
     },
     {
       name: 'company',
