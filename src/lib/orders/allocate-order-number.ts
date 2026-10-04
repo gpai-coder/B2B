@@ -1,6 +1,7 @@
 import type { Payload, PayloadRequest } from 'payload'
 
 import { isUniqueViolation } from '@/commerce/db-errors'
+import { runBoundedUniqueRetry } from '@/lib/db/bounded-unique-retry'
 
 export function isOrderNumberCollision(err: unknown): boolean {
   if (!isUniqueViolation(err)) return false
@@ -18,8 +19,7 @@ export function isOrderNumberCollision(err: unknown): boolean {
   return false
 }
 
-/** Collision-safe order number allocation (same algorithm as checkout). */
-export async function allocateOrderNumber(payload: Payload, req: PayloadRequest): Promise<string> {
+async function pickUnusedOrderNumber(payload: Payload, req: PayloadRequest): Promise<string> {
   const year = new Date().getFullYear()
   for (let attempt = 0; attempt < 12; attempt++) {
     const candidate = `ORD-${year}-${String(Math.floor(Math.random() * 900000) + 100000)}`
@@ -33,4 +33,22 @@ export async function allocateOrderNumber(payload: Payload, req: PayloadRequest)
     if (!existing.docs[0]) return candidate
   }
   throw new Error('Could not allocate order number.')
+}
+
+/** Collision-safe order number allocation (same algorithm as checkout). */
+export async function allocateOrderNumber(payload: Payload, req: PayloadRequest): Promise<string> {
+  return pickUnusedOrderNumber(payload, req)
+}
+
+/** Order number allocation with bounded retry on unique violation (fresh transaction per attempt). */
+export async function allocateOrderNumberWithRetry(
+  payload: Payload,
+  req: PayloadRequest,
+): Promise<string> {
+  return runBoundedUniqueRetry(
+    payload,
+    req,
+    () => pickUnusedOrderNumber(payload, req),
+    { isCollision: isOrderNumberCollision },
+  )
 }

@@ -140,6 +140,32 @@ export const staffFieldAccessUnlessFrozen: FieldAccess = (args) => {
   return true
 }
 
+/** Staff may edit quote builder fields only while the quote is still a draft. */
+export const staffFieldAccessUnlessQuoteFrozen: FieldAccess = (args) => {
+  if (!staffFieldAccess(args)) return false
+  if (args.id == null && args.doc == null) return true
+  const storedStatus = args.doc?.status
+  if (storedStatus != null && storedStatus !== 'draft') return false
+  return true
+}
+
+export const vendorQuoteReadAccess =
+  (companyField = 'company'): Access =>
+  ({ req: { user } }) => {
+    const u = user as AppUser
+    if (!u) return false
+    if (isStaff(u)) return true
+    if (u.role !== 'vendor-buyer' || !vendorBuyerIsApproved(u)) return false
+    const companyId = getUserCompanyId(u)
+    if (!companyId) return false
+    return {
+      and: [
+        { [companyField]: { equals: companyId } },
+        { status: { in: ['sent', 'accepted', 'expired'] } },
+      ],
+    }
+  }
+
 export async function assertVendorCanLogin(req: PayloadRequest, user: AppUser): Promise<void> {
   if (user.role !== 'vendor-buyer') return
   if (!vendorBuyerIsApproved(user)) {

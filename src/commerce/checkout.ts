@@ -2,7 +2,7 @@ import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
-import { allocateOrderNumber, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
+import { allocateOrderNumberWithRetry, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
 
 import type { CartMutationContext } from './cart-serialized'
 import { lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
@@ -127,7 +127,7 @@ async function createSubmittedOrderDoc(
   req: PayloadRequest,
   data: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const orderNumber = await allocateOrderNumber(deps.payload, req)
+  const orderNumber = await allocateOrderNumberWithRetry(deps.payload, req)
   const created = await deps.payload.create({
     collection: 'orders',
     data: { ...data, orderNumber } as never,
