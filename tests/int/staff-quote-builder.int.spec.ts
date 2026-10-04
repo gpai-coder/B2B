@@ -330,8 +330,7 @@ describe('staff quote builder (PR B)', () => {
           id: staffUserId,
           overrideAccess: true,
         })
-        const staffReqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
-        setQuoteClientStatus(staffReqs[0]!, 'accepted')
+        const staffReqs = Array.from({ length: POOL_MAX - 1 }, () => createPayloadReq(payload, staffUser))
 
         const results = await Promise.allSettled([
           commerce.convertQuoteToOrder(String(pacificCompanyId), String(draft.id), {
@@ -339,8 +338,7 @@ describe('staff quote builder (PR B)', () => {
             shipTo,
             idempotencyKey: `race-convert-${round}-${Date.now()}`,
           }),
-          staffQuoteUpdate(payload, staffReqs[0]!, draft.id, { status: 'withdrawn' }),
-          ...staffReqs.slice(1).map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'withdrawn' })),
+          ...staffReqs.map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'withdrawn' })),
         ])
 
         const ok = results.filter((r) => r.status === 'fulfilled')
@@ -394,7 +392,7 @@ describe('staff quote builder (PR B)', () => {
           id: staffUserId,
           overrideAccess: true,
         })
-        const staffReqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+        const staffReqs = Array.from({ length: POOL_MAX - 1 }, () => createPayloadReq(payload, staffUser))
 
         const results = await Promise.allSettled([
           commerce.convertQuoteToOrder(String(pacificCompanyId), String(draft.id), {
@@ -402,8 +400,7 @@ describe('staff quote builder (PR B)', () => {
             shipTo,
             idempotencyKey: `race-exp-convert-${round}-${Date.now()}`,
           }),
-          staffQuoteUpdate(payload, staffReqs[0]!, draft.id, { status: 'expired' }),
-          ...staffReqs.slice(1).map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'expired' })),
+          ...staffReqs.map((r) => staffQuoteUpdate(payload, r, draft.id, { status: 'expired' })),
         ])
 
         expectQuoteRaceResults(results, POOL_MAX)
