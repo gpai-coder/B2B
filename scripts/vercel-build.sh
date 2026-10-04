@@ -6,9 +6,15 @@ if [ "${VERCEL:-}" = "1" ] && [ -z "${VERCEL_ENV:-}" ]; then
   exit 1
 fi
 
-if [ "${VERCEL_ENV:-}" = "production" ]; then
-  echo "Running Payload migrations (production)…"
-  cross-env NODE_ENV=production PAYLOAD_DISABLE_PUSH=true NODE_OPTIONS=--no-deprecation payload migrate
-fi
+case "${VERCEL_ENV:-}" in
+  production)
+    echo "Running Payload migrations (production)…"
+    cross-env NODE_ENV=production PAYLOAD_DISABLE_PUSH=true NODE_OPTIONS=--no-deprecation payload migrate
+    ;;
+  preview)
+    echo "Running Payload migrations (preview)…"
+    cross-env NODE_ENV=production PAYLOAD_DISABLE_PUSH=true NODE_OPTIONS=--no-deprecation payload migrate
+    ;;
+esac
 
 pnpm run build
