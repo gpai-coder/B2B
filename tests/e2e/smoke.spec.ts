@@ -77,7 +77,7 @@ async function runSmokeShutdown(
 
 async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup) {
   if (!state.adminCookieHeader) return
-  const headers = { Cookie: state.adminCookieHeader, 'Content-Type': 'application/json' }
+  const headers = adminCookieHeaders(state.adminCookieHeader, { 'Content-Type': 'application/json' })
 
   const assertOk = async (
     res: { ok: () => boolean; status: () => number; text: () => Promise<string> },
@@ -220,7 +220,7 @@ test.describe('B2B foundations smoke', () => {
       expect(patchVariant.ok()).toBeTruthy()
 
       const pacificLists = await request.get('/api/price-lists?where[kind][equals]=company&limit=5', {
-        headers: { Cookie: cleanup.adminCookieHeader },
+        headers: adminCookieHeaders(cleanup.adminCookieHeader),
       })
       expect(pacificLists.ok()).toBeTruthy()
       const listBody = (await pacificLists.json()) as {
