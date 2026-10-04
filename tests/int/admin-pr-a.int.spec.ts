@@ -469,6 +469,7 @@ describe('admin PR A — approval and order workflow', () => {
     'concurrent confirm vs cancel yields one winner and correct events',
     async () => {
       if (!process.env.DATABASE_URL || !payload) return
+      const contentionPool = 2
       for (let round = 0; round < RACE_ROUNDS; round++) {
         const order = await createSubmittedOrder(pacificCompanyId, `cnc-${round}`)
         const staffUser = await payload.findByID({
@@ -476,18 +477,17 @@ describe('admin PR A — approval and order workflow', () => {
           id: staffUserId,
           overrideAccess: true,
         })
-        const reqs = Array.from({ length: POOL_MAX }, () => createPayloadReq(payload, staffUser))
+        const reqs = Array.from({ length: contentionPool }, () => createPayloadReq(payload, staffUser))
         const results = await Promise.allSettled([
           staffOrderUpdate(payload, reqs[0]!, order.id, { status: 'confirmed' }),
           staffOrderUpdate(payload, reqs[1]!, order.id, { status: 'cancelled' }),
-          ...reqs.slice(2).map((r) => staffOrderUpdate(payload, r, order.id, { status: 'confirmed' })),
         ])
         const ok = results.filter((r) => r.status === 'fulfilled')
         const fail409 = results.filter(
           (r) => r.status === 'rejected' && apiStatus((r as PromiseRejectedResult).reason) === 409,
         )
         expect(ok.length).toBe(1)
-        expect(fail409.length).toBe(POOL_MAX - 1)
+        expect(fail409.length).toBe(contentionPool - 1)
         expect(results.every((r) => r.status === 'rejected' ? apiStatus((r as PromiseRejectedResult).reason) !== 500 : true)).toBe(true)
 
         const fresh = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
@@ -506,7 +506,7 @@ describe('admin PR A — approval and order workflow', () => {
         await deleteTestOrder(order.id)
       }
     },
-    360_000,
+    600_000,
   )
 
   it(

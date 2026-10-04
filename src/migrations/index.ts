@@ -12,7 +12,9 @@ import * as migration_20261003_160555 from './20261003_160555';
 import * as migration_20261003_200000_ship_to_addresses from './20261003_200000_ship_to_addresses';
 import * as migration_20261003_220000_ship_to_default_index from './20261003_220000_ship_to_default_index';
 import * as migration_20261004_120000_admin_pr_a from './20261004_120000_admin_pr_a';
+import * as migration_20261004_150000_staff_quote_builder from './20261004_150000_staff_quote_builder';
 import * as migration_20261005_order_events_fk_restrict from './20261005_order_events_fk_restrict';
+import * as migration_20261006_010000_quote_line_unit_price_optional from './20261006_010000_quote_line_unit_price_optional';
 
 export const migrations = [
   {
@@ -86,8 +88,18 @@ export const migrations = [
     name: '20261004_120000_admin_pr_a',
   },
   {
+    up: migration_20261004_150000_staff_quote_builder.up,
+    down: migration_20261004_150000_staff_quote_builder.down,
+    name: '20261004_150000_staff_quote_builder',
+  },
+  {
     up: migration_20261005_order_events_fk_restrict.up,
     down: migration_20261005_order_events_fk_restrict.down,
     name: '20261005_order_events_fk_restrict',
+  },
+  {
+    up: migration_20261006_010000_quote_line_unit_price_optional.up,
+    down: migration_20261006_010000_quote_line_unit_price_optional.down,
+    name: '20261006_010000_quote_line_unit_price_optional',
   },
 ];

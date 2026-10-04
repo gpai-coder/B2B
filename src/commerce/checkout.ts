@@ -2,10 +2,11 @@ import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
-import { allocateOrderNumber, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
+import { allocateOrderNumberWithRetry, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
+import { QuoteTransitionConflictError } from '@/lib/quotes/quote-workflow'
 
 import type { CartMutationContext } from './cart-serialized'
-import { lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
+import { isCartBusyCause, lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
 import { isUniqueViolation } from './db-errors'
 import {
   assertValidCartQuantity,
@@ -86,11 +87,11 @@ function assertQuoteEligible(
     throw new Error('Quote not found')
   }
   if (quote.status !== 'accepted') {
-    throw new Error('Quote not found')
+    throw new QuoteTransitionConflictError('Quote is no longer available for conversion.')
   }
   const expires = new Date(String(quote.expiresAt))
   if (expires.getTime() < Date.now()) {
-    throw new Error('Quote not found')
+    throw new QuoteTransitionConflictError('Quote is no longer available for conversion.')
   }
 }
 
@@ -127,7 +128,7 @@ async function createSubmittedOrderDoc(
   req: PayloadRequest,
   data: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const orderNumber = await allocateOrderNumber(deps.payload, req)
+  const orderNumber = await allocateOrderNumberWithRetry(deps.payload, req)
   const created = await deps.payload.create({
     collection: 'orders',
     data: { ...data, orderNumber } as never,
@@ -262,7 +263,7 @@ export async function convertQuoteToOrder(
   const replay = await findOrderByCompanyIdempotency(deps, key)
   if (replay) return replay
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 5; attempt++) {
     const req = deps.createReq()
     let transactionID: string | number | null | undefined
     try {
@@ -332,9 +333,55 @@ export async function convertQuoteToOrder(
       if (transactionID != null) {
         await deps.payload.db.rollbackTransaction(transactionID)
       }
-      if (isOrderNumberCollision(err) && attempt < 2) continue
+      if ((isOrderNumberCollision(err) || isCartBusyCause(err)) && attempt < 4) continue
+
+      const replayAfterErr = await findOrderByCompanyIdempotency(deps, key)
+      if (replayAfterErr) {
+        const quoteForReplay = await deps.payload.findByID({
+          collection: 'quotes',
+          id: input.quoteId,
+          overrideAccess: true,
+        })
+        assertQuoteEligible(quoteForReplay, deps.companyId)
+        return replayAfterErr
+      }
+
+      const quoteAfterErr = await deps.payload.findByID({
+        collection: 'quotes',
+        id: input.quoteId,
+        overrideAccess: true,
+      })
+      if (quoteAfterErr.convertedOrder) {
+        assertQuoteEligible(quoteAfterErr, deps.companyId)
+        const existingId =
+          typeof quoteAfterErr.convertedOrder === 'object'
+            ? String((quoteAfterErr.convertedOrder as { id: number }).id)
+            : String(quoteAfterErr.convertedOrder)
+        const order = await deps.payload.findByID({
+          collection: 'orders',
+          id: existingId,
+          overrideAccess: true,
+        })
+        return deps.mapOrder(order as unknown as Record<string, unknown>)
+      }
+
+      if (isCartBusyCause(err)) {
+        throw new QuoteTransitionConflictError('Quote was updated concurrently; refresh and retry.')
+      }
+
       return handleCheckoutUniqueViolation(deps, err, key, po.poNumber)
     }
+  }
+
+  const replayFinal = await findOrderByCompanyIdempotency(deps, key)
+  if (replayFinal) {
+    const quoteForReplay = await deps.payload.findByID({
+      collection: 'quotes',
+      id: input.quoteId,
+      overrideAccess: true,
+    })
+    assertQuoteEligible(quoteForReplay, deps.companyId)
+    return replayFinal
   }
 
   throw new Error('Could not complete quote conversion.')

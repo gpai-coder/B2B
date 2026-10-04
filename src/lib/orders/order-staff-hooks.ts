@@ -7,7 +7,7 @@ import type {
 import { APIError } from 'payload'
 import type { User } from '@/payload-types'
 import { isStaff } from '@/access'
-import { allocateOrderNumber } from '@/lib/orders/allocate-order-number'
+import { allocateOrderNumberWithRetry } from '@/lib/orders/allocate-order-number'
 import {
   assertFrozenOrderFieldsUnchanged,
   assertValidStatusTransition,
@@ -182,7 +182,7 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     if (lockedStatus === 'draft' && nextStatus === 'submitted') {
       const incomingNumber = fieldPresent(data, 'orderNumber') ? data.orderNumber : locked.orderNumber
       if (emptyEquivalent(incomingNumber, null) || String(incomingNumber ?? '').trim() === '') {
-        data = { ...data, orderNumber: await allocateOrderNumber(args.req.payload, args.req) }
+        data = { ...data, orderNumber: await allocateOrderNumberWithRetry(args.req.payload, args.req) }
       }
     }
 

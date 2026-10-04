@@ -378,6 +378,10 @@ export async function findOrCreateQuote(
     overrideAccess: true,
   })
   if (existing.docs[0]) {
+    const doc = existing.docs[0]
+    if (String(doc.status ?? 'draft') !== 'draft') {
+      return doc
+    }
     await payload.update({
       collection: 'quotes',
       id: existing.docs[0].id,

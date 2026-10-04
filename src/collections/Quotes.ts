@@ -1,6 +1,18 @@
 import type { CollectionConfig } from 'payload'
 
-import { adminPanelAccess, companyReadAccess, staffOnly } from '../access'
+import {
+  adminPanelAccess,
+  staffFieldAccess,
+  staffFieldAccessUnlessQuoteFrozen,
+  staffOnly,
+  vendorQuoteReadAccess,
+} from '../access'
+import {
+  quoteStaffAfterError,
+  quoteStaffBeforeChange,
+  quoteStaffBeforeOperation,
+  quoteStaffBeforeValidate,
+} from '@/lib/quotes/quote-staff-hooks'
 
 export const Quotes: CollectionConfig = {
   slug: 'quotes',
@@ -10,10 +22,16 @@ export const Quotes: CollectionConfig = {
   },
   access: {
     admin: adminPanelAccess,
-    read: companyReadAccess(),
+    read: vendorQuoteReadAccess(),
     create: staffOnly,
     update: staffOnly,
     delete: staffOnly,
+  },
+  hooks: {
+    beforeOperation: [quoteStaffBeforeOperation],
+    beforeValidate: [quoteStaffBeforeValidate],
+    beforeChange: [quoteStaffBeforeChange],
+    afterError: [quoteStaffAfterError],
   },
   fields: [
     {
@@ -21,31 +39,46 @@ export const Quotes: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      access: { update: staffFieldAccessUnlessQuoteFrozen },
+      admin: {
+        readOnly: true,
+        description: 'Generated on create if empty.',
+      },
     },
     {
       name: 'company',
       type: 'relationship',
       relationTo: 'companies',
       required: true,
+      access: { update: staffFieldAccessUnlessQuoteFrozen },
     },
     {
       name: 'status',
       type: 'select',
       required: true,
       defaultValue: 'draft',
+      access: { update: staffFieldAccess },
       options: [
         { label: 'Draft', value: 'draft' },
         { label: 'Sent', value: 'sent' },
         { label: 'Accepted', value: 'accepted' },
         { label: 'Expired', value: 'expired' },
-        { label: 'Cancelled', value: 'cancelled' },
+        { label: 'Withdrawn', value: 'withdrawn' },
+        { label: 'Cancelled (legacy)', value: 'cancelled' },
       ],
     },
     {
       name: 'expiresAt',
       type: 'date',
       required: true,
+      access: { update: staffFieldAccessUnlessQuoteFrozen },
       admin: { date: { pickerAppearance: 'dayOnly' } },
+    },
+    {
+      name: 'notes',
+      type: 'textarea',
+      access: { update: staffFieldAccess },
+      admin: { description: 'Internal or customer-facing notes (editable after send).' },
     },
     {
       name: 'convertedOrder',
@@ -57,6 +90,7 @@ export const Quotes: CollectionConfig = {
       name: 'lines',
       type: 'array',
       required: true,
+      access: { update: staffFieldAccessUnlessQuoteFrozen },
       fields: [
         {
           name: 'sku',
@@ -77,7 +111,6 @@ export const Quotes: CollectionConfig = {
         {
           name: 'unitPrice',
           type: 'number',
-          required: true,
           min: 0,
         },
       ],

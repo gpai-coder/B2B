@@ -3,11 +3,9 @@ import path from 'path'
 
 import {
   fetchSeedQuote,
-  patchQuote,
-  restoreQuote,
   sweepSmokeTestArtifacts,
-  type QuoteRestoreState,
 } from '../helpers/admin-api'
+import { isLocalBaseUrl } from '../helpers/e2e-env'
 import { loginVendor } from '../helpers/vendor-login'
 
 const SEED_HERO_SLUG =
@@ -36,8 +34,9 @@ type SmokeCleanup = {
   productId?: number
   mediaId?: number
   variantId?: number
-  orderId?: number
   pacificListId?: number
+  tempQuoteId?: number
+  tempOrderId?: number
 }
 
 async function assertNoApplicationError(page: Page) {
@@ -55,14 +54,21 @@ function isClosedRequestError(err: unknown): boolean {
 async function runSmokeShutdown(
   request: APIRequestContext,
   cleanup: SmokeCleanup,
-  quoteRestoreHolder: { restore: QuoteRestoreState | null },
   options: { ignoreClosedRequest?: boolean } = {},
 ) {
   const errors: unknown[] = []
-  try {
-    await restoreQuote(request, quoteRestoreHolder)
-  } catch (err) {
-    errors.push(err)
+  if (isLocalBaseUrl() && cleanup.tempQuoteId) {
+    try {
+      const { purgeQuoteConversionTestData, destroyTestQuotePayload } = await import(
+        '../helpers/purge-test-quote'
+      )
+      await purgeQuoteConversionTestData(cleanup.tempQuoteId, cleanup.tempOrderId ?? null)
+      await destroyTestQuotePayload()
+      cleanup.tempQuoteId = undefined
+      cleanup.tempOrderId = undefined
+    } catch (err) {
+      errors.push(err)
+    }
   }
   try {
     await runSmokeTeardown(request, cleanup)
@@ -109,14 +115,6 @@ async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup)
     }
   }
 
-  if (state.orderId && !Number.isNaN(state.orderId)) {
-    await assertOk(
-      await request.delete(`/api/orders/${state.orderId}`, { headers }),
-      'delete order',
-      true,
-    )
-    state.orderId = undefined
-  }
   if (state.variantId) {
     await assertOk(
       await request.delete(`/api/product-variants/${state.variantId}`, { headers }),
@@ -145,14 +143,13 @@ async function runSmokeTeardown(request: APIRequestContext, state: SmokeCleanup)
 
 test.describe('B2B foundations smoke', () => {
   const cleanup: SmokeCleanup = { adminCookieHeader: '' }
-  const quoteRestoreHolder: { restore: QuoteRestoreState | null } = { restore: null }
 
   test.beforeAll(async ({ request }) => {
     await sweepSmokeTestArtifacts(request)
   })
 
   test.afterAll(async ({ request }) => {
-    await runSmokeShutdown(request, cleanup, quoteRestoreHolder)
+    await runSmokeShutdown(request, cleanup)
   })
 
   test('admin creates catalog item with PDF; vendor sees company price; quote order flow', async ({
@@ -307,44 +304,70 @@ test.describe('B2B foundations smoke', () => {
       const mediaRes = await request.get('/api/vendor/media/1')
       expect(mediaRes.status()).toBeGreaterThanOrEqual(401)
 
-      const { headers: adminHeaders, doc: seedQuote } = await fetchSeedQuote(request, SEED_QUOTE_NUMBER)
-      const converted =
-        seedQuote.convertedOrder == null
-          ? null
-          : typeof seedQuote.convertedOrder === 'object'
-            ? seedQuote.convertedOrder.id
-            : seedQuote.convertedOrder
-      quoteRestoreHolder.restore = {
-        quoteId: seedQuote.id,
-        snapshot: {
-          status: seedQuote.status,
-          expiresAt: seedQuote.expiresAt,
-          convertedOrder: converted ?? null,
-        },
+      const localQuoteFlow = isLocalBaseUrl()
+      if (localQuoteFlow) {
+        const pacificCo = await request.get(
+          `/api/companies?where[name][equals]=${encodeURIComponent('Pacific Plumbing Supply')}&limit=1`,
+          { headers: adminCookieHeaders(cleanup.adminCookieHeader) },
+        )
+        const pacificBody = (await pacificCo.json()) as { docs: Array<{ id: number }> }
+        const companyId = pacificBody.docs[0]?.id
+        expect(companyId).toBeTruthy()
+
+        const heroVariantRes = await request.get(
+          `/api/product-variants?where[sku][equals]=${encodeURIComponent(SEED_HERO_SKU)}&limit=1`,
+          { headers: adminCookieHeaders(cleanup.adminCookieHeader) },
+        )
+        const heroVariantBody = (await heroVariantRes.json()) as { docs: Array<{ id: number }> }
+        const heroVariantId = heroVariantBody.docs[0]?.id
+        expect(heroVariantId).toBeTruthy()
+
+        const createQuote = await request.post('/api/quotes', {
+          headers: adminCookieHeaders(cleanup.adminCookieHeader, { 'Content-Type': 'application/json' }),
+          data: {
+            company: companyId,
+            status: 'draft',
+            lines: [{ sku: SEED_HERO_SKU, variant: heroVariantId, quantity: 1 }],
+          },
+        })
+        expect(createQuote.ok()).toBeTruthy()
+        const quoteDoc = (await createQuote.json()) as { doc: { id: number; quoteNumber: string } }
+        cleanup.tempQuoteId = quoteDoc.doc.id
+        const tempQuoteNumber = quoteDoc.doc.quoteNumber
+        expect(tempQuoteNumber).not.toBe(SEED_QUOTE_NUMBER)
+
+        const sent = await request.patch(`/api/quotes/${cleanup.tempQuoteId}`, {
+          headers: adminCookieHeaders(cleanup.adminCookieHeader, { 'Content-Type': 'application/json' }),
+          data: { status: 'sent' },
+        })
+        expect(sent.ok()).toBeTruthy()
+        const accepted = await request.patch(`/api/quotes/${cleanup.tempQuoteId}`, {
+          headers: adminCookieHeaders(cleanup.adminCookieHeader, { 'Content-Type': 'application/json' }),
+          data: { status: 'accepted' },
+        })
+        expect(accepted.ok()).toBeTruthy()
+
+        await loginVendor(page, `/quotes/${encodeURIComponent(tempQuoteNumber)}/order`)
+        await assertNoApplicationError(page)
+        await expect(page.getByTestId('quote-order-page')).toBeVisible()
+        await page.getByTestId('submit-quote-order').click()
+        await page.waitForURL('**/orders/**', { timeout: 30_000 })
+        await assertNoApplicationError(page)
+        cleanup.tempOrderId = Number(page.url().split('/orders/')[1]?.split('?')[0])
+        await expect(page.getByTestId('order-submitted-banner')).toBeVisible()
+      } else {
+        const { doc: seedQuote } = await fetchSeedQuote(request, SEED_QUOTE_NUMBER)
+        expect(seedQuote.status).toBe('sent')
+
+        await loginVendor(page, `/quotes/${SEED_QUOTE_NUMBER}/order`)
+        await assertNoApplicationError(page)
+        await expect(page.getByTestId('quote-order-unavailable')).toHaveText(
+          'This quote is not available for ordering.',
+        )
+        await expect(page.getByTestId('submit-quote-order')).toHaveCount(0)
       }
-
-      const acceptRes = await patchQuote(
-        request,
-        seedQuote.id,
-        {
-          status: 'accepted',
-          convertedOrder: null,
-          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-        },
-        adminHeaders,
-      )
-      expect(acceptRes.ok()).toBeTruthy()
-
-      await page.goto(`/quotes/${SEED_QUOTE_NUMBER}/order`)
-      await assertNoApplicationError(page)
-      await expect(page.getByTestId('quote-order-page')).toBeVisible()
-      await page.getByTestId('submit-quote-order').click()
-      await page.waitForURL('**/orders/**', { timeout: 30_000 })
-      await assertNoApplicationError(page)
-      cleanup.orderId = Number(page.url().split('/orders/')[1]?.split('?')[0])
-      await expect(page.getByTestId('order-submitted-banner')).toBeVisible()
     } finally {
-      await runSmokeShutdown(request, cleanup, quoteRestoreHolder, { ignoreClosedRequest: true })
+      await runSmokeShutdown(request, cleanup, { ignoreClosedRequest: true })
     }
   })
 })

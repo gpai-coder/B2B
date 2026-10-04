@@ -36,7 +36,7 @@ function drizzleForTransaction(payload: Payload, txId: string | number) {
   return sessionDb
 }
 
-function isCartBusyCause(err: unknown): boolean {
+export function isCartBusyCause(err: unknown): boolean {
   if (!err || typeof err !== 'object') return false
   const record = err as Record<string, unknown>
   const code = record.code ?? (record.cause as Record<string, unknown> | undefined)?.code

@@ -443,16 +443,23 @@ export interface PriceList {
  */
 export interface Quote {
   id: number;
+  /**
+   * Generated on create if empty.
+   */
   quoteNumber: string;
   company: number | Company;
-  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled';
+  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'withdrawn' | 'cancelled';
   expiresAt: string;
+  /**
+   * Internal or customer-facing notes (editable after send).
+   */
+  notes?: string | null;
   convertedOrder?: (number | null) | Order;
   lines: {
     sku: string;
     variant?: (number | null) | ProductVariant;
     quantity: number;
-    unitPrice: number;
+    unitPrice?: number | null;
     id?: string | null;
   }[];
   updatedAt: string;
@@ -925,6 +932,7 @@ export interface QuotesSelect<T extends boolean = true> {
   company?: T;
   status?: T;
   expiresAt?: T;
+  notes?: T;
   convertedOrder?: T;
   lines?:
     | T
