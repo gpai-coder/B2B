@@ -335,7 +335,15 @@ export async function convertQuoteToOrder(
       if ((isOrderNumberCollision(err) || isCartBusyCause(err)) && attempt < 4) continue
 
       const replayAfterErr = await findOrderByCompanyIdempotency(deps, key)
-      if (replayAfterErr) return replayAfterErr
+      if (replayAfterErr) {
+        const quoteForReplay = await deps.payload.findByID({
+          collection: 'quotes',
+          id: input.quoteId,
+          overrideAccess: true,
+        })
+        assertQuoteEligible(quoteForReplay, deps.companyId)
+        return replayAfterErr
+      }
 
       const quoteAfterErr = await deps.payload.findByID({
         collection: 'quotes',
@@ -343,6 +351,7 @@ export async function convertQuoteToOrder(
         overrideAccess: true,
       })
       if (quoteAfterErr.convertedOrder) {
+        assertQuoteEligible(quoteAfterErr, deps.companyId)
         const existingId =
           typeof quoteAfterErr.convertedOrder === 'object'
             ? String((quoteAfterErr.convertedOrder as { id: number }).id)
@@ -360,7 +369,15 @@ export async function convertQuoteToOrder(
   }
 
   const replayFinal = await findOrderByCompanyIdempotency(deps, key)
-  if (replayFinal) return replayFinal
+  if (replayFinal) {
+    const quoteForReplay = await deps.payload.findByID({
+      collection: 'quotes',
+      id: input.quoteId,
+      overrideAccess: true,
+    })
+    assertQuoteEligible(quoteForReplay, deps.companyId)
+    return replayFinal
+  }
 
   throw new Error('Could not complete quote conversion.')
 }
