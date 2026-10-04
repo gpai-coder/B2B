@@ -1,7 +1,5 @@
 import Link from 'next/link'
 
-import '@/app/(frontend)/styles.css'
-
 export default function NotFound() {
   return (
     <div className="home">
