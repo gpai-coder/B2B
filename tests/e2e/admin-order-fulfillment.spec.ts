@@ -33,14 +33,25 @@ async function deleteOrderWithEvents(
   await request.delete(`/api/orders/${orderId}`, { headers })
 }
 
-async function selectPayloadSelect(page: import('@playwright/test').Page, fieldId: string, stepsDown: number) {
-  const field = page.locator(`#${fieldId}`)
+async function pickStatus(page: import('@playwright/test').Page, label: string) {
+  const field = page.locator('#field-status')
   await field.scrollIntoViewIfNeeded()
   await field.getByRole('combobox').click()
-  for (let i = 0; i < stepsDown; i++) {
-    await page.keyboard.press('ArrowDown')
-  }
-  await page.keyboard.press('Enter')
+  const menu = page.locator('div.rs__menu')
+  await expect(menu).toBeVisible()
+  await menu.locator('.rs__option').filter({ hasText: label }).click()
+}
+
+async function saveOrderDocument(page: import('@playwright/test').Page, orderId: number) {
+  const saveButton = page.getByRole('button', { name: /^save$/i })
+  await expect(saveButton).toBeEnabled({ timeout: 20_000 })
+  const patchDone = page.waitForResponse(
+    (res) => res.request().method() === 'PATCH' && res.url().includes(`/api/orders/${orderId}`),
+    { timeout: 60_000 },
+  )
+  await saveButton.click()
+  const res = await patchDone
+  expect(res.ok(), `order save failed: ${res.status()} ${await res.text()}`).toBeTruthy()
 }
 
 test.describe('admin order fulfillment (local staff UI)', () => {
@@ -83,14 +94,14 @@ test.describe('admin order fulfillment (local staff UI)', () => {
 
       await page.goto(`/admin/collections/orders/${orderId}`)
 
-      await selectPayloadSelect(page, 'field-status', 1)
-      await page.getByRole('button', { name: /^save$/i }).click()
+      await pickStatus(page, 'Confirmed')
+      await saveOrderDocument(page, orderId)
       await expect(page.locator('#field-status')).toContainText('Confirmed')
 
-      await selectPayloadSelect(page, 'field-status', 1)
+      await pickStatus(page, 'Shipped')
       await page.getByLabel(/^carrier/i).fill('UPS')
       await page.getByLabel(/^tracking number/i).fill(`1Z-E2E-${stamp}`)
-      await page.getByRole('button', { name: /^save$/i }).click()
+      await saveOrderDocument(page, orderId)
       await expect(page.locator('#field-status')).toContainText('Shipped')
 
       const fresh = await request.get(`/api/orders/${orderId}?depth=0`, { headers })
