@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { graphql } from 'graphql'
-import { APIError, getPayload, type Payload, type PayloadRequest } from 'payload'
+import { getPayload, type Payload, type PayloadRequest } from 'payload'
 
 import config from '@/payload.config'
 import { createPostgresCommerceService } from '@/commerce/postgres'
@@ -83,6 +83,20 @@ describe('admin PR A — approval and order workflow', () => {
   async function staffReq() {
     const staff = await payload.findByID({ collection: 'users', id: staffUserId, overrideAccess: true })
     return createPayloadReq(payload, staff)
+  }
+
+  async function staffPayloadUpdate(
+    req: PayloadRequest,
+    orderId: number,
+    data: Record<string, unknown>,
+  ) {
+    return payload.update({
+      collection: 'orders',
+      id: orderId,
+      data,
+      req,
+      overrideAccess: false,
+    })
   }
 
   async function vendorReq(userId: number) {
@@ -178,7 +192,7 @@ describe('admin PR A — approval and order workflow', () => {
       name: 'Test',
     }
 
-    await staffOrderUpdate(payload, req, order.id, {
+    await staffPayloadUpdate(req, order.id, {
       status: 'confirmed',
       shipTo: reorderedShipTo,
       lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
@@ -186,7 +200,7 @@ describe('admin PR A — approval and order workflow', () => {
     const confirmed = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
     expect(confirmed.status).toBe('confirmed')
 
-    await staffOrderUpdate(payload, req, order.id, {
+    await staffPayloadUpdate(req, order.id, {
       status: 'shipped',
       carrier: 'UPS',
       trackingNumber: '1Z999',
@@ -203,7 +217,7 @@ describe('admin PR A — approval and order workflow', () => {
     if (!process.env.DATABASE_URL || !payload) return
     const req = await staffReq()
     const order = await createSubmittedOrder(pacificCompanyId, 'shipto-null')
-    await expect(staffOrderUpdate(payload, req, order.id, { shipTo: null })).rejects.toMatchObject({
+    await expect(staffPayloadUpdate(req, order.id, { shipTo: null })).rejects.toMatchObject({
       status: 400,
     })
     await deleteTestOrder(order.id)
@@ -237,26 +251,115 @@ describe('admin PR A — approval and order workflow', () => {
     await deleteTestOrder(draft.id)
   })
 
+  it('returns 400 for frozen field changes with overrideAccess: false (not silent drop)', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const order = await createSubmittedOrder(pacificCompanyId, 'frozen-access')
+    const originalPo = order.poNumber
+
+    await expect(
+      staffPayloadUpdate(req, order.id, { poNumber: `${originalPo}-CHANGED` }),
+    ).rejects.toMatchObject({ status: 400 })
+    await expect(staffPayloadUpdate(req, order.id, { poNumber: '' })).rejects.toMatchObject({
+      status: 400,
+    })
+    await expect(staffPayloadUpdate(req, order.id, { poNumber: null })).rejects.toMatchObject({
+      status: 400,
+    })
+    await expect(
+      staffPayloadUpdate(req, order.id, { shipTo: { ...shipTo, line1: '999 Hack St' } }),
+    ).rejects.toMatchObject({ status: 400 })
+    await expect(staffPayloadUpdate(req, order.id, { shipTo: null })).rejects.toMatchObject({
+      status: 400,
+    })
+    await expect(
+      staffPayloadUpdate(req, order.id, {
+        lines: [{ sku: '7353101.002', quantity: 2, unitPrice: 10 }],
+      }),
+    ).rejects.toMatchObject({ status: 400 })
+    await expect(staffPayloadUpdate(req, order.id, { lines: [] })).rejects.toMatchObject({
+      status: 400,
+    })
+    await expect(
+      staffPayloadUpdate(req, order.id, { orderNumber: 'HACK-ORD' }),
+    ).rejects.toMatchObject({ status: 400 })
+
+    const otherCo = await payload.create({
+      collection: 'companies',
+      data: { name: `PR-A frozen co ${Date.now()}`, accountApproved: true },
+      overrideAccess: true,
+    })
+    await expect(
+      staffPayloadUpdate(req, order.id, { company: otherCo.id }),
+    ).rejects.toMatchObject({ status: 400 })
+
+    const unchanged = await payload.findByID({ collection: 'orders', id: order.id, overrideAccess: true })
+    expect(unchanged.poNumber).toBe(originalPo)
+    await payload.delete({ collection: 'companies', id: otherCo.id, overrideAccess: true })
+    await deleteTestOrder(order.id)
+  })
+
+  it('allows equivalent frozen-field resend with overrideAccess: false', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const order = await payload.create({
+      collection: 'orders',
+      data: {
+        company: pacificCompanyId,
+        status: 'submitted',
+        orderNumber: `ADM-resend-${Date.now()}`,
+        poNumber: `PO-resend-${Date.now()}`,
+        shipTo: { ...shipTo, line2: null },
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
+      },
+      overrideAccess: true,
+    })
+    await expect(
+      staffPayloadUpdate(req, order.id, {
+        status: 'confirmed',
+        shipTo: { country: 'US', postalCode: '94105', state: 'CA', city: 'SF', line1: '1 Main', line2: '', name: 'Test' },
+        lines: [{ unitPrice: 10, quantity: 1, sku: '7353101.002' }],
+      }),
+    ).resolves.toBeTruthy()
+    await deleteTestOrder(order.id)
+  })
+
+  it('applies PO edits when draft becomes submitted in one save', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const draft = await createDraftOrder(pacificCompanyId, 'draft-po')
+    const newPo = `PO-SUBMIT-${Date.now()}`
+    await staffPayloadUpdate(req, draft.id, {
+      status: 'submitted',
+      poNumber: newPo,
+      orderNumber: `ORD-SUBMIT-${Date.now()}`,
+    })
+    const fresh = await payload.findByID({ collection: 'orders', id: draft.id, overrideAccess: true })
+    expect(fresh.status).toBe('submitted')
+    expect(fresh.poNumber).toBe(newPo)
+    await deleteTestOrder(draft.id)
+  })
+
   it('blocks frozen fields with 400', async () => {
     if (!process.env.DATABASE_URL || !payload) return
     const req = await staffReq()
     const order = await createSubmittedOrder(pacificCompanyId, 'frozen')
     await expect(
-      staffOrderUpdate(payload, req, order.id, { shipTo: { ...shipTo, line1: '999 Hack St' } }),
+      staffPayloadUpdate(req, order.id, { shipTo: { ...shipTo, line1: '999 Hack St' } }),
     ).rejects.toMatchObject({ status: 400 })
     await expect(
-      staffOrderUpdate(payload, req, order.id, {
+      staffPayloadUpdate(req, order.id, {
         lines: [{ sku: '7353101.002', quantity: 2, unitPrice: 10 }],
       }),
     ).rejects.toMatchObject({ status: 400 })
-    await expect(staffOrderUpdate(payload, req, order.id, { poNumber: '' })).rejects.toMatchObject({
+    await expect(staffPayloadUpdate(req, order.id, { poNumber: '' })).rejects.toMatchObject({
       status: 400,
     })
-    await expect(staffOrderUpdate(payload, req, order.id, { poNumber: null })).rejects.toMatchObject({
+    await expect(staffPayloadUpdate(req, order.id, { poNumber: null })).rejects.toMatchObject({
       status: 400,
     })
     await expect(
-      staffOrderUpdate(payload, req, order.id, { orderNumber: 'HACK-ORD' }),
+      staffPayloadUpdate(req, order.id, { orderNumber: 'HACK-ORD' }),
     ).rejects.toMatchObject({ status: 400 })
     await deleteTestOrder(order.id)
   })

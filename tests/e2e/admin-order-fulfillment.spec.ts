@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 
 import { adminJwtHeaders } from '../helpers/admin-api'
 import { isLocalBaseUrl } from '../helpers/e2e-env'
+import { purgeTestOrderById } from '../helpers/purge-test-order'
 
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test'
 const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password'
@@ -13,24 +14,6 @@ const shipTo = {
   state: 'CA',
   postalCode: '94105',
   country: 'US',
-}
-
-async function deleteOrderWithEvents(
-  request: import('@playwright/test').APIRequestContext,
-  orderId: number,
-  headers: Awaited<ReturnType<typeof adminJwtHeaders>>,
-) {
-  const events = await request.get(
-    `/api/order-events?where[order][equals]=${orderId}&limit=50&depth=0`,
-    { headers },
-  )
-  if (events.ok()) {
-    const body = (await events.json()) as { docs: Array<{ id: number }> }
-    for (const row of body.docs) {
-      await request.delete(`/api/order-events/${row.id}`, { headers })
-    }
-  }
-  await request.delete(`/api/orders/${orderId}`, { headers })
 }
 
 async function pickStatus(page: import('@playwright/test').Page, label: string) {
@@ -128,7 +111,9 @@ test.describe('admin order fulfillment (local staff UI)', () => {
         'confirmed->shipped',
       ])
     } finally {
-      await deleteOrderWithEvents(request, orderId, headers)
+      if (process.env.DATABASE_URL) {
+        await purgeTestOrderById(orderId)
+      }
     }
   })
 })

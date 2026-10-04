@@ -32,27 +32,66 @@ function rethrowOrderWorkflow(err: unknown): never {
   throw err
 }
 
-export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({ operation, args, req }) => {
-  if (operation !== 'update') return args
-  const data = args.data as Record<string, unknown> | undefined
-  if (!data || !Object.prototype.hasOwnProperty.call(data, 'shipTo') || data.shipTo !== null) return args
+const FROZEN_FIELD_KEYS = ['company', 'lines', 'shipTo', 'poNumber', 'orderNumber'] as const
 
-  let status = data.status
-  const rawId = 'id' in args ? args.id : undefined
-  const orderId =
-    typeof rawId === 'string' || typeof rawId === 'number' ? rawId : undefined
-  if (status == null && orderId != null) {
-    const existing = await req.payload.findByID({
+function updateTouchesFrozenFields(data: Record<string, unknown>): boolean {
+  return FROZEN_FIELD_KEYS.some((key) => fieldPresent(data, key))
+}
+
+async function loadOrdersForUpdateOperation(
+  req: Parameters<CollectionBeforeOperationHook>[0]['req'],
+  args: Record<string, unknown>,
+): Promise<Array<Record<string, unknown>>> {
+  if ('id' in args && args.id != null) {
+    const rawId = args.id
+    const id = typeof rawId === 'string' || typeof rawId === 'number' ? rawId : null
+    if (id == null) return []
+    const doc = await req.payload.findByID({
       collection: 'orders',
-      id: orderId,
+      id,
       depth: 0,
       overrideAccess: true,
     })
-    status = existing.status
+    return [doc as unknown as Record<string, unknown>]
   }
-  if (String(status ?? 'draft') !== 'draft') {
-    throw new APIError('Ship-to is frozen after submit.', 400)
+
+  if ('where' in args && args.where) {
+    const found = await req.payload.find({
+      collection: 'orders',
+      where: args.where as import('payload').Where,
+      limit: 500,
+      depth: 0,
+      overrideAccess: true,
+    })
+    return found.docs as unknown as Array<Record<string, unknown>>
   }
+
+  return []
+}
+
+export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({ operation, args, req }) => {
+  if (operation !== 'update') return args
+  const data = args.data as Record<string, unknown> | undefined
+  if (!data || !updateTouchesFrozenFields(data)) return args
+
+  try {
+    const lockedDocs = await loadOrdersForUpdateOperation(req, args as Record<string, unknown>)
+    const clientStatus = takeOrderClientStatus(req)
+    if (clientStatus != null) {
+      for (const locked of lockedDocs) {
+        const lockedStatus = String(locked.status ?? 'draft')
+        if (clientStatus !== lockedStatus) {
+          throw new OrderTransitionConflictError('Order was updated concurrently; refresh and retry.')
+        }
+      }
+    }
+    for (const locked of lockedDocs) {
+      assertFrozenOrderFieldsUnchanged(locked, data)
+    }
+  } catch (err) {
+    rethrowOrderWorkflow(err)
+  }
+
   return args
 }
 
@@ -78,8 +117,6 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     if (clientStatus !== lockedStatus) {
       throw new OrderTransitionConflictError('Order was updated concurrently; refresh and retry.')
     }
-
-    assertFrozenOrderFieldsUnchanged(locked, (args.data ?? {}) as Record<string, unknown>)
 
     if (nextStatus !== lockedStatus) {
       assertValidStatusTransition(lockedStatus, nextStatus)

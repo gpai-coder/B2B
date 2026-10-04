@@ -131,11 +131,12 @@ export const priceListReadAccess: Access = ({ req: { user } }) => {
 
 export const staffFieldAccess: FieldAccess = ({ req: { user } }) => isStaff(user as AppUser)
 
-/** Staff may edit the field only while the order is still a draft. */
+/** Staff may edit the field only while the stored order is still a draft. */
 export const staffFieldAccessUnlessFrozen: FieldAccess = (args) => {
   if (!staffFieldAccess(args)) return false
-  const status = args.siblingData?.status ?? args.doc?.status
-  if (status != null && status !== 'draft') return false
+  if (args.id == null && args.doc == null) return true
+  const storedStatus = args.doc?.status
+  if (storedStatus != null && storedStatus !== 'draft') return false
   return true
 }
 
