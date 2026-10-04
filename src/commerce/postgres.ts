@@ -7,6 +7,7 @@ import { getUserCompanyId } from '@/access'
 import { vendorBuyerAccessDeniedMessage, vendorBuyerIsApproved } from '@/lib/access/vendor-gate'
 import { withPayloadTransaction } from '@/lib/orders/payload-transaction'
 import { lockAndLoadOrderForUpdate, setOrderClientStatus } from '@/lib/orders/order-workflow'
+import { allocateOrderNumber } from '@/lib/orders/allocate-order-number'
 
 import type {
   CartLine,
@@ -599,7 +600,7 @@ export function createPostgresCommerceService(
         const orderNumber =
           (locked.orderNumber as string | null) ??
           current.orderNumber ??
-          `ORD-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 900000) + 100000)}`
+          (await allocateOrderNumber(payload, req))
 
         const updated = await payload.update({
           collection: 'orders',

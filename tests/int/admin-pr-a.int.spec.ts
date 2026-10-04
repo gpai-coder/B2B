@@ -332,11 +332,22 @@ describe('admin PR A — approval and order workflow', () => {
     await staffPayloadUpdate(req, draft.id, {
       status: 'submitted',
       poNumber: newPo,
-      orderNumber: `ORD-SUBMIT-${Date.now()}`,
     })
     const fresh = await payload.findByID({ collection: 'orders', id: draft.id, overrideAccess: true })
     expect(fresh.status).toBe('submitted')
     expect(fresh.poNumber).toBe(newPo)
+    expect(String(fresh.orderNumber ?? '')).toMatch(/^ORD-\d{4}-\d{6}$/)
+    await deleteTestOrder(draft.id)
+  })
+
+  it('generates orderNumber when admin submits draft without one', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const req = await staffReq()
+    const draft = await createDraftOrder(pacificCompanyId, 'gen-ord')
+    await staffPayloadUpdate(req, draft.id, { status: 'submitted', orderNumber: '' })
+    const fresh = await payload.findByID({ collection: 'orders', id: draft.id, overrideAccess: true })
+    expect(fresh.status).toBe('submitted')
+    expect(String(fresh.orderNumber ?? '')).toMatch(/^ORD-\d{4}-\d{6}$/)
     await deleteTestOrder(draft.id)
   })
 
@@ -648,6 +659,112 @@ describe('admin PR A — approval and order workflow', () => {
     expect(fresh.approvalReviewedAt).toBeTruthy()
     await payload.delete({ collection: 'users', id: user.id, overrideAccess: true })
     await payload.delete({ collection: 'companies', id: company.id, overrideAccess: true })
+  })
+
+  function anonymousReq() {
+    return createPayloadReq(payload, null)
+  }
+
+  it('does not leak orders via frozen-field oracle to anonymous callers', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const order = await createSubmittedOrder(pacificCompanyId, 'oracle-anon')
+    const anon = anonymousReq()
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: { poNumber: 'WRONG-PO-GUESS' },
+        req: anon,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: { poNumber: order.poNumber },
+        req: anon,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: 999_999_999,
+        data: { poNumber: 'X' },
+        req: anon,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await expect(
+      payload.update({
+        collection: 'orders',
+        where: { poNumber: { equals: order.poNumber } },
+        data: { poNumber: 'HACK-PO' },
+        req: anon,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await deleteTestOrder(order.id)
+  })
+
+  it('does not leak orders via frozen-field oracle to vendor callers', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const order = await createSubmittedOrder(pacificCompanyId, 'oracle-vendor')
+    const vendor = await vendorReq(pacificUserId)
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: { poNumber: 'WRONG-PO-GUESS' },
+        req: vendor,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: { poNumber: order.poNumber },
+        req: vendor,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await expect(
+      payload.update({
+        collection: 'orders',
+        id: 999_999_999,
+        data: { poNumber: 'X' },
+        req: vendor,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await expect(
+      payload.update({
+        collection: 'orders',
+        where: { 'shipTo.city': { equals: shipTo.city } },
+        data: { poNumber: 'HACK-PO' },
+        req: vendor,
+        overrideAccess: false,
+      }),
+    ).rejects.toMatchObject({ status: 403 })
+    await deleteTestOrder(order.id)
+  })
+
+  it('rejects staff draft PO edits that race vendor submit (TOCTOU re-check)', async () => {
+    if (!process.env.DATABASE_URL || !payload) return
+    const vendor = await payload.findByID({ collection: 'users', id: pacificUserId, overrideAccess: true })
+    const commerce = createPostgresCommerceService(payload, vendor)
+    const draft = await createDraftOrder(pacificCompanyId, 'toctou-po')
+    const staff = await staffReq()
+    const originalPo = draft.poNumber
+    await commerce.submitOrder(String(draft.id), `toctou-${Date.now()}`, String(pacificCompanyId))
+    await expect(
+      staffPayloadUpdate(staff, draft.id, { poNumber: `PO-RACE-${Date.now()}` }),
+    ).rejects.toMatchObject({ status: 400 })
+    const fresh = await payload.findByID({ collection: 'orders', id: draft.id, overrideAccess: true })
+    expect(fresh.poNumber).toBe(originalPo)
+    await deleteTestOrder(draft.id)
   })
 
   it('approve/reject on non-buyer returns 400', async () => {

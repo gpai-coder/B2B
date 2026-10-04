@@ -6,6 +6,8 @@ import type {
 } from 'payload'
 import { APIError } from 'payload'
 import type { User } from '@/payload-types'
+import { isStaff } from '@/access'
+import { allocateOrderNumber } from '@/lib/orders/allocate-order-number'
 import {
   assertFrozenOrderFieldsUnchanged,
   assertValidStatusTransition,
@@ -15,11 +17,13 @@ import {
   OrderWorkflowTransactionError,
   setOrderTransitionFromStatus,
   takeOrderTransitionFromStatus,
-  setOrderClientStatus,
   takeOrderClientStatus,
   type OrderStatus,
 } from '@/lib/orders/order-workflow'
+import { emptyEquivalent } from '@/lib/orders/order-frozen-compare'
 import { appendOrderStatusEvent } from '@/lib/orders/order-events'
+
+const ORDER_FROZEN_OPERATION_STASH = 'orderFrozenOperationStash'
 
 function fieldPresent(data: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(data, key)
@@ -34,8 +38,44 @@ function rethrowOrderWorkflow(err: unknown): never {
 
 const FROZEN_FIELD_KEYS = ['company', 'lines', 'shipTo', 'poNumber', 'orderNumber'] as const
 
+function pickFrozenFields(data: Record<string, unknown>): Record<string, unknown> {
+  const slice: Record<string, unknown> = {}
+  for (const key of FROZEN_FIELD_KEYS) {
+    if (fieldPresent(data, key)) slice[key] = data[key]
+  }
+  return slice
+}
+
 function updateTouchesFrozenFields(data: Record<string, unknown>): boolean {
   return FROZEN_FIELD_KEYS.some((key) => fieldPresent(data, key))
+}
+
+function stashFrozenOperationData(
+  req: Parameters<CollectionBeforeOperationHook>[0]['req'],
+  orderId: number,
+  data: Record<string, unknown>,
+): void {
+  const slice = pickFrozenFields(data)
+  if (Object.keys(slice).length === 0) return
+  const ctx = req.context as Record<string, unknown>
+  let map = ctx[ORDER_FROZEN_OPERATION_STASH] as Map<number, Record<string, unknown>> | undefined
+  if (!map) {
+    map = new Map()
+    ctx[ORDER_FROZEN_OPERATION_STASH] = map
+  }
+  map.set(orderId, slice)
+}
+
+function takeFrozenOperationStash(
+  req: Parameters<CollectionBeforeChangeHook>[0]['req'],
+  orderId: number,
+): Record<string, unknown> | undefined {
+  const ctx = req.context as Record<string, unknown>
+  const map = ctx[ORDER_FROZEN_OPERATION_STASH] as Map<number, Record<string, unknown>> | undefined
+  if (!map) return undefined
+  const slice = map.get(orderId)
+  map.delete(orderId)
+  return slice
 }
 
 async function loadOrdersForUpdateOperation(
@@ -51,7 +91,9 @@ async function loadOrdersForUpdateOperation(
       id,
       depth: 0,
       overrideAccess: true,
+      disableErrors: true,
     })
+    if (!doc) return []
     return [doc as unknown as Record<string, unknown>]
   }
 
@@ -59,7 +101,7 @@ async function loadOrdersForUpdateOperation(
     const found = await req.payload.find({
       collection: 'orders',
       where: args.where as import('payload').Where,
-      limit: 500,
+      pagination: false,
       depth: 0,
       overrideAccess: true,
     })
@@ -69,10 +111,20 @@ async function loadOrdersForUpdateOperation(
   return []
 }
 
-export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({ operation, args, req }) => {
+export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({
+  operation,
+  args,
+  req,
+  overrideAccess,
+}) => {
   if (operation !== 'update') return args
   const data = args.data as Record<string, unknown> | undefined
   if (!data || !updateTouchesFrozenFields(data)) return args
+
+  const user = req.user as User | undefined
+  if (!overrideAccess && !isStaff(user)) {
+    return args
+  }
 
   try {
     const lockedDocs = await loadOrdersForUpdateOperation(req, args as Record<string, unknown>)
@@ -86,7 +138,9 @@ export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({
       }
     }
     for (const locked of lockedDocs) {
+      const orderId = Number(locked.id)
       assertFrozenOrderFieldsUnchanged(locked, data)
+      stashFrozenOperationData(req, orderId, data)
     }
   } catch (err) {
     rethrowOrderWorkflow(err)
@@ -98,6 +152,8 @@ export const orderStaffBeforeOperation: CollectionBeforeOperationHook = async ({
 export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) => {
   if (args.operation === 'create' || !args.originalDoc?.id) return args.data
 
+  let data = (args.data ?? {}) as Record<string, unknown>
+
   try {
     const locked = await lockAndLoadOrderForUpdate(
       args.req.payload,
@@ -106,8 +162,8 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     )
 
     const lockedStatus = String(locked.status ?? 'draft') as OrderStatus
-    const nextStatus = (
-      args.data?.status != null ? String(args.data.status) : lockedStatus
+    let nextStatus = (
+      data.status != null ? String(data.status) : lockedStatus
     ) as OrderStatus
 
     const clientStatus = (
@@ -116,6 +172,18 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     ) as OrderStatus
     if (clientStatus !== lockedStatus) {
       throw new OrderTransitionConflictError('Order was updated concurrently; refresh and retry.')
+    }
+
+    const stashed = takeFrozenOperationStash(args.req, Number(args.originalDoc.id))
+    if (stashed) {
+      assertFrozenOrderFieldsUnchanged(locked, stashed)
+    }
+
+    if (lockedStatus === 'draft' && nextStatus === 'submitted') {
+      const incomingNumber = fieldPresent(data, 'orderNumber') ? data.orderNumber : locked.orderNumber
+      if (emptyEquivalent(incomingNumber, null) || String(incomingNumber ?? '').trim() === '') {
+        data = { ...data, orderNumber: await allocateOrderNumber(args.req.payload, args.req) }
+      }
     }
 
     if (nextStatus !== lockedStatus) {
@@ -129,7 +197,7 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     rethrowOrderWorkflow(err)
   }
 
-  return args.data
+  return data
 }
 
 export const orderStaffAfterChange: CollectionAfterChangeHook = async ({ doc, req, previousDoc }) => {

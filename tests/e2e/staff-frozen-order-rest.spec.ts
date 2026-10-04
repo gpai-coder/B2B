@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 
 import { adminJwtHeaders } from '../helpers/admin-api'
 import { isLocalBaseUrl } from '../helpers/e2e-env'
-import { purgeTestOrderById } from '../helpers/purge-test-order'
 
 const shipTo = {
   name: 'REST Frozen',
@@ -54,7 +53,61 @@ test.describe('staff order frozen fields (REST)', () => {
       const body = (await fresh.json()) as { poNumber?: string }
       expect(body.poNumber).toBe(`PO-REST-FRZ-${stamp}`)
     } finally {
-      await purgeTestOrderById(orderId)
+      if (process.env.DATABASE_URL && isLocalBaseUrl()) {
+        const { purgeTestOrderById } = await import('../helpers/purge-test-order')
+        await purgeTestOrderById(orderId)
+      }
+    }
+  })
+
+  test('anonymous PATCH cannot probe frozen fields (403 only)', async ({ request }) => {
+    test.skip(!isLocalBaseUrl(), 'localhost Payload REST only')
+
+    const headers = await adminJwtHeaders(request)
+    const companies = await request.get(
+      '/api/companies?where[name][equals]=Pacific%20Plumbing%20Supply&limit=1&depth=0',
+      { headers },
+    )
+    expect(companies.ok()).toBeTruthy()
+    const companyId = ((await companies.json()) as { docs: Array<{ id: number }> }).docs[0]?.id
+    expect(companyId).toBeTruthy()
+
+    const stamp = Date.now()
+    const createRes = await request.post('/api/orders', {
+      headers,
+      data: {
+        company: companyId,
+        status: 'submitted',
+        orderNumber: `E2E-ORACLE-${stamp}`,
+        poNumber: `PO-ORACLE-${stamp}`,
+        shipTo,
+        lines: [{ sku: '7353101.002', quantity: 1, unitPrice: 10 }],
+      },
+    })
+    expect(createRes.ok()).toBeTruthy()
+    const orderId = ((await createRes.json()) as { doc: { id: number } }).doc.id
+    const realPo = `PO-ORACLE-${stamp}`
+
+    try {
+      const wrongPo = await request.patch(`/api/orders/${orderId}`, {
+        data: { poNumber: 'WRONG-PO-GUESS' },
+      })
+      expect(wrongPo.status()).toBe(403)
+
+      const rightPo = await request.patch(`/api/orders/${orderId}`, {
+        data: { poNumber: realPo },
+      })
+      expect(rightPo.status()).toBe(403)
+
+      const missing = await request.patch('/api/orders/999999999', {
+        data: { poNumber: 'WRONG' },
+      })
+      expect(missing.status()).toBe(403)
+    } finally {
+      if (process.env.DATABASE_URL && isLocalBaseUrl()) {
+        const { purgeTestOrderById } = await import('../helpers/purge-test-order')
+        await purgeTestOrderById(orderId)
+      }
     }
   })
 })

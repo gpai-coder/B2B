@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test'
 
 import { adminJwtHeaders } from '../helpers/admin-api'
 import { isLocalBaseUrl } from '../helpers/e2e-env'
-import { purgeTestOrderById } from '../helpers/purge-test-order'
 
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@local.test'
 const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'local-dev-admin-password'
@@ -111,7 +110,8 @@ test.describe('admin order fulfillment (local staff UI)', () => {
         'confirmed->shipped',
       ])
     } finally {
-      if (process.env.DATABASE_URL) {
+      if (process.env.DATABASE_URL && isLocalBaseUrl()) {
+        const { purgeTestOrderById } = await import('../helpers/purge-test-order')
         await purgeTestOrderById(orderId)
       }
     }

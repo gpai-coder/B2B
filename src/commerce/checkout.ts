@@ -2,6 +2,7 @@ import type { Payload, PayloadRequest } from 'payload'
 
 import type { User } from '@/payload-types'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
+import { allocateOrderNumber, isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
 
 import type { CartMutationContext } from './cart-serialized'
 import { lockQuoteRow, rethrowCartMutationError } from './cart-serialized'
@@ -47,37 +48,7 @@ type CheckoutDeps = {
   mapOrder: (doc: Record<string, unknown>) => CommerceOrder
 }
 
-export function isOrderNumberCollision(err: unknown): boolean {
-  if (!isUniqueViolation(err)) return false
-  const record = err as Record<string, unknown>
-  const data = record.data
-  if (data && typeof data === 'object') {
-    const errors = (data as { errors?: Array<{ path?: string }> }).errors
-    if (errors?.some((e) => e.path === 'orderNumber')) return true
-  }
-  const cause = record.cause
-  if (cause && typeof cause === 'object') {
-    const constraint = (cause as Record<string, unknown>).constraint
-    if (constraint === 'orders_order_number_idx') return true
-  }
-  return false
-}
-
-async function allocateOrderNumber(payload: Payload, req: PayloadRequest): Promise<string> {
-  const year = new Date().getFullYear()
-  for (let attempt = 0; attempt < 12; attempt++) {
-    const candidate = `ORD-${year}-${String(Math.floor(Math.random() * 900000) + 100000)}`
-    const existing = await payload.find({
-      collection: 'orders',
-      where: { orderNumber: { equals: candidate } },
-      limit: 1,
-      overrideAccess: true,
-      req,
-    })
-    if (!existing.docs[0]) return candidate
-  }
-  throw new Error('Could not allocate order number.')
-}
+export { isOrderNumberCollision } from '@/lib/orders/allocate-order-number'
 
 async function findOrderByCompanyIdempotency(
   deps: CheckoutDeps,
