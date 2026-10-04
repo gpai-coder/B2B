@@ -11,7 +11,7 @@ import { createPayloadReq } from '@/lib/payload-req'
 import { resolveMediaId } from '@/lib/product-media'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { vendorPortalApprovalGate, VENDOR_PENDING_ACCOUNT_PATH } from '@/lib/vendor-portal'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -44,7 +44,7 @@ export default async function ProductPage({ params }: Props) {
   })
   const product = products.docs[0]
   if (!product) {
-    return <p className="error">Product not found.</p>
+    notFound()
   }
 
   const variants = await payload.find({

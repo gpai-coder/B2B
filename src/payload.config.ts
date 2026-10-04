@@ -36,6 +36,7 @@ export default buildConfig({
   debug: env.NODE_ENV === 'development',
   admin: {
     user: Users.slug,
+    avatar: 'default',
     importMap: {
       baseDir: path.resolve(dirname),
     },
