@@ -12,9 +12,6 @@ const FETCH_RETRIES = 2
 /**
  * Preview-only guard: refuse migrate when preview DB fingerprint matches production.
  * Never log hosts, credentials, or full DATABASE_URL values.
- *
- * Escape hatch (remove after production serves dbFingerprint): HTTP 200 without
- * dbFingerprint logs a warning and allows migrate for chicken-and-egg on first deploy.
  */
 
 export async function fetchProdDbFingerprint(prodHealthUrl, fetchFn = globalThis.fetch) {
@@ -87,22 +84,12 @@ export async function checkPreviewDbIsolation(env, options = {}) {
     body && typeof body.dbFingerprint === 'string' ? body.dbFingerprint.trim() : ''
 
   if (!prodFingerprint) {
-    if (response.status === 200) {
-      if (!isHealthJsonObject(body)) {
-        return {
-          ok: false,
-          exitCode: 1,
-          stderr:
-            'error: production health returned an unparseable or non-object JSON body; refusing preview migrate.',
-        }
-      }
+    if (response.status === 200 && !isHealthJsonObject(body)) {
       return {
-        ok: true,
-        exitCode: 0,
-        warn:
-          'WARNING: production /api/health returned 200 without dbFingerprint (pre-deploy). Continuing preview migrate. Remove this escape hatch after production serves dbFingerprint.',
-        stdout:
-          'Preview DB isolation check skipped: production dbFingerprint pending (pre-deploy); continuing preview migrate.',
+        ok: false,
+        exitCode: 1,
+        stderr:
+          'error: production health returned an unparseable or non-object JSON body; refusing preview migrate.',
       }
     }
     return {
@@ -149,9 +136,6 @@ function formatPassLine(previewFingerprints, prodFingerprint) {
 
 async function runCli() {
   const result = await checkPreviewDbIsolation(process.env)
-  if (result.warn) {
-    process.stderr.write(`${result.warn}\n`)
-  }
   if (result.stderr) {
     process.stderr.write(`${result.stderr}\n`)
   }
