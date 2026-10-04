@@ -162,7 +162,7 @@ export const orderStaffBeforeChange: CollectionBeforeChangeHook = async (args) =
     )
 
     const lockedStatus = String(locked.status ?? 'draft') as OrderStatus
-    let nextStatus = (
+    const nextStatus = (
       data.status != null ? String(data.status) : lockedStatus
     ) as OrderStatus
 
