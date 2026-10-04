@@ -57,7 +57,7 @@ export const Quotes: CollectionConfig = {
         { label: 'Accepted', value: 'accepted' },
         { label: 'Expired', value: 'expired' },
         { label: 'Withdrawn', value: 'withdrawn' },
-        { label: 'Cancelled (legacy)', value: 'cancelled', admin: { hidden: true } },
+        { label: 'Cancelled (legacy)', value: 'cancelled' },
       ],
     },
     {
