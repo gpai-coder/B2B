@@ -80,13 +80,8 @@ export const migrations = [
     name: '20261003_220000_ship_to_default_index',
   },
   {
-    up: migration_20261004_002007.up,
-    down: migration_20261004_002007.down,
-    name: '20261004_002007',
-  },
-  {
     up: migration_20261004_120000_admin_pr_a.up,
     down: migration_20261004_120000_admin_pr_a.down,
-    name: '20261004_120000_admin_pr_a'
+    name: '20261004_120000_admin_pr_a',
   },
 ];
