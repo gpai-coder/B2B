@@ -329,7 +329,6 @@ test.describe('B2B foundations smoke', () => {
         {
           status: 'accepted',
           convertedOrder: null,
-          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
         },
         adminHeaders,
       )

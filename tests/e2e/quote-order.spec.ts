@@ -1,63 +1,62 @@
 import { test, expect } from '@playwright/test'
 
-import {
-  adminJwtHeaders,
-  restoreQuote,
-  type QuoteRestoreState,
-} from '../helpers/admin-api'
+import { adminJwtHeaders } from '../helpers/admin-api'
+import { isLocalBaseUrl } from '../helpers/e2e-env'
 import { loginVendor } from '../helpers/vendor-login'
 
-const SEED_QUOTE_NUMBER = 'Q-2026-0001'
-
 test.describe('Quote order page', () => {
-  const quoteRestoreHolder: { restore: QuoteRestoreState | null } = { restore: null }
-
-  test.afterAll(async ({ request }) => {
-    await restoreQuote(request, quoteRestoreHolder)
-  })
-
   test('shows a clear message when quote is not accepted', async ({ page, request }) => {
+    test.skip(!isLocalBaseUrl(), 'Uses temp quotes; localhost CI only')
+
     const headers = await adminJwtHeaders(request)
-    const quoteRes = await request.get(
-      `/api/quotes?where[quoteNumber][equals]=${encodeURIComponent(SEED_QUOTE_NUMBER)}&limit=1&depth=0`,
+    const companyRes = await request.get(
+      `/api/companies?where[name][equals]=${encodeURIComponent('Pacific Plumbing Supply')}&limit=1`,
       { headers },
     )
-    expect(quoteRes.ok()).toBeTruthy()
-    const quoteBody = (await quoteRes.json()) as {
-      docs: Array<{ id: number; status?: string; expiresAt?: string; convertedOrder?: number | null }>
-    }
-    const quote = quoteBody.docs[0]
-    expect(quote).toBeTruthy()
+    const companyBody = (await companyRes.json()) as { docs: Array<{ id: number }> }
+    const companyId = companyBody.docs[0]?.id
+    expect(companyId).toBeTruthy()
 
-    quoteRestoreHolder.restore = {
-      quoteId: quote!.id,
-      snapshot: {
-        status: quote!.status,
-        expiresAt: quote!.expiresAt,
-        convertedOrder: quote!.convertedOrder ?? null,
+    const variantRes = await request.get(
+      '/api/product-variants?where[sku][equals]=7353101.002&limit=1',
+      { headers },
+    )
+    const variantBody = (await variantRes.json()) as { docs: Array<{ id: number; sku: string }> }
+    const variant = variantBody.docs[0]
+    expect(variant).toBeTruthy()
+
+    const createRes = await request.post('/api/quotes', {
+      headers,
+      data: {
+        company: companyId,
+        status: 'draft',
+        lines: [{ sku: variant!.sku, variant: variant!.id, quantity: 1, unitPrice: 10 }],
       },
-    }
+    })
+    expect(createRes.ok()).toBeTruthy()
+    const created = (await createRes.json()) as { doc: { id: number; quoteNumber: string } }
+    const quoteId = created.doc.id
+    const quoteNumber = created.doc.quoteNumber
 
     try {
-      const patch = await request.patch(`/api/quotes/${quote!.id}`, {
+      const sentRes = await request.patch(`/api/quotes/${quoteId}`, {
         headers,
-        data: { status: 'expired', convertedOrder: null },
+        data: { status: 'sent' },
       })
-      expect(patch.ok()).toBeTruthy()
+      expect(sentRes.ok()).toBeTruthy()
 
-      await loginVendor(page, `/quotes/${SEED_QUOTE_NUMBER}/order`)
+      await loginVendor(page, `/quotes/${encodeURIComponent(quoteNumber)}/order`)
       await expect(page.getByTestId('quote-order-unavailable')).toHaveText(
         'This quote is not available for ordering.',
       )
       await expect(page.getByTestId('submit-quote-order')).toHaveCount(0)
     } finally {
-      try {
-        await restoreQuote(request, quoteRestoreHolder)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        if (!/Target page, context or browser has been closed|Request context disposed/i.test(msg)) {
-          throw err
-        }
+      if (process.env.DATABASE_URL && isLocalBaseUrl()) {
+        const { purgeTestQuoteById, destroyTestQuotePayload } = await import('../helpers/purge-test-quote')
+        await purgeTestQuoteById(quoteId)
+        await destroyTestQuotePayload()
+      } else {
+        await request.delete(`/api/quotes/${quoteId}`, { headers })
       }
     }
   })
