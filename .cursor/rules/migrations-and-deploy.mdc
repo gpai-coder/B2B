@@ -1,0 +1,11 @@
+---
+description: Migrations and Vercel build guards
+alwaysApply: true
+---
+
+# Migrations and deploy
+
+- Schema changes: add Payload SQL migrations; run with `PAYLOAD_DISABLE_PUSH=true`.
+- Do not add collection fields for columns owned by SQL migrations (e.g. `search_vector` — see `src/lib/search/README.md`).
+- Production and preview migrations run only via `scripts/vercel-build.sh`. Preview must pass `scripts/check-preview-db.mjs` before migrate.
+- CI must keep `PAYLOAD_DISABLE_PUSH=true` on migrate/seed/build/e2e steps.

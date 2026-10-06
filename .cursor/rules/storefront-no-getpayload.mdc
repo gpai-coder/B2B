@@ -1,0 +1,12 @@
+---
+description: Storefront must not call getPayload directly
+alwaysApply: true
+---
+
+# Storefront data access
+
+In `src/app/(frontend)/**`, do not import `getPayload` from `payload`.
+
+Use `@/commerce` for cart, checkout, quotes, and priced commerce reads. Use `@/lib/catalog/read-models` for catalog PLP/PDP/search page assembly. Use `@/lib/session` and account helpers for vendor account data.
+
+Payload admin and API routes under `app/(payload)/` and `app/api/` are exempt.
