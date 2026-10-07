@@ -27,6 +27,7 @@ jobs:
           --health-retries 10
 
     env:
+      PAYLOAD_DISABLE_PUSH: 'true'
       DATABASE_URL: postgresql://portal:portal@127.0.0.1:5432/b2b_portal
       DB_POOL_MAX: '5'
       PAYLOAD_SECRET: ci-payload-secret-min-16-chars
@@ -52,6 +53,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Assert PAYLOAD_DISABLE_PUSH
+        run: test "${PAYLOAD_DISABLE_PUSH}" = "true"
 
       - name: Playwright discovers tests without DATABASE_URL
         if: hashFiles('tests/e2e/smoke.spec.ts') != ''
