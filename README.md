@@ -78,9 +78,18 @@ The repo owner configures these (not automated in CI):
 3. **Payload secret** — Add `PAYLOAD_SECRET` in Vercel → Settings → Environment Variables (all environments). Generate with `openssl rand -base64 32`.
 4. **Public URL** — Set `NEXT_PUBLIC_SERVER_URL` to the production URL (e.g. `https://your-app.vercel.app`).
 5. **Vercel Blob** — Create a Blob store in Vercel Storage; add `BLOB_READ_WRITE_TOKEN` to env. Without it, dev uses local `media/` uploads only.
-6. **Deploy** — Push to the connected branch. Vercel runs the **`vercel-build`** script (not plain `build`): on **production** only (`VERCEL_ENV=production`), it runs `payload migrate` with `NODE_ENV=production` and `PAYLOAD_DISABLE_PUSH=true`, then `next build`. Preview and development builds **never** migrate the production database.
+6. **Deploy** — Push to the connected branch. Vercel runs **`vercel-build`** (not plain `build`): **production** and **preview** run `payload migrate` with `PAYLOAD_DISABLE_PUSH=true`, then `next build`. Preview runs `scripts/check-preview-db.mjs` first so the preview `DATABASE_URL` fingerprint cannot match production (see `/api/health` `dbFingerprint` on the prod URL).
 
-Schema changes in repo should ship via Payload SQL migrations (`pnpm db:migrate` locally). Do not rely on Drizzle push against production; see `src/lib/search/README.md` for migration-owned columns such as `search_vector`.
+### Preview deployments and Neon (runbook)
+
+Until every preview uses a dedicated Neon branch/database:
+
+1. **Prefer isolated Neon** — Create a branch per preview or per developer in Neon; point the Vercel **Preview** environment `DATABASE_URL` at that branch (free tier supports branching).
+2. **Guards (required today)** — `scripts/vercel-build.sh` calls `check-preview-db.mjs`, which compares preview DB fingerprints against production health (`PROD_HEALTH_URL`, default `https://b2b-gamma-seven.vercel.app/api/health`). Migrate aborts on a match.
+3. **Verify after env changes** — `curl -sS "$PROD_HEALTH_URL/api/health"` and confirm preview `DATABASE_URL` resolves to a different fingerprint before merging migration PRs.
+4. **Local check** — `node scripts/check-preview-db.mjs` with preview env vars (never log full connection strings).
+
+Schema changes in repo should ship via Payload SQL migrations (`pnpm db:migrate` locally). Do not rely on Drizzle push against production; see `docs/migrations-safety.md` and `src/lib/search/README.md` for migration-owned columns such as `search_vector`.
 
 Optional CLI (if linked): `vercel link`, `vercel env pull .env.local`.
 
