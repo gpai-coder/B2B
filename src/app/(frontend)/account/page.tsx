@@ -1,10 +1,8 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
+import { loadAccountCompany } from '@/lib/account/load-account-company'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { createPayloadReq } from '@/lib/payload-req'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,13 +21,7 @@ export default async function AccountPage() {
     return <p className="error">Vendor account is missing a company.</p>
   }
 
-  const payload = await getPayload({ config: await config })
-  const company = await payload.findByID({
-    collection: 'companies',
-    id: Number(companyId),
-    overrideAccess: false,
-    req: createPayloadReq(payload, user),
-  })
+  const company = await loadAccountCompany(user, companyId)
 
   return (
     <div className="as-account" data-testid="account-page">

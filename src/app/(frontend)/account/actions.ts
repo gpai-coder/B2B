@@ -9,10 +9,7 @@ import {
   ShipToAddressValidationError,
   updateVendorShipToAddress,
 } from '@/lib/vendor/ship-to-addresses'
-import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload, type Payload } from 'payload'
-import config from '@/payload.config'
-import type { User } from '@/payload-types'
+import { vendorPayloadContext } from '@/lib/account/vendor-payload-context'
 
 export type AccountActionResult = { ok: true } | { ok: false; error: string }
 
@@ -37,24 +34,8 @@ function parseAddressForm(formData: FormData) {
   }
 }
 
-async function vendorContext(): Promise<
-  { error: string } | { user: User; companyId: string; payload: Payload }
-> {
-  const user = await getRequestUser()
-  if (!user || user.role !== 'vendor-buyer') {
-    return { error: 'Authentication required.' }
-  }
-  if (!user.approved) {
-    return { error: PENDING_APPROVAL }
-  }
-  const companyId = getCompanyIdFromUser(user)
-  if (!companyId) return { error: 'Vendor account is missing a company.' }
-  const payload = await getPayload({ config: await config })
-  return { user, companyId, payload }
-}
-
 export async function createShipToAddressAction(formData: FormData): Promise<AccountActionResult> {
-  const ctx = await vendorContext()
+  const ctx = await vendorPayloadContext()
   if ('error' in ctx) return { ok: false, error: ctx.error }
   try {
     await createVendorShipToAddress(ctx.payload, ctx.user, ctx.companyId, parseAddressForm(formData))
@@ -71,7 +52,7 @@ export async function updateShipToAddressAction(
   addressId: string,
   formData: FormData,
 ): Promise<AccountActionResult> {
-  const ctx = await vendorContext()
+  const ctx = await vendorPayloadContext()
   if ('error' in ctx) return { ok: false, error: ctx.error }
   try {
     await updateVendorShipToAddress(
@@ -90,7 +71,7 @@ export async function updateShipToAddressAction(
 }
 
 export async function deleteShipToAddressAction(addressId: string): Promise<AccountActionResult> {
-  const ctx = await vendorContext()
+  const ctx = await vendorPayloadContext()
   if ('error' in ctx) return { ok: false, error: ctx.error }
   try {
     await deleteVendorShipToAddress(ctx.payload, ctx.user, ctx.companyId, addressId)
@@ -103,7 +84,7 @@ export async function deleteShipToAddressAction(addressId: string): Promise<Acco
 }
 
 export async function setDefaultShipToAddressAction(addressId: string): Promise<AccountActionResult> {
-  const ctx = await vendorContext()
+  const ctx = await vendorPayloadContext()
   if ('error' in ctx) return { ok: false, error: ctx.error }
   try {
     await setVendorDefaultShipToAddress(ctx.payload, ctx.user, ctx.companyId, addressId)
