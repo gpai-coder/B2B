@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 
 import { SearchPageClient } from '@/components/catalog/SearchPageClient'
-import { loadSearchPageData } from '@/lib/search/load-search-page-data'
+import { loadSearchResultsReadModel } from '@/lib/catalog/read-models'
 import { parseSearchRequestParams } from '@/lib/search/validate'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { vendorPortalApprovalGate, VENDOR_PENDING_ACCOUNT_PATH } from '@/lib/vendor-portal'
@@ -41,7 +41,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
     ),
   )
 
-  const loaded = await loadSearchPageData(user, companyId, params)
+  const loaded = await loadSearchResultsReadModel(user, companyId, params)
   if (loaded === 'empty-query') {
     return (
       <div className="as-search-page__empty" data-testid="search-empty">

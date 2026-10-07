@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 
 import { CatalogPageClient } from '@/components/catalog/CatalogPageClient'
-import { loadCatalogPageData } from '@/lib/catalog/load-catalog-page-data'
+import { loadCatalogListReadModel } from '@/lib/catalog/read-models'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 import { vendorPortalApprovalGate, VENDOR_PENDING_ACCOUNT_PATH } from '@/lib/vendor-portal'
 
@@ -22,7 +22,7 @@ export default async function CatalogPage() {
     return <p className="error">Vendor account is missing a company.</p>
   }
 
-  const { catalogProducts, prices } = await loadCatalogPageData(user, companyId)
+  const { products: catalogProducts, prices } = await loadCatalogListReadModel(user, companyId)
 
   return (
     <Suspense fallback={<p>Loading catalog…</p>}>
