@@ -1,23 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { getCommerce } from '@/commerce'
-import { QUOTE_NOT_AVAILABLE_MESSAGE, quoteOrderAvailability } from '@/lib/quotes/quote-order-eligibility'
+import { loadQuotesListPage } from '@/lib/quotes/load-quotes-list-page'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { createPayloadReq } from '@/lib/payload-req'
 
 export const dynamic = 'force-dynamic'
 
 const PENDING_APPROVAL = 'Your account is pending administrator approval.'
-
-function formatExpiry(expiresAt?: string | null) {
-  if (!expiresAt) return '—'
-  const d = new Date(expiresAt)
-  if (Number.isNaN(d.getTime())) return '—'
-  return d.toLocaleDateString()
-}
 
 export default async function QuotesListPage() {
   const user = await getRequestUser()
@@ -32,30 +21,7 @@ export default async function QuotesListPage() {
     return <p className="error">Vendor account is missing a company.</p>
   }
 
-  const commerce = await getCommerce({ user })
-  const quotes = await commerce.listQuotes(companyId)
-  const payload = await getPayload({ config: await config })
-  const req = createPayloadReq(payload, user)
-
-  const rows = await Promise.all(
-    quotes.map(async (q) => {
-      const full = await payload.findByID({
-        collection: 'quotes',
-        id: Number(q.id),
-        overrideAccess: false,
-        req,
-      })
-      const canOrder = quoteOrderAvailability(full, companyId).ok
-      return {
-        id: q.id,
-        quoteNumber: q.quoteNumber,
-        status: full.status ?? '—',
-        expiresAt: formatExpiry(full.expiresAt),
-        orderHref: canOrder ? `/quotes/${encodeURIComponent(q.quoteNumber)}/order` : null,
-        unavailable: canOrder ? null : QUOTE_NOT_AVAILABLE_MESSAGE,
-      }
-    }),
-  )
+  const rows = await loadQuotesListPage(user, companyId)
 
   return (
     <div className="as-quotes" data-testid="quotes-page">

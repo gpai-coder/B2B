@@ -33,6 +33,24 @@ const eslintConfig = [
   {
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],
   },
+  {
+    files: ['src/app/(frontend)/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'payload',
+              importNames: ['getPayload'],
+              message:
+                'Do not call getPayload from the storefront. Use @/lib/payload/get-app-payload via domain loaders in src/lib/**.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]
 
 export default eslintConfig

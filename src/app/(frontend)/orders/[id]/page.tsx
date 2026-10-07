@@ -1,10 +1,9 @@
-import { getCommerce } from '@/commerce'
-import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { createPayloadReq } from '@/lib/payload-req'
 import { redirect } from 'next/navigation'
+
+import { getCommerce } from '@/commerce'
 import { vendorBuyerAccessDeniedMessage } from '@/lib/access/vendor-gate'
+import { loadOrderDetailEvents } from '@/lib/orders/load-order-detail-events'
+import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ submitted?: string }> }
 
@@ -25,16 +24,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
   const order = await commerce.getOrder(id, companyId)
   if (!order) return <p className="error">Order not found.</p>
 
-  const payload = await getPayload({ config: await config })
-  const req = createPayloadReq(payload, user)
-  const events = await payload.find({
-    collection: 'order-events',
-    where: { order: { equals: Number(id) } },
-    sort: 'createdAt',
-    limit: 50,
-    req,
-    overrideAccess: false,
-  })
+  const events = await loadOrderDetailEvents(user, id)
 
   const total = order.lines.reduce((sum, line) => sum + line.quantity * line.unitPrice.amount, 0)
 
@@ -90,7 +80,7 @@ export default async function OrderDetailPage({ params, searchParams }: Props) {
       <section data-testid="order-events">
         <h2>Activity</h2>
         <ul>
-          {events.docs.map((ev) => (
+          {events.map((ev) => (
             <li key={ev.id} data-testid={`order-event-${ev.id}`}>
               {String(ev.fromStatus)} → {String(ev.toStatus)}
               {ev.createdAt ? ` (${new Date(String(ev.createdAt)).toLocaleString()})` : null}

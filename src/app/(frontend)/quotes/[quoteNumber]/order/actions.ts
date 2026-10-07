@@ -5,16 +5,10 @@ import { randomUUID } from 'crypto'
 import { revalidatePath } from 'next/cache'
 
 import { CartValidationError, getCommerce } from '@/commerce'
-import { shipToFromCompanyDefault } from '@/lib/checkout/ship-to'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
-import {
-  QUOTE_NOT_AVAILABLE_MESSAGE,
-  quoteOrderAvailability,
-} from '@/lib/quotes/quote-order-eligibility'
+import { QUOTE_NOT_AVAILABLE_MESSAGE } from '@/lib/quotes/quote-order-eligibility'
+import { loadQuoteOrderSubmitContext } from '@/lib/quotes/quote-order-submit-context'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { createPayloadReq } from '@/lib/payload-req'
 
 const PENDING_APPROVAL = 'Your account is pending administrator approval.'
 
@@ -46,29 +40,11 @@ export async function submitQuoteOrderAction(
   const po = validatePoNumber(formData.get('poNumber')?.toString() ?? `PO-${quoteNumber}`)
   if (!po.ok) return { ok: false, error: po.error }
 
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const req = createPayloadReq(payload, user)
-  const quotes = await payload.find({
-    collection: 'quotes',
-    where: { quoteNumber: { equals: quoteNumber } },
-    limit: 1,
-    overrideAccess: false,
-    req,
-  })
-  const quoteDoc = quotes.docs[0]
-  const availability = quoteOrderAvailability(quoteDoc, companyId)
-  if (!availability.ok) {
-    return { ok: false, error: availability.message }
+  const ctx = await loadQuoteOrderSubmitContext(user, companyId, quoteNumber)
+  if (!ctx.ok) {
+    return { ok: false, error: ctx.message }
   }
-
-  const company = await payload.findByID({
-    collection: 'companies',
-    id: Number(companyId),
-    overrideAccess: false,
-    req,
-  })
-  const defaultShip = shipToFromCompanyDefault(company.defaultShipTo)
+  const { quoteDoc, defaultShip } = ctx
   const shipTo = {
     name: String(formData.get('shipToName') ?? defaultShip?.name ?? '').trim(),
     line1: String(formData.get('shipToLine1') ?? defaultShip?.line1 ?? '').trim(),
@@ -87,7 +63,7 @@ export async function submitQuoteOrderAction(
 
   try {
     const commerce = await getCommerce({ user })
-    const submitted = await commerce.convertQuoteToOrder(companyId, String(quoteDoc!.id), {
+    const submitted = await commerce.convertQuoteToOrder(companyId, String(quoteDoc.id), {
       poNumber: po.poNumber,
       shipTo,
       orderNotes,

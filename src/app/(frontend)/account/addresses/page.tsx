@@ -2,10 +2,8 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { AccountAddressesManager } from '@/components/account/AccountAddressesManager'
-import { listVendorShipToAddresses } from '@/lib/vendor/ship-to-addresses'
+import { loadVendorAddresses } from '@/lib/account/load-vendor-addresses'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,8 +22,7 @@ export default async function AccountAddressesPage() {
     return <p className="error">Vendor account is missing a company.</p>
   }
 
-  const payload = await getPayload({ config: await config })
-  const addresses = await listVendorShipToAddresses(payload, user, companyId)
+  const addresses = await loadVendorAddresses(user, companyId)
 
   return (
     <div className="as-account-addresses" data-testid="account-addresses-page">

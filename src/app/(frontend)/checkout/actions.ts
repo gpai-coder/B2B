@@ -6,13 +6,10 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { CartBusyError, CartValidationError, getCommerce } from '@/commerce'
-import { shipToFromCompanyDefault } from '@/lib/checkout/ship-to'
+import { loadCheckoutDefaultShipTo } from '@/lib/checkout/load-checkout-defaults'
 import { parseCheckoutShipToFromForm } from '@/lib/checkout/parse-checkout-ship-to'
 import { validatePoNumber } from '@/lib/checkout/validate-po'
 import { getCompanyIdFromUser, getRequestUser } from '@/lib/session'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { createPayloadReq } from '@/lib/payload-req'
 
 export type CheckoutActionResult = { ok: true; orderId: string } | { ok: false; error: string }
 
@@ -73,7 +70,7 @@ export async function submitCartCheckoutAndRedirectAction(formData: FormData, id
 }
 
 export async function loadCheckoutDefaultsAction(): Promise<{
-  shipTo: ReturnType<typeof shipToFromCompanyDefault>
+  shipTo: Awaited<ReturnType<typeof loadCheckoutDefaultShipTo>>['shipTo']
 }> {
   const user = await getRequestUser()
   if (!user || user.role !== 'vendor-buyer') {
@@ -85,12 +82,5 @@ export async function loadCheckoutDefaultsAction(): Promise<{
   const companyId = getCompanyIdFromUser(user)
   if (!companyId) return { shipTo: null }
 
-  const payload = await getPayload({ config: await config })
-  const company = await payload.findByID({
-    collection: 'companies',
-    id: Number(companyId),
-    overrideAccess: false,
-    req: createPayloadReq(payload, user),
-  })
-  return { shipTo: shipToFromCompanyDefault(company.defaultShipTo) }
+  return loadCheckoutDefaultShipTo(user, companyId)
 }

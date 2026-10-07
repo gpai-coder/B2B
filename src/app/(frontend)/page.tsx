@@ -1,14 +1,8 @@
-import { headers as getHeaders } from 'next/headers'
-import { getPayload } from 'payload'
-
-import config from '@/payload.config'
+import { getHomeAuthEmail } from '@/lib/storefront/home-auth'
 import './styles.css'
 
 export default async function HomePage() {
-  const headers = await getHeaders()
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
+  const email = await getHomeAuthEmail()
 
   return (
     <div className="home">
@@ -19,8 +13,8 @@ export default async function HomePage() {
           quotes. Version 1 runs fully on Postgres; SAP integration comes later via a commerce
           module swap.
         </p>
-        {user && 'email' in user ? (
-          <p className="signed-in">Signed in as {user.email}</p>
+        {email ? (
+          <p className="signed-in">Signed in as {email}</p>
         ) : (
           <p className="signed-in">Sign in via Payload admin or the vendor portal (upcoming).</p>
         )}
