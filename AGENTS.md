@@ -15,7 +15,7 @@ Next.js App Router + Payload 3 + Neon Postgres + Vercel Blob. Deploy via Vercel 
 | Vendor-visible media bytes | `@/lib/media` facade + `/api/vendor/media` | New blob URL builders in components |
 | Auth / vendor gate | `@/lib/session`, `@/lib/vendor-portal`, `@/lib/access/vendor-gate` | Duplicate approval checks |
 | Access control rules | `src/access` + collection hooks | One-off `overrideAccess: true` in UI |
-| Schema changes | SQL migrations + `pnpm db:migrate` (`PAYLOAD_DISABLE_PUSH=true`) | Drizzle push against prod-like DBs |
+| Schema changes | SQL migrations + `pnpm db:migrate` (`PAYLOAD_DISABLE_PUSH=true`) — see `docs/migrations-safety.md` | Drizzle push against prod-like DBs |
 | Deploy / migrate | `scripts/vercel-build.sh` only | Extra migrate paths in `package.json` without tests |
 
 **Staff workflows:** Payload admin only (`app/(payload)/admin`). Do not add custom staff storefront routes unless product explicitly requests them.
