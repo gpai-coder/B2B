@@ -9,7 +9,7 @@ import { AddToCartControls } from '@/components/cart/AddToCartControls'
 import { finishSwatchColor } from '@/lib/finish-swatches'
 import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { PriceDTO } from '@/lib/catalog/types'
-import { vendorMediaPath } from '@/lib/product-media'
+import { vendorMediaPath } from '@/lib/media'
 
 export type ProductDetailDTO = {
   slug: string

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { vendorMediaPath } from '@/lib/product-media'
+import { vendorMediaPath } from '@/lib/media'
 
 type Suggestion = {
   productId: number

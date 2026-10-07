@@ -1,7 +1,7 @@
 import { getPayload } from 'payload'
 
 import { getCatalogMediaAuthFailure } from '@/access'
-import { serveBlobFileResponse } from '@/lib/serve-blob-file'
+import { serveBlobFileResponse } from '@/lib/media'
 import { createPayloadReq } from '@/lib/payload-req'
 import { getRequestUser } from '@/lib/session'
 import config from '@/payload.config'

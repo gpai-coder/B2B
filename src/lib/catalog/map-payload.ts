@@ -1,6 +1,6 @@
 import type { Product, ProductVariant } from '@/payload-types'
 
-import { resolveMediaId } from '@/lib/product-media'
+import { resolveMediaId } from '@/lib/media'
 
 import { sortVariantsById } from './catalog-default-pricing'
 import type { CatalogProductDTO, CatalogVariantDTO } from './types'
