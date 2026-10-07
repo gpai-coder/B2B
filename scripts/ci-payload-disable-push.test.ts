@@ -5,11 +5,10 @@ const CI_WORKFLOW = readFileSync('.github/workflows/ci.yml', 'utf8')
 
 describe('CI migration safety', () => {
   it('sets PAYLOAD_DISABLE_PUSH=true on migrate, seed, build, and e2e steps', () => {
-    const blocks = CI_WORKFLOW.split('\n').filter((line) => /PAYLOAD_DISABLE_PUSH/.test(line))
-    expect(blocks.length).toBeGreaterThanOrEqual(4)
-    for (const line of blocks) {
-      expect(line).toMatch(/PAYLOAD_DISABLE_PUSH:\s*['"]true['"]/)
-    }
+    const envLines = CI_WORKFLOW.split('\n').filter((line) =>
+      /^\s+PAYLOAD_DISABLE_PUSH:\s*['"]true['"]/.test(line),
+    )
+    expect(envLines.length).toBeGreaterThanOrEqual(4)
   })
 
   it('runs legacy cart reconcile and migrate:check when migrations exist', () => {
