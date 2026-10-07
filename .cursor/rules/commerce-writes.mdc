@@ -1,0 +1,10 @@
+---
+description: Commerce mutations go through getCommerce only
+alwaysApply: true
+---
+
+# Commerce writes
+
+Server actions under `app/(frontend)/**` that change carts, orders, quotes, or checkout state must call `getCommerce()` and must not call `payload.create`, `payload.update`, or `payload.delete` directly.
+
+Staff order/quote changes belong in Payload hooks under `src/lib/orders` and `src/lib/quotes`, invoked from admin or commerce internals.
