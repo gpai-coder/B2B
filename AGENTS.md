@@ -11,7 +11,7 @@ Next.js App Router + Payload 3 + Neon Postgres + Vercel Blob. Deploy via Vercel 
 | Task | Do this | Do not |
 | --- | --- | --- |
 | Cart, checkout, quotes, pricing for orders | `getCommerce()` from `@/commerce` | `getPayload` / `payload.update` in storefront actions |
-| Catalog PLP / PDP / search page data | `@/lib/catalog/read-models` (when present) or existing catalog helpers | Ad-hoc `payload.find` with varying `depth` in pages |
+| Catalog PLP / PDP / search page data | `@/lib/catalog/read-models` | Ad-hoc `payload.find` with varying `depth` in pages |
 | Vendor-visible media bytes | `@/lib/media` facade + `/api/vendor/media` | New blob URL builders in components |
 | Auth / vendor gate | `@/lib/session`, `@/lib/vendor-portal`, `@/lib/access/vendor-gate` | Duplicate approval checks |
 | Access control rules | `src/access` + collection hooks | One-off `overrideAccess: true` in UI |
