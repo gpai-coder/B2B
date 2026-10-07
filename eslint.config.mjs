@@ -42,9 +42,8 @@ const eslintConfig = [
           paths: [
             {
               name: 'payload',
-              importNames: ['getPayload'],
               message:
-                'Do not call getPayload from the storefront. Use @/lib/payload/get-app-payload via domain loaders in src/lib/**.',
+                'Storefront must not import the payload package. Use getCommerce() for writes and src/lib/** loaders for reads.',
             },
           ],
         },
