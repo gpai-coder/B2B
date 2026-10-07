@@ -34,6 +34,26 @@ const eslintConfig = [
     ignores: ['.next/', 'src/payload-types.ts', 'src/payload-generated-schema.ts'],
   },
   {
+    files: ['src/components/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@/lib/product-media',
+              message: 'Import vendor media helpers from @/lib/media.',
+            },
+            {
+              name: '@/lib/blob-media-url',
+              message: 'Import blob media helpers from @/lib/media.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/app/(frontend)/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-imports': [

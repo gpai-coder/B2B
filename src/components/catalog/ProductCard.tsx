@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 import { finishSwatchColor } from '@/lib/finish-swatches'
-import { vendorMediaPath } from '@/lib/product-media'
+import { vendorMediaPath } from '@/lib/media'
 
 import { pickDefaultVariantSku } from '@/lib/catalog/default-variant'
 import type { CatalogProductDTO, PriceDTO } from '@/lib/catalog/types'
