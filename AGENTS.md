@@ -52,3 +52,10 @@ pnpm db:migrate && pnpm db:seed
 pnpm dev
 pnpm typecheck && pnpm lint && pnpm test:unit
 ```
+
+## pstack: build, verify, ship
+
+1. **Install pstack** — In Cursor: `/add-plugin pstack`, then `/setup-pstack` (writes `~/.cursor/rules/pstack-models.mdc`). Repo notes: `.cursor/pstack-setup.md`.
+2. **Rigorous work** — Start with `/poteto-mode` and a clear goal (feature, bug fix, refactor). Let the playbook route subagents; do not bypass commerce/catalog boundaries in `AGENTS.md`.
+3. **Prove behavior** — After code changes, run the **`verify-b2b-portal`** skill (`.cursor/skills/verify-b2b-portal/SKILL.md`): launch → doctor → drive affected features → cleanup. Respect preview DB isolation (`scripts/check-preview-db.mjs`); use local Docker Postgres for verification.
+4. **PR evidence** — Attach screenshots/logs from `artifacts/verify-b2b-portal/<VERIFY_RUN_ID>/` in the PR description (catalog + admin when touching those surfaces).
